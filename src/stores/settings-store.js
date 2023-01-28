@@ -1,15 +1,17 @@
-import { defineStore } from 'pinia';
+import { defineStore } from "pinia";
 
-export const useCounterStore = defineStore('counter', {
+export const useSettingsStore = defineStore("settings", {
   state: () => ({
-    counter: 0,
+    indexUrl: "https://#",
+    indexKey: "abcdefg",
   }),
   getters: {
-    doubleCount: (state) => state.counter * 2,
+    placeHolder: (state) => state.indexUrl,
   },
   actions: {
-    increment() {
-      this.counter++;
+    testConnection() {
+      console.log("wut");
     },
   },
+  persist: true,
 });

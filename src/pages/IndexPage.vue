@@ -7,6 +7,7 @@
           src="~assets/meili-logo.svg"
           style="width: 200px; height: 200px"
         />
+        whatttttttt
       </div>
     </div>
   </q-page>
