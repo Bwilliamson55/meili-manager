@@ -1,5 +1,6 @@
 import IndexPageVue from "pages/IndexPage.vue";
 import SidebarSettingsVue from "pages/SidebarSettings.vue";
+import TasksPageVue from "src/pages/TasksPage.vue";
 
 const routes = [
   {
@@ -10,6 +11,13 @@ const routes = [
         path: "",
         components: {
           main: IndexPageVue,
+          side: SidebarSettingsVue,
+        },
+      },
+      {
+        path: "tasks",
+        components: {
+          main: TasksPageVue,
           side: SidebarSettingsVue,
         },
       },

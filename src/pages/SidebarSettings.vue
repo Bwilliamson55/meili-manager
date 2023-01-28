@@ -1,5 +1,8 @@
 <template>
   <div class="q-pa-md">
+    <div class="text-center text-bold border-bottom">
+      MeiliSearch Manager Settings
+    </div>
     <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
       <q-input
         filled
@@ -38,16 +41,15 @@
 import { useQuasar } from "quasar";
 import { api } from "boot/axios";
 import { useSettingsStore } from "src/stores/settings-store";
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { storeToRefs } from "pinia";
 
 export default {
   setup() {
     const $q = useQuasar();
     const theSettings = useSettingsStore();
-    const { indexUrl, indexKey } = storeToRefs(theSettings);
+    const { indexUrl, indexKey, confirmed } = storeToRefs(theSettings);
     const accept = ref(false);
-    const credsConfirmed = ref(false);
 
     return {
       indexUrl,
@@ -77,7 +79,7 @@ export default {
                   icon: "warning",
                   message: "Sorry those creds didn't work",
                 });
-                credsConfirmed.value = false;
+                confirmed.value = false;
               } else {
                 $q.notify({
                   color: "green-4",
@@ -85,11 +87,12 @@ export default {
                   icon: "cloud_done",
                   message: "Creds authenticated",
                 });
-                credsConfirmed.value = true;
+                confirmed.value = true;
               }
             })
             .catch((error) => {
               console.log(error);
+              confirmed.value = false;
               $q.notify({
                 color: "red-5",
                 textColor: "white",
