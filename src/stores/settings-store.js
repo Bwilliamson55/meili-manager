@@ -5,6 +5,7 @@ export const useSettingsStore = defineStore("settings", {
     indexUrl: "https://#",
     indexKey: "abcdefg",
     confirmed: false,
+    currentIndex: "",
   }),
   getters: {
     placeHolder: (state) => state.indexUrl,

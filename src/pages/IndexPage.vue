@@ -1,34 +1,41 @@
 <template>
-  <q-page class="flex justify-center">
-    <div class="row full-width">
-      <div class="col q-gutter-none text-center">
+  <q-page>
+    <div class="row justify-center">
+      <div class="col-xs-12 col-md-8">
         <div v-if="confirmed" class="q-mt-sm">
           <q-list bordered class="rounded-borders">
-            <q-item-label header class="rounded-borders"
-              >Your Indexes</q-item-label
-            >
+            <q-item>
+              <q-item-section top
+                ><q-item-label header>Your Indexes</q-item-label>
+              </q-item-section>
+              <q-item-section top side
+                ><q-btn icon="add_box" name="newIndex"></q-btn></q-item-section
+            ></q-item>
             <div
               v-for="index in indexList"
               :key="index.id"
               class="q-pa-md q-gutter-md"
             >
               <q-item>
-                <q-item-section avatar top>
-                  <q-icon name="list" color="black" size="34px" />
-                </q-item-section>
-
                 <q-item-section top>
                   <q-item-label lines="1">
                     <span class="text-weight-medium">{{ index.uid }}</span>
                   </q-item-label>
                   <q-item-label caption lines="1">
-                    @rstoenescu in #3: > Generic type parameter for props
+                    Created:
+                    {{ formatDate(index.createdAt) }} / Updated:
+                    {{ formatDate(index.updatedAt) }}
                   </q-item-label>
                   <q-item-label
                     lines="1"
                     class="q-mt-xs text-body2 text-weight-bold text-primary text-uppercase"
                   >
-                    <span class="cursor-pointer">Show Me</span>
+                    <q-btn
+                      flat
+                      :to="`/index-details/${index.uid}`"
+                      class="cursor-pointer q-pl-none"
+                      >Show Me</q-btn
+                    >
                   </q-item-label>
                 </q-item-section>
 
@@ -71,8 +78,13 @@ import { ref, onMounted } from "vue";
 import { MeiliSearch } from "meilisearch";
 
 const theSettings = useSettingsStore();
-const { indexUrl, indexKey, confirmed } = storeToRefs(theSettings);
+const { indexUrl, indexKey, confirmed, currentIndex } =
+  storeToRefs(theSettings);
 const indexList = ref([]);
+const formatDate = (dateString) =>
+  new Intl.DateTimeFormat("default", { dateStyle: "long" }).format(
+    new Date(dateString)
+  );
 onMounted(async () => {
   if (confirmed) {
     const client = new MeiliSearch({
@@ -81,7 +93,6 @@ onMounted(async () => {
     });
     const indexes = await client.getRawIndexes();
     indexList.value = indexes.results;
-    console.log(indexList);
   }
 });
 </script>
