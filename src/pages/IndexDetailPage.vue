@@ -1,45 +1,52 @@
 <template>
   <q-page padding>
-    <div class="q-pa-md row items-start q-gutter-md">
-      <q-card class="col" flat bordered>
-        <q-card-section>
-          <q-card-section>
-            <div v-if="iStats && iPk" class="flex justify-around">
-              <q-chip icon="numbers" class="bg-info"
-                >Count: {{ iStats.numberOfDocuments }}</q-chip
-              >
-              <div>
-                Primary Key: <strong>{{ iPk }}</strong>
-              </div>
-              <q-chip
-                :icon="iStats.isIndexing ? 'done' : 'sync'"
-                class="bg-secondary text-white"
-                >Indexing: {{ iStats.isIndexing }}</q-chip
-              >
-            </div>
-          </q-card-section>
+    <div class="q-pa-md row items-start q-gutter-md full-width">
+      <IndexDetailTabs>
+        <template #overview-tab>
+          <q-card class="col" flat bordered>
+            <q-card-section>
+              <q-card-section>
+                <div v-if="iStats && iPk" class="flex justify-around">
+                  <q-chip icon="numbers" class="bg-info"
+                    >Count: {{ iStats.numberOfDocuments }}</q-chip
+                  >
+                  <div>
+                    Primary Key: <strong>{{ iPk }}</strong>
+                  </div>
+                  <q-chip
+                    :icon="iStats.isIndexing ? 'done' : 'sync'"
+                    class="bg-secondary text-white"
+                    >Indexing: {{ iStats.isIndexing }}</q-chip
+                  >
+                </div>
+              </q-card-section>
 
-          <q-separator />
+              <q-separator />
 
-          <q-card-section>
-            <div v-if="iStats && iPk" class="flex">
-              <div class="full-width text-center">
-                <p>Field Distribution</p>
-              </div>
-              <div class="q-px-md q-mx-auto col">
-                <q-table
-                  dense
-                  :rows="fdRows"
-                  row-key="Field Name"
-                  :rows-per-page-options="[5, 10, 15, 0]"
-                  flat
-                  bordered
-                />
-              </div>
-            </div>
-          </q-card-section>
-        </q-card-section>
-      </q-card>
+              <q-card-section>
+                <div v-if="iStats && iPk" class="flex">
+                  <div class="full-width text-center">
+                    <p>Field Distribution</p>
+                  </div>
+                  <div class="q-px-md q-mx-auto col">
+                    <q-table
+                      dense
+                      :rows="fdRows"
+                      row-key="Field Name"
+                      :rows-per-page-options="[5, 10, 15, 0]"
+                      flat
+                      bordered
+                    />
+                  </div>
+                </div>
+              </q-card-section>
+            </q-card-section>
+          </q-card>
+        </template>
+        <template #settings-tab>
+          <SettingsForm></SettingsForm>
+        </template>
+      </IndexDetailTabs>
     </div>
     <div class="text-center">
       <p class="strong">Documents in this Index</p>
@@ -119,12 +126,16 @@ import { MeiliSearch } from "meilisearch";
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
 import { useSettingsStore } from "src/stores/settings-store";
 import { storeToRefs } from "pinia";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { useRoute } from "vue-router";
+import { useQuasar } from "quasar";
+import IndexDetailTabs from "components/IndexDetailTabs.vue";
+import SettingsForm from "components/SettingsForm.vue";
+
+const $q = useQuasar();
 
 const theSettings = useSettingsStore();
 const { indexUrl, indexKey, currentIndex } = storeToRefs(theSettings);
-
 const iStats = ref({});
 const iPk = ref("");
 const searchClient = instantMeiliSearch(indexUrl.value, indexKey.value);
@@ -154,6 +165,7 @@ onMounted(async () => {
   });
   const mclient = meiliClient.index(route.params.uid);
   iStats.value = await mclient.getStats();
+  iSettings.value = await mclient.getSettings();
   fdRows.value = Object.keys(iStats.value.fieldDistribution).map((key) => {
     return { "Field Name": key, Count: iStats.value.fieldDistribution[key] };
   });
