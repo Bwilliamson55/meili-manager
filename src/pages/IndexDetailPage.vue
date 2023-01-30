@@ -137,6 +137,7 @@ const $q = useQuasar();
 const theSettings = useSettingsStore();
 const { indexUrl, indexKey, currentIndex } = storeToRefs(theSettings);
 const iStats = ref({});
+const iSettings = ref({});
 const iPk = ref("");
 const searchClient = instantMeiliSearch(indexUrl.value, indexKey.value);
 const fdRows = ref([]);
