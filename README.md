@@ -1,6 +1,6 @@
 # MeiliSearch Manager (meili-manager)
 
-A Quasar app to manage a meilisearch instance
+A Quasar app to manage a meilisearch instance. Currently in development and subject to change!
 
 ## Install the dependencies
 ```bash
