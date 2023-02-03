@@ -8,8 +8,19 @@
     >
     to understand available options.
   </p>
-  <div class="q-pa-md">
+  <div class="q-pa-md" v-if="!fetching">
     <q-form @submit="onSubmit" class="q-gutter-md">
+      <q-input
+        filled
+        v-model="iSettings.distinctAttribute"
+        label="Distinct (Unique) attribute"
+        hint="A single string - the attribute that is unique in every result list. Can be different from PK"
+        use-input
+        stack-label
+        hide-dropdown-icon
+        input-debounce="0"
+      />
+      <hr />
       <q-select
         filled
         v-model="iSettings.displayedAttributes"
@@ -121,6 +132,76 @@
         </div>
       </template>
       <hr />
+
+      <p class="text-center">Typo Tollerance</p>
+      <q-toggle
+        v-model="iSettings.typoTolerance.enabled"
+        color="green"
+        label="Enabled"
+      />
+      <div class="row q-py-sm justify-between">
+        <q-input
+          v-model.number="iSettings.typoTolerance.minWordSizeForTypos.oneTypo"
+          type="number"
+          label="Min word size for one typo"
+          filled
+          stack-label
+          class="col-12 col-sm-5 q-mt-xs"
+        />
+        <q-input
+          v-model.number="iSettings.typoTolerance.minWordSizeForTypos.twoTypos"
+          type="number"
+          label="Min word size for two typos"
+          filled
+          stack-label
+          class="col-12 col-sm-5 q-mt-xs"
+        />
+      </div>
+      <q-select
+        filled
+        v-model="iSettings.typoTolerance.disableOnWords"
+        label="Disable on words"
+        hint="A list of strings, or empty"
+        use-input
+        use-chips
+        multiple
+        stack-label
+        hide-dropdown-icon
+        input-debounce="0"
+        new-value-mode="add"
+      />
+      <q-select
+        filled
+        v-model="iSettings.typoTolerance.disableOnAttributes"
+        label="Disable on attributes"
+        hint="A list of strings, or empty"
+        use-input
+        use-chips
+        multiple
+        stack-label
+        hide-dropdown-icon
+        input-debounce="0"
+        new-value-mode="add"
+      />
+      <hr />
+      <div class="row q-py-sm justify-between">
+        <q-input
+          v-model.number="iSettings.faceting.maxValuesPerFacet"
+          type="number"
+          label="Max returned values per facet"
+          filled
+          stack-label
+          class="col-12 col-sm-5 q-mt-xs"
+        />
+        <q-input
+          v-model.number="iSettings.pagination.maxTotalHits"
+          type="number"
+          label="Max results"
+          filled
+          stack-label
+          class="col-12 col-sm-5 q-mt-xs"
+        />
+      </div>
       <div>
         <q-btn label="Submit" type="submit" color="primary" />
       </div>
@@ -136,7 +217,7 @@ import { useSettingsStore } from "src/stores/settings-store";
 import { storeToRefs } from "pinia";
 
 const $q = useQuasar();
-
+const fetching = ref(true);
 const iSettings = ref({});
 
 const theSettings = useSettingsStore();
@@ -150,8 +231,9 @@ onMounted(async () => {
       apiKey: indexKey.value,
     });
     const mclient = meiliClient.index(currentIndex.value);
-
+    fetching.value = true;
     iSettings.value = await mclient.getSettings();
+    fetching.value = false;
   }
 });
 
@@ -163,28 +245,51 @@ const iSettingsSynonymKeys = computed(() => {
 });
 const addSynonymParent = (synonymString, done) => {
   iSettings.value.synonyms[synonymString] = [""];
-  done();
 };
-const removeSynonym = ({ details }) => {
+const removeSynonym = (details) => {
   console.log(details);
   delete iSettings.value.synonyms[details.value];
 };
 
-const onSubmit = () => {
-  // if (accept.value !== true) {
-  //   $q.notify({
-  //     color: "red-5",
-  //     textColor: "white",
-  //     icon: "warning",
-  //     message: "You need to accept the license and terms first",
-  //   });
-  // } else {
-  //   $q.notify({
-  //     color: "green-4",
-  //     textColor: "white",
-  //     icon: "cloud_done",
-  //     message: "Submitted",
-  //   });
-  // }
+const onSubmit = async () => {
+  try {
+    const meiliClient = new MeiliSearch({
+      host: indexUrl.value,
+      apiKey: indexKey.value,
+    });
+    const mclient = meiliClient.index(currentIndex.value);
+    const updateRes = await mclient.updateSettings(iSettings.value);
+    console.log(JSON.stringify(updateRes));
+    const waitForTaskRes = await mclient.waitForTask(updateRes.taskUid, {
+      timeOutMs: 5000,
+    });
+    console.log(JSON.stringify(waitForTaskRes));
+    iSettings.value = await mclient.getSettings();
+    $q.notify({
+      color: "green-4",
+      textColor: "white",
+      icon: "cloud_done",
+      message: "Settings Updated",
+    });
+  } catch (error) {
+    $q.notify({
+      color: "red-5",
+      textColor: "white",
+      icon: "warning",
+      multiLine: true,
+      html: true,
+      message: `<p>Something went wrong<br/><pre>${JSON.stringify(
+        error,
+        null,
+        2
+      )}</pre></p>`,
+    });
+    const meiliClient = new MeiliSearch({
+      host: indexUrl.value,
+      apiKey: indexKey.value,
+    });
+    const mclient = meiliClient.index(currentIndex.value);
+    iSettings.value = await mclient.getSettings();
+  }
 };
 </script>
