@@ -7,13 +7,5 @@ export const useSettingsStore = defineStore("settings", {
     confirmed: false,
     currentIndex: "",
   }),
-  getters: {
-    placeHolder: (state) => state.indexUrl,
-  },
-  actions: {
-    testConnection() {
-      console.log("wut");
-    },
-  },
   persist: true,
 });

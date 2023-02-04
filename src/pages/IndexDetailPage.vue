@@ -56,7 +56,21 @@
       :index-name="currentIndex"
     >
       <ais-search-box />
-
+      <p class="text-center">Stats: <ais-stats /></p>
+      <p class="text-center text-blue">Sort Options</p>
+      <ais-sort-by v-if="sortByItems" :items="sortByItems" />
+      <hr />
+      Current Refinements
+      <ais-current-refinements />
+      <hr />
+      <template v-if="iSettings.filterableAttributes">
+        <div class="row">
+          <template v-for="att in iSettings.filterableAttributes" :key="att">
+            <q-card class="col-12 col-sm-6 col-md-4 col-xl-3 q-pa-sm">
+              {{ att }}
+              <ais-refinement-list :attribute="att" /></q-card
+          ></template></div
+      ></template>
       <ais-hits>
         <template v-slot:item="{ item }">
           <q-card flat bordered class="col overflow-auto">
@@ -126,7 +140,7 @@ import { MeiliSearch } from "meilisearch";
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
 import { useSettingsStore } from "src/stores/settings-store";
 import { storeToRefs } from "pinia";
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useQuasar } from "quasar";
 import IndexDetailTabs from "components/IndexDetailTabs.vue";
@@ -138,6 +152,7 @@ const theSettings = useSettingsStore();
 const { indexUrl, indexKey, currentIndex } = storeToRefs(theSettings);
 const iStats = ref({});
 const iSettings = ref({});
+const sortByItems = ref([]);
 const iPk = ref("");
 const searchClient = instantMeiliSearch(indexUrl.value, indexKey.value);
 const fdRows = ref([]);
@@ -171,5 +186,16 @@ onMounted(async () => {
     return { "Field Name": key, Count: iStats.value.fieldDistribution[key] };
   });
   iPk.value = await mclient.fetchPrimaryKey();
+
+  for (const atString of iSettings.value.sortableAttributes) {
+    sortByItems.value.push({
+      value: `${currentIndex.value}:${atString}:asc`,
+      label: `${atString} asc`,
+    });
+    sortByItems.value.push({
+      value: `${currentIndex.value}:${atString}:desc`,
+      label: `${atString} desc`,
+    });
+  }
 });
 </script>
