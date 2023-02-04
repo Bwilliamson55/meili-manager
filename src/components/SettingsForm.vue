@@ -1,5 +1,22 @@
 <template>
-  <p>Value is {{ iSettingsString }}</p>
+  <q-expansion-item
+    dense
+    dense-toggle
+    expand-separator
+    icon="settings"
+    label="Raw Settings JSON"
+    header-class="text-blue"
+    class="q-mb-md"
+  >
+    <q-card>
+      <q-card-section>
+        <p class="text-center">
+          The following is a real time look at your settings object in full.
+        </p>
+        <pre>{{ iSettingsString }}</pre>
+      </q-card-section>
+    </q-card>
+  </q-expansion-item>
   <p class="text-center">
     Please see
     <a
@@ -7,6 +24,9 @@
       >the meilisearch options reference</a
     >
     to understand available options.
+  </p>
+  <p class="text-center text-red text-bold">
+    You must click 'Submit' to persist settings!
   </p>
   <div class="q-pa-md" v-if="!fetching">
     <q-form @submit="onSubmit" class="q-gutter-md">
@@ -238,7 +258,7 @@ onMounted(async () => {
 });
 
 const iSettingsString = computed(() => {
-  return JSON.stringify(iSettings.value);
+  return JSON.stringify(iSettings.value, null, 2);
 });
 const iSettingsSynonymKeys = computed(() => {
   return Object.keys(iSettings.value?.synonyms || {});
@@ -247,7 +267,6 @@ const addSynonymParent = (synonymString, done) => {
   iSettings.value.synonyms[synonymString] = [""];
 };
 const removeSynonym = (details) => {
-  console.log(details);
   delete iSettings.value.synonyms[details.value];
 };
 
@@ -259,11 +278,9 @@ const onSubmit = async () => {
     });
     const mclient = meiliClient.index(currentIndex.value);
     const updateRes = await mclient.updateSettings(iSettings.value);
-    console.log(JSON.stringify(updateRes));
     const waitForTaskRes = await mclient.waitForTask(updateRes.taskUid, {
       timeOutMs: 5000,
     });
-    console.log(JSON.stringify(waitForTaskRes));
     iSettings.value = await mclient.getSettings();
     $q.notify({
       color: "green-4",
