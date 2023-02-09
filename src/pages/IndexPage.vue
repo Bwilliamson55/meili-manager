@@ -9,7 +9,11 @@
                 ><q-item-label header>Your Indexes</q-item-label>
               </q-item-section>
               <q-item-section top side
-                ><q-btn icon="add_box" name="newIndex"></q-btn></q-item-section
+                ><q-btn
+                  icon="add_box"
+                  name="newIndex"
+                  @click="prompt = true"
+                ></q-btn></q-item-section
             ></q-item>
             <div
               v-for="index in indexList"
@@ -48,6 +52,7 @@
                       dense
                       round
                       icon="delete"
+                      @click="delPrompt = true"
                     />
                     <q-btn
                       class="gt-xs"
@@ -68,6 +73,48 @@
         </div>
       </div>
     </div>
+    <q-dialog v-model="prompt" persistent>
+      <q-card style="min-width: 300px">
+        <q-card-section>
+          <p>
+            Index Name
+            <q-input class="q-pt-none" dense v-model="newIndexName" autofocus />
+          </p>
+        </q-card-section>
+        <q-card-section>
+          <p>
+            Index Primary Key (Optional)
+            <q-input dense v-model="newIndexUuid" autofocus />
+          </p>
+        </q-card-section>
+
+        <q-card-actions align="right" class="text-primary">
+          <q-btn flat label="Cancel" v-close-popup />
+          <q-btn @click="newIndex" flat label="Add Index" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="delPrompt" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-avatar icon="delete" color="primary" text-color="white" />
+          <span class="q-ml-sm"
+            >Are you REALLY sure you want to delete this index?</span
+          >
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="primary" v-close-popup />
+          <q-btn
+            @click="delIndex"
+            flat
+            label="Delete Index"
+            color="primary"
+            v-close-popup
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -76,23 +123,63 @@ import { useSettingsStore } from "src/stores/settings-store";
 import { storeToRefs } from "pinia";
 import { ref, onMounted } from "vue";
 import { MeiliSearch } from "meilisearch";
+import { useQuasar } from "quasar";
 
+const $q = useQuasar();
+
+const prompt = ref(false);
+const delPrompt = ref(false);
+const newIndexName = ref("");
+const newIndexUuid = ref("");
 const theSettings = useSettingsStore();
 const { indexUrl, indexKey, confirmed, currentIndex } =
   storeToRefs(theSettings);
 const indexList = ref([]);
+
 const formatDate = (dateString) =>
   new Intl.DateTimeFormat("default", { dateStyle: "long" }).format(
     new Date(dateString)
   );
+const getClient = () =>
+  new MeiliSearch({
+    host: indexUrl.value,
+    apiKey: indexKey.value,
+  });
 onMounted(async () => {
   if (confirmed) {
-    const client = new MeiliSearch({
-      host: indexUrl.value,
-      apiKey: indexKey.value,
-    });
+    const client = getClient();
     const indexes = await client.getRawIndexes();
     indexList.value = indexes.results;
   }
 });
+const newIndex = async () => {
+  const client = getClient();
+  await client
+    .createIndex(newIndexName.value, { primaryKey: newIndexUuid.value })
+    .catch((error) => {
+      console.log(error);
+      $q.notify({
+        color: "red-5",
+        textColor: "white",
+        icon: "warning",
+        message: `Sorry there was an error: ${error.toString()}`,
+      });
+    });
+  $q.notify({
+    color: "green-4",
+    textColor: "white",
+    icon: "cloud_done",
+    message: "Index Created",
+  });
+  const indexes = await client.getRawIndexes();
+  indexList.value = indexes.results;
+};
+const delIndex = async () => {
+  $q.notify({
+    color: "green-4",
+    textColor: "white",
+    icon: "cloud_done",
+    message: "I don't do anything yet!",
+  });
+};
 </script>
