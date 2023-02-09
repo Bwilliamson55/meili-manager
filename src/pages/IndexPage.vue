@@ -52,7 +52,7 @@
                       dense
                       round
                       icon="delete"
-                      @click="delPrompt = true"
+                      @click="delIndex(index.uid)"
                     />
                     <q-btn
                       class="gt-xs"
@@ -174,12 +174,43 @@ const newIndex = async () => {
   const indexes = await client.getRawIndexes();
   indexList.value = indexes.results;
 };
-const delIndex = async () => {
+
+const delIndex = async (indexUidString) => {
   $q.notify({
-    color: "green-4",
-    textColor: "white",
-    icon: "cloud_done",
-    message: "I don't do anything yet!",
+    color: "orange-4",
+    textColor: "black",
+    icon: "delete",
+    timeout: 7000,
+    message: `Really delete ${indexUidString} ?`,
+    actions: [
+      {
+        label: "Cancel",
+        color: "black",
+        handler: () => {
+          /* ... */
+        },
+      },
+      {
+        label: "Yes",
+        color: "red",
+        handler: async () => {
+          const client = getClient();
+          const delRes = await client
+            .deleteIndex(indexUidString)
+            .catch((error) => {
+              console.log(error);
+              $q.notify({
+                color: "red-5",
+                textColor: "white",
+                icon: "warning",
+                message: `Sorry there was an error: ${error.toString()}`,
+              });
+            });
+          const indexes = await client.getRawIndexes();
+          indexList.value = indexes.results;
+        },
+      },
+    ],
   });
 };
 </script>
