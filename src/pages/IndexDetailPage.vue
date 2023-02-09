@@ -52,6 +52,7 @@
       <p class="strong">Documents in this Index</p>
     </div>
     <ais-instant-search
+      v-if="iPk"
       :search-client="searchClient"
       :index-name="currentIndex"
     >
@@ -179,7 +180,7 @@ onMounted(async () => {
     host: indexUrl.value,
     apiKey: indexKey.value,
   });
-  const mclient = meiliClient.index(route.params.uid);
+  const mclient = meiliClient.index(currentIndex.value);
   iStats.value = await mclient.getStats();
   iSettings.value = await mclient.getSettings();
   fdRows.value = Object.keys(iStats.value.fieldDistribution).map((key) => {
