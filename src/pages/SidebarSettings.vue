@@ -34,6 +34,17 @@
         />
       </div>
     </q-form>
+    <q-separator spaced />
+    <q-item-label header
+      ><a href="https://docs.meilisearch.com/reference/api/keys.html#actions"
+        >Permissions Documentation Here</a
+      ></q-item-label
+    >
+    <div v-if="currentIndex" class="q-pa-sm q-gutter-sm">
+      <span
+        >Current index: <strong>{{ currentIndex ?? "" }}</strong></span
+      >
+    </div>
   </div>
 </template>
 
@@ -46,7 +57,8 @@ import { storeToRefs } from "pinia";
 
 const $q = useQuasar();
 const theSettings = useSettingsStore();
-const { indexUrl, indexKey, confirmed } = storeToRefs(theSettings);
+const { indexUrl, indexKey, confirmed, currentIndex } =
+  storeToRefs(theSettings);
 const accept = ref(false);
 const version = ref("");
 

@@ -10,6 +10,7 @@
           >
         </q-toolbar-title>
         <q-tabs>
+          <q-route-tab to="/keys" exact name="keys" label="Keys" />
           <q-route-tab to="/tasks" exact name="tasks" label="Tasks" />
         </q-tabs>
       </q-toolbar>

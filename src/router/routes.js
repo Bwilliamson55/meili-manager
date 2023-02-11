@@ -2,6 +2,7 @@ import IndexPageVue from "pages/IndexPage.vue";
 import SidebarSettingsVue from "pages/SidebarSettings.vue";
 import TasksPageVue from "src/pages/TasksPage.vue";
 import IndexDetailPage from "src/pages/IndexDetailPage.vue";
+import KeysPageVue from "src/pages/KeysPage.vue";
 
 const routes = [
   {
@@ -19,6 +20,13 @@ const routes = [
         path: "/tasks",
         components: {
           main: TasksPageVue,
+          side: SidebarSettingsVue,
+        },
+      },
+      {
+        path: "/keys",
+        components: {
+          main: KeysPageVue,
           side: SidebarSettingsVue,
         },
       },

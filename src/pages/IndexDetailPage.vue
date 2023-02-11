@@ -56,16 +56,28 @@
       :search-client="searchClient"
       :index-name="currentIndex"
     >
-      <ais-search-box />
       <p class="text-center">Stats: <ais-stats /></p>
-      <p class="text-center text-blue">Sort Options</p>
-      <ais-sort-by v-if="sortByItems" :items="sortByItems" />
+      <div class="row justify-evenly q-mx-sm">
+        <div class="col-12 col-sm-5">
+          <p class="text-center text-blue q-my-sm">Search Query</p>
+          <ais-search-box />
+        </div>
+        <div class="col-12 col-sm-5">
+          <p class="text-center text-blue q-my-sm">Sort Options</p>
+          <ais-sort-by v-if="sortByItems" :items="sortByItems" />
+        </div>
+      </div>
       <hr />
-      Current Refinements
-      <ais-current-refinements />
+      <div class="row">
+        <div class="col text-center">
+          Current Refinements
+          <ais-current-refinements />
+        </div>
+      </div>
       <hr />
-      <template v-if="iSettings.filterableAttributes">
+      <template v-if="iSettings.filterableAttributes.length">
         <div class="row">
+          <p class="col text-center text-blue q-my-sm">Filters</p>
           <template v-for="att in iSettings.filterableAttributes" :key="att">
             <q-card class="col-12 col-sm-6 col-md-4 col-xl-3 q-pa-sm">
               {{ att }}
@@ -102,7 +114,8 @@
                       .filter((i) => {
                         return (
                           !String(i).startsWith('_') &&
-                          !String(i).startsWith('__')
+                          !String(i).startsWith('__') &&
+                          i
                         );
                       })
                       .map((k) => {

@@ -58,7 +58,7 @@
         filled
         v-model="iSettings.searchableAttributes"
         label="Searchable Attributes"
-        hint="A list of strings, or *"
+        hint="A list of strings, or *. Press enter to add values you type."
         use-input
         use-chips
         multiple
