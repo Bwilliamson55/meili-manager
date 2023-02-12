@@ -67,6 +67,31 @@ Critical to this app's function are
 
 ---
 
+## Features
+
+_No more manual API calls to change settings_
+
+- Indexes
+  - List, Create, Edit, Delete
+  - Statistics and status
+- Settings
+  - Per index, full settings object available to edit
+  - Intuitive web form rather than raw JSON
+- Search
+  - Interactive Vue instantsearch widgets in each index view
+    - Stats
+    - Search Query
+    - Sort Options
+    - Filters
+    - Refinements
+    - Hits
+- Keys
+  - Create, edit, update, and delete API keys
+- Tasks
+  - View and search through the latest 1000 tasks in real time
+
+---
+
 ## Installation
 
 To install you can follow the quickstart above, or host this app on the service of your choice. The demo is hosted on vercel, with the following settings:
