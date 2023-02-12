@@ -48,8 +48,17 @@
         </template>
       </IndexDetailTabs>
     </div>
-    <div class="text-center">
-      <p class="strong">Documents in this Index</p>
+    <div class="text-center row">
+      <span class="col-12 q-py-auto q-my-auto q-mx-auto"
+        >Documents in this Index</span
+      >
+      <q-btn
+        flat
+        icon="add_circle"
+        :to="`/documents/${currentIndex}/new`"
+        class="cursor-pointer q-py-auto q-my-auto q-ml-auto"
+        >New</q-btn
+      >
     </div>
     <ais-instant-search
       v-if="iPk"

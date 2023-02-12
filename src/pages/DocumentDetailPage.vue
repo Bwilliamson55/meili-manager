@@ -12,8 +12,9 @@
               >Back</q-btn
             >
             <p class="col q-py-auto q-my-auto">
-              Document Details for UID <strong>{{ theDocumentUid }}</strong> in
-              <strong>{{ currentIndex }}</strong>
+              Document Details for UID
+              <strong>{{ theDocumentUid ?? "???" }}</strong> in
+              <strong>{{ currentIndex ?? "???" }}</strong>
             </p>
             <q-btn
               flat
@@ -23,9 +24,13 @@
               >Save</q-btn
             >
           </div>
+          <q-banner class="bg-primary text-white text-center">
+            Saving a document with the same UID as another will overwrite it!
+          </q-banner>
         </q-card-section>
       </q-card>
       <vue-jsoneditor
+        v-if="theDocumentUid"
         mode="tree"
         :queryLanguagesIds="queryLanguages"
         v-model:json="theDocument"
@@ -64,10 +69,23 @@ onMounted(async () => {
   const meiliClient = getClient();
   const mclient = meiliClient.index(currentIndex.value);
   currentIndex.value = route.params.indexUid;
-  // TODO If documentUid is "new"
-  theDocument.value = await mclient.getDocument(route.params.documentUid);
   iPk.value = await mclient.fetchPrimaryKey();
-  theDocumentUid.value = theDocument.value[iPk.value];
+  theDocumentUid.value = theDocument.value[iPk.value] ?? "newIdChangeMe1234";
+  if (route.params.documentUid == "new") {
+    theDocument.value = {
+      array: [1, 2, 3],
+      boolean: true,
+      Null: null,
+      number: 123,
+      seconds: 0,
+      object: { a: "b", c: "d" },
+      string: "Hello World",
+      name: "new document name",
+    };
+    theDocument.value[iPk.value] = theDocumentUid.value;
+  } else {
+    theDocument.value = await mclient.getDocument(route.params.documentUid);
+  }
 });
 
 const updateDocument = async () => {
@@ -102,8 +120,19 @@ const updateDocument = async () => {
     const meiliClient = getClient();
     const mclient = meiliClient.index(currentIndex.value);
     currentIndex.value = route.params.indexUid;
-    // TODO If documentUid is "new"
-    theDocument.value = await mclient.getDocument(route.params.documentUid);
+    if (route.params.documentUid === "new") {
+      theDocument.value = {
+        array: [1, 2, 3],
+        boolean: true,
+        Null: null,
+        number: 123,
+        seconds: 0,
+        object: { a: "b", c: "d" },
+        string: "Hello World",
+      };
+    } else {
+      theDocument.value = await mclient.getDocument(route.params.documentUid);
+    }
     iPk.value = await mclient.fetchPrimaryKey();
     theDocumentUid.value = theDocument.value[iPk.value];
   }
