@@ -3,6 +3,7 @@ import SidebarSettingsVue from "pages/SidebarSettings.vue";
 import TasksPageVue from "src/pages/TasksPage.vue";
 import IndexDetailPage from "src/pages/IndexDetailPage.vue";
 import KeysPageVue from "src/pages/KeysPage.vue";
+import DocumentDetailPage from "src/pages/DocumentDetailPage.vue";
 
 const routes = [
   {
@@ -37,6 +38,14 @@ const routes = [
           side: SidebarSettingsVue,
         },
         props: ["uid"],
+      },
+      {
+        path: "/documents/:indexUid/:documentUid",
+        components: {
+          main: DocumentDetailPage,
+          side: SidebarSettingsVue,
+        },
+        props: ["indexUid", "documentUid"],
       },
     ],
   },

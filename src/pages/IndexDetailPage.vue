@@ -88,8 +88,19 @@
         <template v-slot:item="{ item }">
           <q-card flat bordered class="col overflow-auto">
             <q-card-section class="">
-              <div class="hit-name text-center">
-                <ais-highlight :hit="item" attribute="name" />
+              <div class="hit-name text-center row">
+                <ais-highlight
+                  :hit="item"
+                  attribute="name"
+                  class="col q-py-auto q-my-auto"
+                />
+                <q-btn
+                  flat
+                  icon="edit"
+                  :to="`/documents/${currentIndex}/${item[iPk]}`"
+                  class="float-right cursor-pointer q-py-auto q-my-auto"
+                  >Edit</q-btn
+                >
               </div>
             </q-card-section>
             <q-separator horizontal />
