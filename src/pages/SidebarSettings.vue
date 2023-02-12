@@ -53,6 +53,7 @@ import { useQuasar } from "quasar";
 import { api } from "boot/axios";
 import { useSettingsStore } from "src/stores/settings-store";
 import { ref } from "vue";
+import { MeiliSearch } from "meilisearch";
 import { storeToRefs } from "pinia";
 
 const $q = useQuasar();
@@ -61,6 +62,11 @@ const { indexUrl, indexKey, confirmed, currentIndex } =
   storeToRefs(theSettings);
 const accept = ref(false);
 const version = ref("");
+const getClient = () =>
+  new MeiliSearch({
+    host: indexUrl.value,
+    apiKey: indexKey.value,
+  });
 
 const onSubmit = () => {
   if (accept.value !== true) {
@@ -73,26 +79,13 @@ const onSubmit = () => {
   } else {
     api.defaults.headers.common["Authorization"] = `Bearer ${indexKey.value}`;
     api
-      .get(`${indexUrl.value}/version`)
-      .then((response) => {
-        if (!response.data.commitDate) {
-          $q.notify({
-            color: "red-5",
-            textColor: "white",
-            icon: "warning",
-            message: "Sorry those creds didn't work",
-          });
-          confirmed.value = false;
-        } else {
-          $q.notify({
-            color: "green-4",
-            textColor: "white",
-            icon: "cloud_done",
-            message: "Creds authenticated",
-          });
-          confirmed.value = true;
-          version.value = response.data.pkgVersion;
-        }
+      .get(`${indexUrl.value}`)
+      .then(async (response) => {
+        confirmed.value = true;
+        const mclient = getClient();
+        try {
+          version.value = (await mclient.getVersion()).pkgVersion ?? 0;
+        } catch {} // no worries it's just the version number
       })
       .catch((error) => {
         console.log(error);

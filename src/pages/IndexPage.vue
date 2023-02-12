@@ -54,15 +54,6 @@
                       icon="delete"
                       @click="delIndex(index.uid)"
                     />
-                    <q-btn
-                      class="gt-xs"
-                      size="12px"
-                      flat
-                      dense
-                      round
-                      icon="done"
-                    />
-                    <q-btn size="12px" flat dense round icon="more_vert" />
                   </div>
                 </q-item-section>
               </q-item>
