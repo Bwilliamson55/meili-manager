@@ -278,9 +278,11 @@ const onSubmit = async () => {
     });
     const mclient = meiliClient.index(currentIndex.value);
     const updateRes = await mclient.updateSettings(iSettings.value);
-    const waitForTaskRes = await mclient.waitForTask(updateRes.taskUid, {
-      timeOutMs: 15000,
-    });
+    const waitForTaskRes = await mclient
+      .waitForTask(updateRes.taskUid, {
+        timeOutMs: 15000,
+      })
+      .catch((error) => console.log(error));
     iSettings.value = await mclient.getSettings();
     $q.notify({
       color: "green-4",
