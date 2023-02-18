@@ -78,8 +78,9 @@
       </div>
       <hr />
       <div class="row">
-        <div class="col text-center">
-          Current Refinements
+        <div class="col text-center q-mx-auto">
+          Current Refinements --
+          <ais-clear-refinements class="inline-block q-my-sm" />
           <ais-current-refinements />
         </div>
       </div>
@@ -96,11 +97,19 @@
       <ais-hits>
         <template v-slot:item="{ item }">
           <q-card flat bordered class="col overflow-auto">
-            <q-card-section class="">
+            <q-card-section>
               <div class="hit-name text-center row">
+                <q-select
+                  v-model="docNameFieldChoice"
+                  :options="attributeCodes"
+                  label="Heading Attribute"
+                  stack-label
+                  class="q-py-auto q-my-auto"
+                  style="min-width: 15%"
+                ></q-select>
                 <ais-highlight
                   :hit="item"
-                  attribute="name"
+                  :attribute="docNameFieldChoice"
                   class="col q-py-auto q-my-auto"
                 />
                 <q-btn
@@ -115,47 +124,82 @@
             <q-separator horizontal />
             <div class="row wrap">
               <q-card-section class="col">
+                <q-select
+                  v-model="imgFieldSelectChoice"
+                  :options="attributeCodes"
+                  label="Attribute for Image"
+                  width-full
+                ></q-select>
                 <q-img
                   width-full
                   class="q-ma-sm"
-                  :src="item.picture_url ?? item.image ?? item.image_url"
-                  :alt="item.picture_url ?? item.image ?? item.image_url"
+                  :src="
+                    item[imgFieldSelectChoice] ??
+                    item.picture_url ??
+                    item.image ??
+                    item.image_url
+                  "
+                  :alt="
+                    item[imgFieldSelectChoice] ??
+                    item.picture_url ??
+                    item.image ??
+                    item.image_url
+                  "
                 />
               </q-card-section>
               <q-card-section class="col-xs-12 col-sm-8 col-lg-10">
                 <div v-show="item.description" class="hit-description">
                   <ais-snippet :hit="item" attribute="description" />
                 </div>
-                <q-table
-                  style="max-height: 400px"
-                  virtual-scroll
-                  :rows="
-                    Object.keys(item)
+                <q-list
+                  bordered
+                  separator
+                  style="max-height: 30vh; overflow-y: scroll"
+                >
+                  <template
+                    v-for="field in Object.keys(item)
                       .filter((i) => {
                         return (
                           !String(i).startsWith('_') &&
-                          !String(i).startsWith('__') &&
+                          !String(i).startsWith('__') && // make sure there's a value and it's not a system value
                           i
                         );
                       })
                       .map((k) => {
                         return {
-                          Field: k,
-                          Value:
+                          fieldName: k,
+                          fieldValue:
                             typeof item[k] == 'object'
-                              ? JSON.stringify(item[k], null, 2)
+                              ? JSON.stringify(item[k], null, 2) // make the json pretty plz
                               : item[k],
                         };
-                      })
-                  "
-                  :columns="itemColumns"
-                  :rows-per-page-options="[0]"
-                  :hide-pagination="true"
-                  row-key="Field"
-                  dense
-                  flat
-                  bordered
-                />
+                      })"
+                    :key="field.fieldName"
+                  >
+                    <q-item clickable v-ripple>
+                      <q-item-section>
+                        <q-item-label overline>{{
+                          field.fieldName
+                        }}</q-item-label>
+                        <q-item-label>
+                          <template
+                            v-if="
+                              item.hasOwnProperty(
+                                '_highlightResult[attribute].value' //this prop required for highlights to work
+                              )
+                            "
+                          >
+                            <ais-highlight
+                              :hit="item"
+                              :attribute="field.fieldName" /></template
+                          ><template v-else>{{
+                            field.fieldValue
+                          }}</template></q-item-label
+                        >
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </q-list>
               </q-card-section>
             </div>
           </q-card>
@@ -190,22 +234,10 @@ const sortByItems = ref([]);
 const iPk = ref("");
 const searchClient = instantMeiliSearch(indexUrl.value, indexKey.value);
 const fdRows = ref([]);
-const itemColumns = [
-  {
-    name: "Field",
-    label: "Field",
-    field: "Field",
-    align: "Left",
-    sortable: "True",
-  },
-  {
-    name: "Value",
-    label: "Value",
-    field: "Value",
-    align: "Left",
-    sortable: "True",
-  },
-];
+const imgFieldSelectChoice = ref("");
+const docNameFieldChoice = ref("");
+const attributeCodes = ref([]);
+
 onMounted(async () => {
   const route = useRoute();
   currentIndex.value = route.params.uid;
@@ -220,6 +252,7 @@ onMounted(async () => {
     return { "Field Name": key, Count: iStats.value.fieldDistribution[key] };
   });
   iPk.value = await mclient.fetchPrimaryKey();
+  attributeCodes.value = fdRows.value.map((row) => row["Field Name"]); // use the stats table for attribute codes
 
   for (const atString of iSettings.value.sortableAttributes) {
     sortByItems.value.push({
