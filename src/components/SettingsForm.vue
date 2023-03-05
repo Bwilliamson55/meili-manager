@@ -223,7 +223,17 @@
         />
       </div>
       <div>
-        <q-btn label="Submit" type="submit" color="primary" />
+        <q-btn
+          :loading="iSettingsProcessing.processing"
+          label="Submit"
+          type="submit"
+          color="primary"
+        >
+          Submit to save settings
+          <template v-slot:loading>
+            Settings updating... Task: {{ iSettingsProcessing.taskId }}
+          </template>
+        </q-btn>
       </div>
     </q-form>
   </div>
@@ -239,6 +249,7 @@ import { storeToRefs } from "pinia";
 const $q = useQuasar();
 const fetching = ref(true);
 const iSettings = ref({});
+const iSettingsProcessing = ref({ taskId: 0, processing: false });
 
 const theSettings = useSettingsStore();
 const { indexUrl, indexKey, currentIndex, confirmed } =
@@ -271,6 +282,7 @@ const removeSynonym = (details) => {
 };
 
 const onSubmit = async () => {
+  iSettingsProcessing.value.processing = true;
   try {
     const meiliClient = new MeiliSearch({
       host: indexUrl.value,
@@ -278,11 +290,13 @@ const onSubmit = async () => {
     });
     const mclient = meiliClient.index(currentIndex.value);
     const updateRes = await mclient.updateSettings(iSettings.value);
+    iSettingsProcessing.value.taskId = updateRes.taskUid ?? 0;
     const waitForTaskRes = await mclient
       .waitForTask(updateRes.taskUid, {
-        timeOutMs: 15000,
+        intervalMs: 5000,
       })
       .catch((error) => console.log(error));
+    iSettingsProcessing.value.processing = false;
     iSettings.value = await mclient.getSettings();
     $q.notify({
       color: "green-4",
@@ -291,6 +305,8 @@ const onSubmit = async () => {
       message: "Settings Updated",
     });
   } catch (error) {
+    iSettingsProcessing.value.processing = false;
+    iSettingsProcessing.value.taskId = 0;
     $q.notify({
       color: "red-5",
       textColor: "white",

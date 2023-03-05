@@ -30,7 +30,7 @@
         </q-card-section>
       </q-card>
       <vue-jsoneditor
-        v-if="theDocumentUid"
+        v-if="theDocumentUid !== ''"
         mode="tree"
         :queryLanguagesIds="queryLanguages"
         v-model:json="theDocument"
@@ -67,9 +67,10 @@ const getClient = () =>
 
 onMounted(async () => {
   const meiliClient = getClient();
-  const mclient = meiliClient.index(currentIndex.value);
   currentIndex.value = route.params.indexUid;
+  const mclient = meiliClient.index(currentIndex.value);
   iPk.value = await mclient.fetchPrimaryKey();
+  theDocument.value = await mclient.getDocument(route.params.documentUid);
   theDocumentUid.value = theDocument.value[iPk.value] ?? "newIdChangeMe1234";
   if (route.params.documentUid == "new") {
     theDocument.value = {
