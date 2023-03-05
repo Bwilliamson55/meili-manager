@@ -225,7 +225,6 @@
       <div>
         <q-btn
           :loading="iSettingsProcessing.processing"
-          label="Submit"
           type="submit"
           color="primary"
         >
