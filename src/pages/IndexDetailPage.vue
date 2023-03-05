@@ -94,7 +94,7 @@
               <ais-refinement-list :attribute="att" /></q-card
           ></template></div
       ></template>
-      <ais-hits>
+      <ais-infinite-hits :escapeHTML="false">
         <template v-slot:item="{ item }">
           <q-card flat bordered class="col overflow-auto">
             <q-card-section>
@@ -182,20 +182,8 @@
                           field.fieldName
                         }}</q-item-label>
                         <q-item-label>
-                          <template
-                            v-if="
-                              item.hasOwnProperty(
-                                '_highlightResult[attribute].value' //this prop required for highlights to work
-                              )
-                            "
-                          >
-                            <ais-highlight
-                              :hit="item"
-                              :attribute="field.fieldName" /></template
-                          ><template v-else>{{
-                            field.fieldValue
-                          }}</template></q-item-label
-                        >
+                          {{ field.fieldValue }}
+                        </q-item-label>
                       </q-item-section>
                     </q-item>
                   </template>
@@ -204,9 +192,10 @@
             </div>
           </q-card>
         </template>
-      </ais-hits>
+      </ais-infinite-hits>
       <ais-configure
         :attributesToSnippet="['description:50']"
+        :hits-per-page="10"
         snippetEllipsisText="…"
       />
     </ais-instant-search>
