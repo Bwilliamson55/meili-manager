@@ -13,11 +13,21 @@
             :rows="iTasks.results"
             :rows-per-page-options="[10, 20, 50, 0]"
             :filter="filter"
+            :columns="columns"
             row-key="uid"
-            dense
             flat
             bordered
           >
+            <template v-slot:body-cell-name="props">
+              <q-td :props="props">
+                <div>
+                  <q-badge color="purple" :label="props.value" />
+                </div>
+                <div class="my-table-details">
+                  {{ props.row.details }}
+                </div>
+              </q-td>
+            </template>
             <template v-slot:top-right>
               <q-input
                 borderless
@@ -48,6 +58,83 @@ const theSettings = useSettingsStore();
 const { indexUrl, indexKey } = storeToRefs(theSettings);
 const filter = ref("");
 const iTasks = ref({});
+
+const columns = [
+  { name: "uid", label: "UID", align: "center", sortable: true, field: "uid" },
+  {
+    name: "indexUid",
+    label: "Index UID",
+    align: "center",
+    sortable: true,
+    field: "indexUid",
+  },
+  {
+    name: "status",
+    label: "Status",
+    align: "center",
+    sortable: true,
+    field: "status",
+  },
+  {
+    name: "type",
+    label: "Type",
+    align: "center",
+    sortable: true,
+    field: "type",
+  },
+  {
+    name: "enqueuedAt",
+    label: "Enqueued At",
+    align: "center",
+    sortable: true,
+    field: "enqueuedAt",
+    format: (val) => new Date(val).toLocaleString(),
+  },
+  {
+    name: "startedAt",
+    label: "Started At",
+    align: "center",
+    sortable: true,
+    field: "startedAt",
+    format: (val) => new Date(val).toLocaleString(),
+  },
+  {
+    name: "finishedAt",
+    label: "Finished At",
+    align: "center",
+    sortable: true,
+    field: "finishedAt",
+    format: (val) => new Date(val).toLocaleString(),
+  },
+  {
+    name: "duration",
+    label: "Duration",
+    align: "center",
+    sortable: true,
+    field: "duration",
+  },
+  {
+    name: "canceledBy",
+    label: "Canceled By",
+    align: "center",
+    sortable: true,
+    field: "canceledBy",
+  },
+  {
+    name: "error",
+    label: "Error",
+    align: "center",
+    sortable: true,
+    field: "error",
+    style: "white-space: wrap",
+    format: (val) =>
+      val
+        ? `Code: ${val.code ?? ""} \n Link: ${val.link ?? ""} \n ${
+            val.message ?? ""
+          } \n ${val.type}`
+        : "",
+  },
+];
 onMounted(async () => {
   const meiliClient = new MeiliSearch({
     host: indexUrl.value,
