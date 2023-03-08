@@ -85,17 +85,24 @@
         </div>
       </div>
       <hr />
-      <template v-if="iSettings.filterableAttributes.length">
-        <div class="row">
-          <p class="col text-center text-blue q-my-sm">Filters</p>
-          <template v-for="att in iSettings.filterableAttributes" :key="att">
-            <q-card class="col-12 col-sm-6 col-md-4 col-xl-3 q-pa-sm">
-              {{ att }}
-              <ais-refinement-list :attribute="att" /></q-card
-          ></template></div
-      ></template>
-      <ais-infinite-hits :escapeHTML="false">
-        <template v-slot:item="{ item }">
+      <div class="row" v-if="iSettings.filterableAttributes.length > 0">
+        <p class="col text-center text-blue q-my-sm">Filters</p>
+        <template v-for="att in iSettings.filterableAttributes" :key="att">
+          <q-card class="col-12 col-sm-6 col-md-4 col-xl-3 q-pa-sm">
+            <ais-panel>
+              <template #header="{ hasRefinements }">
+                <p>
+                  {{ att }}<span v-if="!hasRefinements"> (no results) </span>
+                </p>
+              </template>
+              <template #default>
+                <ais-refinement-list :attribute="att" />
+              </template>
+            </ais-panel> </q-card
+        ></template>
+      </div>
+      <ais-infinite-hits :escapeHTML="true">
+        <template #item="{ item }">
           <q-card flat bordered class="col overflow-auto">
             <q-card-section>
               <div class="hit-name text-center row">

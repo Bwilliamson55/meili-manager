@@ -19,7 +19,6 @@
           label="The Keys Description"
           hint="Something descriptive"
           lazy-rules
-          :rules="[(val) => (val && val.length > 0) || 'Please type something']"
         />
         <div class="row justify-evenly">
           <div class="bg-grey-2 q-pa-sm q-my-sm rounded-borders col-12 col-sm">
@@ -36,6 +35,7 @@
               fill-input
               input-debounce="0"
               :options="keyActionsFilter"
+              new-value-mode="add-unique"
               @filter="filterFnActions"
               @filter-abort="abortFilterFn"
             />
@@ -53,6 +53,7 @@
               stack-label
               input-debounce="0"
               :options="availableIndexes"
+              new-value-mode="add-unique"
               @filter="filterFnIndexes"
               @filter-abort="abortFilterFn"
             />
@@ -63,7 +64,8 @@
             filled
             v-model="newKeyObj.expiresAt"
             label="Expires At"
-            hint="Required"
+            hint="Required but can be null"
+            clearable
             class="col-12 col-sm-6"
           >
             <template v-slot:prepend>
@@ -125,7 +127,7 @@ const emit = defineEmits(["refresh"]);
 const $q = useQuasar();
 const theSettings = useSettingsStore();
 const { indexUrl, indexKey } = storeToRefs(theSettings);
-const newKeyObj = ref({});
+const newKeyObj = ref({ expiresAt: null });
 const iKeys = ref({});
 
 const keyActions = [
@@ -150,6 +152,7 @@ const keyActions = [
   "keys.create",
   "keys.update",
   "keys.delete",
+  "*",
 ];
 const keyActionsFilter = ref(keyActions);
 const availableIndexes = ref([]);

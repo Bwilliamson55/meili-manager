@@ -177,35 +177,16 @@
                 </ul>
               </div>
             </div>
-            <div class="row justify-evenly">
-              <q-input
-                v-model="iKeys.results[i].expiresAt"
-                filled
-                type="datetime"
-                hint="expiresAt date"
-                class="q-my-sm col-12 col-sm-5"
-              />
-              <q-input
-                v-model="iKeys.results[i].createdAt"
-                filled
-                type="datetime"
-                hint="createdAt date"
-                class="q-my-sm col-12 col-sm-5"
-              />
-              <q-input
-                v-model="iKeys.results[i].updatedAt"
-                filled
-                type="datetime"
-                hint="updatedAt date"
-                class="q-my-sm col-12 col-sm-5"
-              />
-              <q-input
-                v-model="iKeys.results[i].updateAt"
-                filled
-                type="datetime"
-                hint="updateAt date"
-                class="q-my-sm col-12 col-sm-5"
-              />
+            <div class="col text-center">
+              <p>
+                <strong>Created At</strong> - {{ iKeys.results[i].createdAt }}
+              </p>
+              <p>
+                <strong>Updated At</strong> - {{ iKeys.results[i].updatedAt }}
+              </p>
+              <p>
+                <strong>Expires At</strong> - {{ iKeys.results[i].expiresAt }}
+              </p>
             </div>
           </q-card>
         </q-expansion-item>
