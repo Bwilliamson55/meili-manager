@@ -78,128 +78,151 @@
       </div>
       <hr />
       <div class="row">
-        <div class="col text-center q-mx-auto">
-          Current Refinements --
-          <ais-clear-refinements class="inline-block q-my-sm" />
-          <ais-current-refinements />
+        <div class="col-12 col-md-3">
+          <div class="row">
+            <div class="col text-center q-mx-auto">
+              Current Refinements --
+              <ais-clear-refinements class="inline-block q-my-sm" />
+              <ais-current-refinements />
+            </div>
+          </div>
+          <hr />
+          <div
+            class="row q-pa-sm"
+            v-if="iSettings.filterableAttributes.length > 0"
+          >
+            <q-expansion-item
+              v-model="filtersExpanded"
+              icon="filter_alt"
+              label="Filters"
+              class="col-12 text-center text-blue q-my-xs"
+            >
+              <q-card
+                dense
+                v-for="att in iSettings.filterableAttributes"
+                :key="att"
+                class="col-12 q-pa-sm q-mt-sm"
+              >
+                <ais-panel
+                  :class-names="{
+                    'ais-Panel': 'no-margin',
+                    // 'ais-Panel-body': 'MyCustomPanelBody',
+                  }"
+                >
+                  <template #header="{ hasRefinements }">
+                    <p>
+                      {{ att
+                      }}<span v-if="!hasRefinements"> (no results) </span>
+                    </p>
+                  </template>
+                  <template #default>
+                    <ais-refinement-list :attribute="att" show-more />
+                  </template>
+                </ais-panel>
+              </q-card>
+            </q-expansion-item>
+          </div>
+        </div>
+        <div class="col-12 col-md-9">
+          <ais-infinite-hits :escapeHTML="true">
+            <template #item="{ item }">
+              <q-card flat bordered class="col overflow-auto">
+                <q-card-section>
+                  <div class="hit-name text-center row">
+                    <ais-highlight
+                      :hit="item"
+                      :attribute="docNameFieldChoice"
+                      class="col q-py-auto q-my-auto"
+                    />
+                    <q-btn
+                      flat
+                      icon="edit"
+                      :to="`/documents/${currentIndex}/${item[iPk]}`"
+                      class="float-right cursor-pointer q-py-auto q-my-auto"
+                      >Edit</q-btn
+                    >
+                  </div>
+                </q-card-section>
+                <q-separator horizontal />
+                <div class="row wrap">
+                  <q-card-section class="col">
+                    <q-select
+                      v-model="docNameFieldChoice"
+                      :options="attributeCodes"
+                      label="Heading Attribute"
+                      width-full
+                    ></q-select>
+                    <q-select
+                      v-model="imgFieldSelectChoice"
+                      :options="attributeCodes"
+                      label="Attribute for Image"
+                      width-full
+                    ></q-select>
+                    <q-img
+                      width-full
+                      class="q-ma-sm"
+                      :src="
+                        item[imgFieldSelectChoice] ??
+                        item.picture_url ??
+                        item.image ??
+                        item.image_url
+                      "
+                      :alt="
+                        item[imgFieldSelectChoice] ??
+                        item.picture_url ??
+                        item.image ??
+                        item.image_url
+                      "
+                    />
+                  </q-card-section>
+                  <q-card-section class="col-xs-12 col-sm-8 col-lg-10">
+                    <div v-show="item.description" class="hit-description">
+                      <ais-snippet :hit="item" attribute="description" />
+                    </div>
+                    <q-list
+                      bordered
+                      separator
+                      style="max-height: 30vh; overflow-y: scroll"
+                    >
+                      <template
+                        v-for="field in Object.keys(item)
+                          .filter((i) => {
+                            return (
+                              !String(i).startsWith('_') &&
+                              !String(i).startsWith('__') && // make sure there's a value and it's not a system value
+                              i
+                            );
+                          })
+                          .map((k) => {
+                            return {
+                              fieldName: k,
+                              fieldValue:
+                                typeof item[k] == 'object'
+                                  ? JSON.stringify(item[k], null, 2) // make the json pretty plz
+                                  : item[k],
+                            };
+                          })"
+                        :key="field.fieldName"
+                      >
+                        <q-item clickable v-ripple>
+                          <q-item-section>
+                            <q-item-label overline>{{
+                              field.fieldName
+                            }}</q-item-label>
+                            <q-item-label>
+                              {{ field.fieldValue }}
+                            </q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </template>
+                    </q-list>
+                  </q-card-section>
+                </div>
+              </q-card>
+            </template>
+          </ais-infinite-hits>
         </div>
       </div>
-      <hr />
-      <div class="row" v-if="iSettings.filterableAttributes.length > 0">
-        <p class="col text-center text-blue q-my-sm">Filters</p>
-        <template v-for="att in iSettings.filterableAttributes" :key="att">
-          <q-card class="col-12 col-sm-6 col-md-4 col-xl-3 q-pa-sm">
-            <ais-panel>
-              <template #header="{ hasRefinements }">
-                <p>
-                  {{ att }}<span v-if="!hasRefinements"> (no results) </span>
-                </p>
-              </template>
-              <template #default>
-                <ais-refinement-list :attribute="att" />
-              </template>
-            </ais-panel> </q-card
-        ></template>
-      </div>
-      <ais-infinite-hits :escapeHTML="true">
-        <template #item="{ item }">
-          <q-card flat bordered class="col overflow-auto">
-            <q-card-section>
-              <div class="hit-name text-center row">
-                <q-select
-                  v-model="docNameFieldChoice"
-                  :options="attributeCodes"
-                  label="Heading Attribute"
-                  stack-label
-                  class="q-py-auto q-my-auto"
-                  style="min-width: 15%"
-                ></q-select>
-                <ais-highlight
-                  :hit="item"
-                  :attribute="docNameFieldChoice"
-                  class="col q-py-auto q-my-auto"
-                />
-                <q-btn
-                  flat
-                  icon="edit"
-                  :to="`/documents/${currentIndex}/${item[iPk]}`"
-                  class="float-right cursor-pointer q-py-auto q-my-auto"
-                  >Edit</q-btn
-                >
-              </div>
-            </q-card-section>
-            <q-separator horizontal />
-            <div class="row wrap">
-              <q-card-section class="col">
-                <q-select
-                  v-model="imgFieldSelectChoice"
-                  :options="attributeCodes"
-                  label="Attribute for Image"
-                  width-full
-                ></q-select>
-                <q-img
-                  width-full
-                  class="q-ma-sm"
-                  :src="
-                    item[imgFieldSelectChoice] ??
-                    item.picture_url ??
-                    item.image ??
-                    item.image_url
-                  "
-                  :alt="
-                    item[imgFieldSelectChoice] ??
-                    item.picture_url ??
-                    item.image ??
-                    item.image_url
-                  "
-                />
-              </q-card-section>
-              <q-card-section class="col-xs-12 col-sm-8 col-lg-10">
-                <div v-show="item.description" class="hit-description">
-                  <ais-snippet :hit="item" attribute="description" />
-                </div>
-                <q-list
-                  bordered
-                  separator
-                  style="max-height: 30vh; overflow-y: scroll"
-                >
-                  <template
-                    v-for="field in Object.keys(item)
-                      .filter((i) => {
-                        return (
-                          !String(i).startsWith('_') &&
-                          !String(i).startsWith('__') && // make sure there's a value and it's not a system value
-                          i
-                        );
-                      })
-                      .map((k) => {
-                        return {
-                          fieldName: k,
-                          fieldValue:
-                            typeof item[k] == 'object'
-                              ? JSON.stringify(item[k], null, 2) // make the json pretty plz
-                              : item[k],
-                        };
-                      })"
-                    :key="field.fieldName"
-                  >
-                    <q-item clickable v-ripple>
-                      <q-item-section>
-                        <q-item-label overline>{{
-                          field.fieldName
-                        }}</q-item-label>
-                        <q-item-label>
-                          {{ field.fieldValue }}
-                        </q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </template>
-                </q-list>
-              </q-card-section>
-            </div>
-          </q-card>
-        </template>
-      </ais-infinite-hits>
       <ais-configure
         :attributesToSnippet="['description:50']"
         :hits-per-page="10"
@@ -219,6 +242,7 @@ import { useRoute } from "vue-router";
 import { useQuasar } from "quasar";
 import IndexDetailTabs from "components/IndexDetailTabs.vue";
 import SettingsForm from "components/SettingsForm.vue";
+import { AisDynamicWidgets } from "vue-instantsearch/vue3/es";
 
 const $q = useQuasar();
 
@@ -233,6 +257,7 @@ const fdRows = ref([]);
 const imgFieldSelectChoice = ref("");
 const docNameFieldChoice = ref("");
 const attributeCodes = ref([]);
+const filtersExpanded = ref(true);
 
 onMounted(async () => {
   const route = useRoute();
