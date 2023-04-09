@@ -83,7 +83,18 @@
             <div class="col text-center q-mx-auto">
               Current Refinements --
               <ais-clear-refinements class="inline-block q-my-sm" />
-              <ais-current-refinements />
+              <ais-current-refinements
+                :class-names="{
+                  'ais-CurrentRefinements': 'flex wrap',
+                  'ais-CurrentRefinements-list': 'block row',
+                  'ais-CurrentRefinements-item':
+                    'flex row full-width wrap q-ma-xs',
+                  'ais-CurrentRefinements-label': 'text-bold q-mr-xs',
+                  'ais-CurrentRefinements-category':
+                    'col-12 q-mx-xs q-pt-xs text-left',
+                }"
+                style="width: 100%"
+              />
             </div>
           </div>
           <hr />
