@@ -6,6 +6,8 @@ export const useSettingsStore = defineStore("settings", {
     indexKey: "abcdefg",
     confirmed: false,
     currentIndex: "",
+    currentInstance: null,
+    instances: [],
   }),
   persist: true,
 });
