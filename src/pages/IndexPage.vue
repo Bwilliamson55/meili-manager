@@ -3,15 +3,30 @@
     <div class="row justify-center">
       <div class="col-xs-12 col-md-8">
         <div v-if="confirmed" class="q-mt-sm">
+          <q-item>
+            <q-item-section top
+              ><q-item-label header class="text-bold"
+                >This Instance: {{ indexUrl }}</q-item-label
+              >
+            </q-item-section>
+            <q-item-section top side
+              ><q-btn
+                icon="download"
+                name="createDump"
+                label="Create Dump"
+                @click="createDump"
+              ></q-btn></q-item-section
+          ></q-item>
           <q-list bordered class="rounded-borders">
             <q-item>
               <q-item-section top
-                ><q-item-label header>Your Indexes</q-item-label>
+                ><q-item-label header>This instances Indexes</q-item-label>
               </q-item-section>
               <q-item-section top side
                 ><q-btn
                   icon="add_box"
                   name="newIndex"
+                  label="New Index"
                   @click="prompt = true"
                 ></q-btn></q-item-section
             ></q-item>
@@ -112,7 +127,7 @@
 <script setup>
 import { useSettingsStore } from "src/stores/settings-store";
 import { storeToRefs } from "pinia";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { MeiliSearch } from "meilisearch";
 import { useQuasar } from "quasar";
 
@@ -123,7 +138,7 @@ const delPrompt = ref(false);
 const newIndexName = ref("");
 const newIndexUuid = ref("");
 const theSettings = useSettingsStore();
-const { indexUrl, indexKey, confirmed, currentIndex } =
+const { indexUrl, indexKey, confirmed, currentIndex, currentInstance } =
   storeToRefs(theSettings);
 const indexList = ref([]);
 
@@ -136,13 +151,28 @@ const getClient = () =>
     host: indexUrl.value,
     apiKey: indexKey.value,
   });
-onMounted(async () => {
-  if (confirmed) {
-    const client = getClient();
+
+watch(currentInstance, async () => {
+  await loadInstance();
+});
+
+const loadInstance = async () => {
+  const client = getClient();
+  try {
     const indexes = await client.getRawIndexes();
     indexList.value = indexes.results;
+  } catch (e) {
+    console.log(e);
+    indexList.value = [];
+  }
+};
+
+onMounted(async () => {
+  if (confirmed) {
+    loadInstance();
   }
 });
+
 const newIndex = async () => {
   const client = getClient();
   await client
@@ -165,7 +195,49 @@ const newIndex = async () => {
   const indexes = await client.getRawIndexes();
   indexList.value = indexes.results;
 };
-
+const createDump = async () => {
+  $q.notify({
+    color: "orange-4",
+    textColor: "black",
+    icon: "download",
+    timeout: 7000,
+    message: `Create dump of ${indexUrl.value} ?`,
+    closeBtn: true,
+    actions: [
+      {
+        label: "Yes",
+        color: "red",
+        handler: async () => {
+          const client = getClient();
+          await client
+            .createDump()
+            .then((response) => {
+              $q.notify({
+                color: "green-4",
+                textColor: "white",
+                icon: "cloud_done",
+                timeout: 9000,
+                html: true,
+                message: `<h5>Dump task created successfully: <br/>
+                 Enqueued: ${response.enqueuedAt} <br/>
+                 Task ID: ${response.taskUid} <br/>
+                 Status: ${response.status} <br/></h5>`,
+              });
+            })
+            .catch((error) => {
+              console.log(error);
+              $q.notify({
+                color: "red-5",
+                textColor: "white",
+                icon: "warning",
+                message: `Sorry there was an error: ${error.toString()}`,
+              });
+            });
+        },
+      },
+    ],
+  });
+};
 const delIndex = async (indexUidString) => {
   $q.notify({
     color: "orange-4",
@@ -173,14 +245,8 @@ const delIndex = async (indexUidString) => {
     icon: "delete",
     timeout: 7000,
     message: `Really delete ${indexUidString} ?`,
+    closeBtn: true,
     actions: [
-      {
-        label: "Cancel",
-        color: "black",
-        handler: () => {
-          /* ... */
-        },
-      },
       {
         label: "Yes",
         color: "red",

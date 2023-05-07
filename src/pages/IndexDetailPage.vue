@@ -270,9 +270,7 @@ const docNameFieldChoice = ref("");
 const attributeCodes = ref([]);
 const filtersExpanded = ref(true);
 
-onMounted(async () => {
-  const route = useRoute();
-  currentIndex.value = route.params.uid;
+const loadInstance = async () => {
   const meiliClient = new MeiliSearch({
     host: indexUrl.value,
     apiKey: indexKey.value,
@@ -285,7 +283,6 @@ onMounted(async () => {
   });
   iPk.value = await mclient.fetchPrimaryKey();
   attributeCodes.value = fdRows.value.map((row) => row["Field Name"]); // use the stats table for attribute codes
-
   for (const atString of iSettings.value.sortableAttributes) {
     sortByItems.value.push({
       value: `${currentIndex.value}:${atString}:asc`,
@@ -296,5 +293,11 @@ onMounted(async () => {
       label: `${atString} desc`,
     });
   }
+};
+
+onMounted(async () => {
+  const route = useRoute();
+  currentIndex.value = route.params.uid;
+  loadInstance();
 });
 </script>
