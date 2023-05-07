@@ -16,7 +16,13 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" side="left" behavior="mobile" bordered>
+    <q-drawer
+      v-model="leftDrawerOpen"
+      side="left"
+      behavior="mobile"
+      :width="350"
+      bordered
+    >
       <!-- drawer content -->
       <router-view name="side" />
     </q-drawer>
