@@ -14,19 +14,65 @@
             :rows-per-page-options="[10, 20, 50, 0]"
             :filter="filter"
             :columns="columns"
+            :loading="loading"
+            v-model:expanded="expanded"
             row-key="uid"
             flat
             bordered
           >
-            <template v-slot:body-cell-name="props">
-              <q-td :props="props">
-                <div>
-                  <q-badge color="purple" :label="props.value" />
-                </div>
-                <div class="my-table-details">
-                  {{ props.row.details }}
-                </div>
-              </q-td>
+            <template v-slot:header="props">
+              <q-tr :props="props">
+                <q-th auto-width />
+                <q-th v-for="col in props.cols" :key="col.name" :props="props">
+                  {{ col.label }}
+                </q-th>
+              </q-tr>
+            </template>
+            <template v-slot:body="props">
+              <q-tr :props="props">
+                <q-td auto-width>
+                  <q-toggle
+                    v-model="props.expand"
+                    @update:model-value="fetchTaskDetails(props)"
+                    checked-icon="add"
+                    unchecked-icon="remove"
+                  />
+                </q-td>
+                <q-td v-for="col in props.cols" :key="col.name" :props="props">
+                  {{ col.value }}
+                </q-td>
+              </q-tr>
+              <q-tr v-show="props.expand" :props="props">
+                <q-td colspan="100%">
+                  <div class="text-left">
+                    Details for task ID: {{ props.row.uid }}.
+
+                    <div v-if="rowDetails[props.row.uid]" class="row">
+                      <q-card
+                        flat
+                        bordered
+                        v-for="col in Object.keys(
+                          rowDetails[props.row.uid]['details']
+                        )"
+                        :key="col.uid"
+                      >
+                        <q-card-section>
+                          <div class="text-overline">{{ col }}:</div>
+                          <div>
+                            <pre>{{
+                              JSON.stringify(
+                                rowDetails[props.row.uid]["details"][col],
+                                null,
+                                2
+                              )
+                            }}</pre>
+                          </div>
+                        </q-card-section>
+                      </q-card>
+                    </div>
+                  </div>
+                </q-td>
+              </q-tr>
             </template>
             <template v-slot:top-right>
               <q-input
@@ -58,7 +104,31 @@ const theSettings = useSettingsStore();
 const { indexUrl, indexKey } = storeToRefs(theSettings);
 const filter = ref("");
 const iTasks = ref({});
+const loading = ref(false);
+const expanded = ref([
+  // Array of row keys
+]);
+const rowDetails = ref({});
+const meiliClient = new MeiliSearch({
+  host: indexUrl.value,
+  apiKey: indexKey.value,
+});
 
+const getTaskDetails = async (taskId) => {
+  try {
+    let resp = await meiliClient.getTask(taskId);
+    return resp;
+  } catch (e) {
+    console.log(e);
+    return "Failed to get task details";
+  }
+};
+const fetchTaskDetails = async (props) => {
+  loading.value = true;
+  let deets = await getTaskDetails(props.key);
+  rowDetails.value[props.key] = { ...deets };
+  loading.value = false;
+};
 const columns = [
   { name: "uid", label: "UID", align: "center", sortable: true, field: "uid" },
   {
