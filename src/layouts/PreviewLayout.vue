@@ -6,20 +6,9 @@
         <q-toolbar-title>
           <q-btn round flat to="/">
             <img style="max-width: 35px" src="~assets/meili-logo.svg" />
-            &nbsp;Meilisearch Manager</q-btn
+            &nbsp;Meilisearch Manager - <em>Index Preview</em></q-btn
           >
         </q-toolbar-title>
-        <q-tabs>
-          <q-route-tab
-            to="/preview"
-            exact
-            name="preview"
-            label="Preview"
-            class="bg-grey-7 text-white"
-          />
-          <q-route-tab to="/keys" exact name="keys" label="Keys" />
-          <q-route-tab to="/tasks" exact name="tasks" label="Tasks" />
-        </q-tabs>
       </q-toolbar>
     </q-header>
 

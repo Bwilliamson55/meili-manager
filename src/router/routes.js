@@ -4,6 +4,8 @@ import TasksPageVue from "src/pages/TasksPage.vue";
 import IndexDetailPage from "src/pages/IndexDetailPage.vue";
 import KeysPageVue from "src/pages/KeysPage.vue";
 import DocumentDetailPage from "src/pages/DocumentDetailPage.vue";
+import PreviewPageVue from "src/pages/PreviewPage.vue";
+import PreviewSidebarVue from "src/pages/PreviewSidebar.vue";
 
 const routes = [
   {
@@ -49,7 +51,19 @@ const routes = [
       },
     ],
   },
-
+  {
+    path: "/",
+    component: () => import("layouts/PreviewLayout.vue"),
+    children: [
+      {
+        path: "/preview",
+        components: {
+          main: PreviewPageVue,
+          side: PreviewSidebarVue,
+        },
+      },
+    ],
+  },
   // Always leave this as last one,
   // but you can also remove it
   {
