@@ -127,7 +127,11 @@
                     </p>
                   </template>
                   <template #default>
-                    <ais-refinement-list :attribute="att" show-more />
+                    <ais-refinement-list
+                      :attribute="att"
+                      show-more
+                      show-more-limit="1000"
+                    />
                   </template>
                 </ais-panel>
               </q-card>
@@ -187,6 +191,9 @@
                     />
                   </q-card-section>
                   <q-card-section class="col-xs-12 col-sm-8 col-lg-10">
+                    <span class="text-center text-italic row"
+                      >Displayed attributes</span
+                    >
                     <div v-show="item.description" class="hit-description">
                       <ais-snippet :hit="item" attribute="description" />
                     </div>
@@ -215,7 +222,7 @@
                           })"
                         :key="field.fieldName"
                       >
-                        <q-item clickable v-ripple>
+                        <q-item>
                           <q-item-section>
                             <q-item-label overline>{{
                               field.fieldName
@@ -253,7 +260,6 @@ import { useRoute } from "vue-router";
 import { useQuasar } from "quasar";
 import IndexDetailTabs from "components/IndexDetailTabs.vue";
 import SettingsForm from "components/SettingsForm.vue";
-import { AisDynamicWidgets } from "vue-instantsearch/vue3/es";
 
 const $q = useQuasar();
 

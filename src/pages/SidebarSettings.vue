@@ -60,7 +60,7 @@
       ><br />
       <span
         >Current instance:
-        <strong>{{ instances[currentInstance].label }}</strong></span
+        <strong>{{ instances[currentInstance]?.label ?? "" }}</strong></span
       >
     </div>
     <q-list bordered class="rounded-borders">
