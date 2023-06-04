@@ -5,5 +5,12 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.codeActionsOnSave": ["source.fixAll.eslint"],
   "eslint.validate": ["javascript", "javascriptreact", "typescript", "vue"],
-  "cSpell.words": ["meili", "meilimanager", "meilisearch", "pinia"]
+  "cSpell.words": [
+    "mclient",
+    "meili",
+    "meilimanager",
+    "meilisearch",
+    "pinia",
+    "swipeable"
+  ]
 }
