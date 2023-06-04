@@ -130,7 +130,7 @@
                     <ais-refinement-list
                       :attribute="att"
                       show-more
-                      show-more-limit="1000"
+                      :show-more-limit="1000"
                     />
                   </template>
                 </ais-panel>
