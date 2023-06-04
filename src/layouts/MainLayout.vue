@@ -4,7 +4,7 @@
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
         <q-toolbar-title>
-          <q-btn round flat to="/">
+          <q-btn dense flat to="/">
             <img style="max-width: 35px" src="~assets/meili-logo.svg" />
             &nbsp;Meilisearch Manager</q-btn
           >
