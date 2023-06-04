@@ -4,11 +4,21 @@
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
         <q-toolbar-title>
-          <q-btn round flat to="/">
+          <q-btn dense flat to="/preview">
             <img style="max-width: 35px" src="~assets/meili-logo.svg" />
-            &nbsp;Meilisearch Manager - <em>Index Preview</em></q-btn
+            &nbsp;Meili-Manager - <em>Preview</em></q-btn
           >
         </q-toolbar-title>
+
+        <q-tabs dense>
+          <q-route-tab
+            to="/"
+            exact
+            name="manager"
+            label="To Manager"
+            class="text-white"
+          />
+        </q-tabs>
       </q-toolbar>
     </q-header>
 
@@ -24,7 +34,7 @@
     </q-drawer>
 
     <q-page-container>
-      <div v-if="!confirmed">
+      <div v-if="!previewCurrentIndex">
         <q-banner class="text-white text-center bg-red">
           You need to enter and save working credentials in the menu.
         </q-banner>
@@ -44,11 +54,11 @@
 
 <script setup>
 import { ref } from "vue";
-import { useSettingsStore } from "src/stores/settings-store";
 import { storeToRefs } from "pinia";
+import { usePreviewStore } from "src/stores/preview-store";
 
-const theSettings = useSettingsStore();
-const { confirmed } = storeToRefs(theSettings);
+const theSettings = usePreviewStore();
+const { previewCurrentIndex } = storeToRefs(theSettings);
 const leftDrawerOpen = ref(false);
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value;
