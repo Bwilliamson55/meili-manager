@@ -1,133 +1,230 @@
 <template>
   <q-page>
     <div class="row justify-center">
-      <div class="col-12 col-sm-11">
-        <div v-if="confirmed" class="q-ma-sm">
+      <div class="col-12">
+        <div v-if="searchClient" class="q-ma-xs">
           <ais-instant-search
             :search-client="searchClient"
-            :index-name="currentIndex"
-            class="row"
+            :index-name="previewCurrentIndex"
+            class="row justify-center"
           >
-            <div class="col col-11 col-sm-3">
+            <ais-configure
+              v-if="
+                previewSettings.pagination && previewSettings.paginationSize
+              "
+              :hits-per-page.camel="previewSettings.paginationSize"
+            />
+            <div class="col col-12 col-sm-3">
+              <span class="text-center">
+                <ais-stats />
+              </span>
+              <div
+                v-if="previewSettings.sortableAttributes?.length > 0"
+                class="col-12"
+              >
+                <p class="text-center text-primary q-mb-none">Sort Options:</p>
+                <ais-sort-by :items="sortByItems" />
+              </div>
               <q-expansion-item
                 v-model="filtersExpanded"
                 icon="list"
                 label="Filters"
               >
-                <div class="search-panel__filters">
-                  <ais-refinement-list attribute="story" />
-                </div>
-                <q-card>
-                  <q-card-section>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                    Quidem, eius reprehenderit eos corrupti commodi magni
-                    quaerat ex numquam, dolorum officiis modi facere maiores
-                    architecto suscipit iste eveniet doloribus ullam aliquid.
-                  </q-card-section>
+                <span class="bg-warning text-black q-pa-xs"
+                  >Warning - Experimental</span
+                >
+                <q-card
+                  dense
+                  v-for="att in filters"
+                  :key="att"
+                  class="col-12 q-pa-sm q-mt-sm"
+                >
+                  <ais-panel
+                    :class-names="{
+                      'ais-Panel': 'no-margin',
+                    }"
+                  >
+                    <template #header="{ hasRefinements }">
+                      <p>
+                        {{ att
+                        }}<span v-if="!hasRefinements"> (no results) </span>
+                      </p>
+                    </template>
+                    <template #default>
+                      <ais-refinement-list
+                        :attribute="att"
+                        show-more
+                        :show-more-limit="1000"
+                      />
+                    </template>
+                  </ais-panel>
                 </q-card>
               </q-expansion-item>
             </div>
-            <div class="col col-11 col-sm-8 q-mx-sm q-px-sm">
+            <div class="col col-12 col-sm-8 q-mx-sm q-px-sm">
+              <ais-clear-refinements
+                v-if="previewSettings.showClearRefinements"
+              />
+              <ais-current-refinements v-if="previewSettings.showRefinements" />
               <ais-search-box placeholder="Search here…" class="searchbox" />
-              <ais-hits>
+              <component
+                :is="
+                  previewSettings.pagination ? 'ais-hits' : 'ais-infinite-hits'
+                "
+              >
                 <template v-slot:item="{ item }">
                   <q-card class="result-card" flat bordered>
-                    <q-img :src="item.full_picture">
-                      <template v-slot:placeholder>
-                        <q-spinner-hourglass size="100px" color="white" />
-                      </template>
-                    </q-img>
+                    <q-carousel
+                      v-if="previewSettings.imageAttributes.length > 0"
+                      animated
+                      v-model="slide"
+                      navigation
+                      infinite
+                      :autoplay="autoplay"
+                      arrows
+                      swipeable
+                      transition-prev="slide-right"
+                      transition-next="slide-left"
+                      @mouseenter="autoplay = false"
+                      @mouseleave="autoplay = true"
+                    >
+                      <template
+                        :key="imgAttribute"
+                        v-for="(
+                          imgAttribute, i
+                        ) in previewSettings.imageAttributes"
+                      >
+                        <q-carousel-slide
+                          v-if="item[imgAttribute]"
+                          :name="imgAttribute + i"
+                          :img-src="item[imgAttribute]"
+                      /></template>
+                    </q-carousel>
+
                     <q-card-section>
-                      <div class="text-h6">
-                        <ais-highlight :hit="item" attribute="from.name" />
+                      <div
+                        v-if="previewSettings.headingAttributes.length > 0"
+                        class="text-h6"
+                      >
+                        <div
+                          :key="headingAttribute"
+                          v-for="headingAttribute in previewSettings.headingAttributes"
+                          class="row"
+                        >
+                          <ais-highlight
+                            :hit="item"
+                            :attribute="headingAttribute"
+                          />
+                        </div>
                       </div>
-                      <div class="text-subtitle2">by John Doe</div>
                     </q-card-section>
                     <q-separator />
-                    <q-card-section>
-                      <div class="text-body2">
-                        <ais-highlight :hit="item" attribute="message" />
+                    <q-card-section
+                      v-if="previewSettings.descriptionAttributes.length > 0"
+                    >
+                      <div
+                        :key="descriptionAttribute"
+                        v-for="descriptionAttribute in previewSettings.descriptionAttributes"
+                        class="text-body2 shadow-1"
+                      >
+                        <ais-highlight
+                          :hit="item"
+                          :attribute="descriptionAttribute"
+                          class="row"
+                        />
                       </div>
                     </q-card-section>
                   </q-card>
                 </template>
-              </ais-hits>
-              <div class="pagination"><ais-pagination /></div>
+              </component>
+              <div
+                v-if="previewSettings.pagination"
+                class="pagination justify-center q-ma-sm text-center flex"
+              >
+                <ais-pagination :padding="3" />
+              </div>
             </div>
           </ais-instant-search>
         </div>
+        <div v-else class="q-ma-sm">
+          <q-card class="q-pa-sm">
+            <q-card-section>
+              <div class="text-h6">Preview</div>
+              <div class="text-subtitle2">
+                Please select an instance and index to preview
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
       </div>
+      <q-page-scroller
+        position="bottom-right"
+        :scroll-offset="150"
+        :offset="[18, 18]"
+      >
+        <q-btn fab icon="keyboard_arrow_up" color="accent" />
+      </q-page-scroller>
     </div>
   </q-page>
 </template>
 
 <script setup>
-import { useSettingsStore } from "src/stores/settings-store";
+import { usePreviewStore } from "src/stores/preview-store";
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
 import { storeToRefs } from "pinia";
-import { ref, onMounted, watch } from "vue";
-import { MeiliSearch } from "meilisearch";
-import { useQuasar } from "quasar";
-import * as jose from "jose";
+import { ref, watchEffect, computed } from "vue";
 
-const $q = useQuasar();
+const autoplay = ref(false);
 const filtersExpanded = ref(true);
-const theSettings = useSettingsStore();
-const { indexUrl, indexKey, confirmed, currentIndex, currentInstance } =
-  storeToRefs(theSettings);
-const searchClient = instantMeiliSearch(indexUrl.value, indexKey.value);
+const thePreviewSettings = usePreviewStore();
+const {
+  previewIndexUrl,
+  previewIndexKey,
+  previewCurrentIndex,
+  previewSettings,
+} = storeToRefs(thePreviewSettings);
+const searchClient = ref(null);
+searchClient.value = instantMeiliSearch(
+  previewIndexUrl.value,
+  previewIndexKey.value
+);
+const sortByItems = computed(() => {
+  let items = [];
+  previewSettings.value.sortableAttributes.forEach((att) => {
+    items.push({
+      value: `${previewCurrentIndex.value}:${att}:asc`,
+      label: `${att} asc`,
+    });
+    items.push({
+      value: `${previewCurrentIndex.value}:${att}:desc`,
+      label: `${att} desc`,
+    });
+  });
+  return items;
+});
+
+const filters = computed(() => {
+  let filters = [];
+  Object.keys(previewSettings.value.filters).forEach((key) => {
+    if (previewSettings.value.filters[key]) {
+      filters.push(key);
+    }
+  });
+  return filters;
+  //TODO: add filter object options and types - for now just the keys for refinement lists
+});
+
+watchEffect(() => {
+  setTimeout(() => {
+    searchClient.value = instantMeiliSearch(
+      previewIndexUrl.value,
+      previewIndexKey.value
+    );
+  }, 500);
+});
 
 const formatDate = (dateString) =>
   new Intl.DateTimeFormat("default", { dateStyle: "long" }).format(
     new Date(dateString)
   );
-const getClient = () =>
-  new MeiliSearch({
-    host: indexUrl.value,
-    apiKey: indexKey.value,
-  });
-
-const jwtEncode = async (payload, secret) => {
-  let jwt = await new jose.EncryptJWT(payload)
-    .setProtectedHeader({ alg: "dir", enc: "A128CBC-HS256" })
-    .setIssuedAt()
-    .setIssuer("urn:meilimanager:issuer")
-    .setAudience("urn:meilimanager:audience")
-    .setExpirationTime(1748390444) //2025
-    .encrypt(secret);
-  console.log(jwt);
-  return jwt;
-};
-const jwtDecode = async (jwt, secret) => {
-  const exsecret = jose.base64url.decode(
-    "zH4NRP1HMALxxCFnRZABFA7GOJtzU_gIj02alfL1lvI"
-  );
-  const exjwt =
-    "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..MB66qstZBPxAXKdsjet_lA.WHbtJTl4taHp7otOHLq3hBvv0yNPsPEKHYInmCPdDDeyV1kU-f-tGEiU4FxlSqkqAT2hVs8_wMNiQFAzPU1PUgIqWCPsBrPP3TtxYsrtwagpn4SvCsUsx0Mhw9ZhliAO8CLmCBQkqr_T9AcYsz5uZw.7nX9m7BGUu_u1p1qFHzyIg";
-
-  const { payload, protectedHeader } = await jose.jwtDecrypt(jwt, secret, {
-    issuer: "urn:meilimanager:issuer",
-    audience: "urn:meilimanager:audience",
-  });
-
-  console.log(protectedHeader);
-  console.log(payload);
-};
-
-watch(currentInstance, async () => {
-  await loadInstance();
-});
-
-const loadInstance = async () => {
-  const client = getClient();
-  try {
-    const index = await client.getIndex("wag-facebook-feed");
-  } catch (e) {
-    console.log(e);
-  }
-};
-
-onMounted(async () => {
-  loadInstance();
-});
 </script>
