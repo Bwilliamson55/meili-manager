@@ -10,14 +10,7 @@ Full readme below the quickstart.
 ## Install the dependencies
 
 ```bash
-yarn
-# or
 npm install
-```
-
-```bash
-yarn
-# or
 npm install -g @quasar/cli
 ```
 
@@ -75,8 +68,10 @@ Critical to this app's function are
 
 ## Features
 
-_No more manual API calls to change settings_
+_No more manual API calls to change settings!_
 
+- Instances
+  - Multiple instances can be saved for quick switching between environments
 - Indexes
   - List, Create, Edit, Delete
   - Statistics and status
@@ -84,7 +79,7 @@ _No more manual API calls to change settings_
   - Per index, full settings object available to edit
   - Intuitive web form rather than raw JSON
 - Search
-  - Interactive Vue instantsearch widgets in each index view
+  - Interactive Vue Instantsearch widgets in each index view
     - Stats
     - Search Query
     - Sort Options
@@ -95,6 +90,10 @@ _No more manual API calls to change settings_
   - Create, edit, update, and delete API keys
 - Tasks
   - View and search through the latest 1000 tasks in real time
+  - Details for each task, error details if present
+- Preview mode (Experimental)
+  - Customize and save a preview of your indexes
+  - Work in progress with the eventual goal of easily sharing settings
 
 ---
 
@@ -117,7 +116,7 @@ You can also follow the quasar docs to compile this app for the platform of your
 ## Customization
 
 PLEASE fork this and make it your own. I make no promises to maintain this over the years.
-All you need are vue3 (And all that implies) and the quasar docs to customize this. I will be making some videos about this app to help summarize.
+All you need are vue3 (And all that implies) and the quasar docs to customize this.
 
 Vue Instantsearch is used heavily when viewing results. See [their showcase](https://www.algolia.com/doc/guides/building-search-ui/widgets/showcase/vue/) for all the things.
 
@@ -270,3 +269,33 @@ This page is a good way to review if an index is busy, or if a particular task f
 ### Endpoints/Methods used
 
 - [getTasks](https://github.com/meilisearch/meilisearch-js#get-all-tasks)
+
+---
+
+## Preview Mode
+
+A more detail oriented preview with the eventual goal of being sharable.
+Save as many preview configurations as you like and switch the index/instance powering them independently.
+
+Settings currently available:
+
+- Name (For load/save key locally)
+- Pagination
+- Pagination Size
+- Show Refinements
+- Show Clear refinements
+- Attribute based options:
+  - **_You can manually enter options by typing and pressing enter_**
+    - **eg `attributeName.subProperty` is valid assuming subProperty exists**
+  - Sortable Attributes
+    - Auto generate asc and desc sort options based on attributes entered here
+  - Facet/Filter Attributes
+    - Auto generate filters based on attributes
+      - Currently just `refinement-list` but the goal is to have more options per attribute for other filter types
+  - Image Attributes
+    - Treat the entered attributes as src/href for image(s) for each result
+  - Heading Attributes
+    - Show the attributes content above the content as H6's for each result
+      - More control over this is on the road map
+  - Description Attributes
+    - Show the attributes content below the heading for each result
