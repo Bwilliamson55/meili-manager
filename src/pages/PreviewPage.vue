@@ -187,7 +187,7 @@ const searchClient = ref(null);
 searchClient.value = instantMeiliSearch(
   previewIndexUrl.value,
   previewIndexKey.value
-);
+).searchClient;
 const sortByItems = computed(() => {
   let items = [];
   previewSettings.value.sortableAttributes.forEach((att) => {
@@ -219,7 +219,7 @@ watchEffect(() => {
     searchClient.value = instantMeiliSearch(
       previewIndexUrl.value,
       previewIndexKey.value
-    );
+    ).searchClient;
   }, 500);
 });
 
