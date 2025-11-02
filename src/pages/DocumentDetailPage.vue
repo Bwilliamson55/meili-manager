@@ -1,17 +1,17 @@
 <template>
   <q-page padding>
-    <div class="q-pa-xs row items-start q-gutter-xs">
-      <q-card class="col" flat bordered>
-        <q-card-section class="full-width">
-          <div class="text-center row">
+    <div class="flex flex-col gap-4">
+      <q-card flat bordered>
+        <q-card-section>
+          <div class="flex items-center justify-between gap-4">
             <q-btn
               flat
               icon="arrow_back"
-              class="float-left cursor-pointer q-py-auto q-my-auto"
+              class="flex-shrink-0"
               :to="`/index-details/${currentIndex}`"
               >Back</q-btn
             >
-            <p class="col q-py-auto q-my-auto">
+            <p class="flex-1 text-center">
               Document Details for UID
               <strong>{{ theDocumentUid ?? "???" }}</strong> in
               <strong>{{ currentIndex ?? "???" }}</strong>
@@ -19,109 +19,54 @@
             <q-btn
               flat
               icon="save"
-              class="float-right cursor-pointer q-py-auto q-my-auto"
+              class="flex-shrink-0"
               @click="updateDocument"
               >Save</q-btn
             >
           </div>
-          <q-banner class="bg-primary text-white text-center">
+          <q-banner class="bg-primary text-white text-center mt-4">
             Saving a document with the same UID as another will overwrite it!
           </q-banner>
         </q-card-section>
       </q-card>
       <vue-jsoneditor
         v-if="theDocumentUid !== ''"
-        mode="tree"
-        :queryLanguagesIds="queryLanguages"
-        v-model:json="theDocument"
-        @error="onError"
-        @focus="onFocus"
-        @blur="onBlur"
+        class="min-h-96"
+        mode="text"
+        :mainMenuBar="false"
+        :navigationBar="false"
+        :statusBar="true"
+        v-model:text="theDocumentText"
       />
     </div>
   </q-page>
 </template>
 
 <script setup>
-import { MeiliSearch } from "meilisearch";
 import { useSettingsStore } from "src/stores/settings-store";
 import { storeToRefs } from "pinia";
 import { onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
-import { useQuasar } from "quasar";
+import { useRoute, useRouter } from "vue-router";
 import VueJsoneditor from "vue3-ts-jsoneditor";
-
-const $q = useQuasar();
+import { showSuccess, showError } from "src/utils/notifications";
 const theSettings = useSettingsStore();
-const { indexUrl, indexKey, currentIndex } = storeToRefs(theSettings);
+const { currentIndex } = storeToRefs(theSettings);
 const route = useRoute();
+const router = useRouter();
 const theDocument = ref({});
+const theDocumentText = ref("");
 const theDocumentUid = ref("");
 const iPk = ref("");
 
-const getClient = () =>
-  new MeiliSearch({
-    host: indexUrl.value,
-    apiKey: indexKey.value,
-  });
-
 onMounted(async () => {
-  const meiliClient = getClient();
-  currentIndex.value = route.params.indexUid;
-  const mclient = meiliClient.index(currentIndex.value);
-  iPk.value = await mclient.fetchPrimaryKey();
-  theDocument.value = await mclient.getDocument(route.params.documentUid);
-  theDocumentUid.value = theDocument.value[iPk.value] ?? "newIdChangeMe1234";
-  if (route.params.documentUid == "new") {
-    theDocument.value = {
-      array: [1, 2, 3],
-      boolean: true,
-      Null: null,
-      number: 123,
-      seconds: 0,
-      object: { a: "b", c: "d" },
-      string: "Hello World",
-      name: "new document name",
-    };
-    theDocument.value[iPk.value] = theDocumentUid.value;
-  } else {
-    theDocument.value = await mclient.getDocument(route.params.documentUid);
-  }
-});
-
-const updateDocument = async () => {
   try {
-    const meiliClient = getClient();
-    const mclient = meiliClient.index(currentIndex.value);
-    theDocumentUid.value = theDocument.value[iPk.value];
-    const updateResult = await mclient.addDocuments([theDocument.value]);
-    const waitForTaskRes = await mclient.waitForTask(updateResult.taskUid, {
-      timeOutMs: 15000,
-    });
-    theDocument.value = await mclient.getDocument(theDocumentUid.value);
-    $q.notify({
-      color: "green-4",
-      textColor: "white",
-      icon: "cloud_done",
-      message: "Document Updated",
-    });
-  } catch (error) {
-    $q.notify({
-      color: "red-5",
-      textColor: "white",
-      icon: "warning",
-      multiLine: true,
-      html: true,
-      message: `<p>Something went wrong<br/><pre>${JSON.stringify(
-        error,
-        null,
-        2
-      )}</pre></p>`,
-    });
-    const meiliClient = getClient();
-    const mclient = meiliClient.index(currentIndex.value);
     currentIndex.value = route.params.indexUid;
-    if (route.params.documentUid === "new") {
+    const mclient = theSettings.getIndexClient(currentIndex.value);
+    iPk.value = await mclient.fetchPrimaryKey();
+
+    // Check if creating a new document BEFORE trying to fetch
+    if (route.params.documentUid == "new") {
+      theDocumentUid.value = "newIdChangeMe1234";
       theDocument.value = {
         array: [1, 2, 3],
         boolean: true,
@@ -130,23 +75,75 @@ const updateDocument = async () => {
         seconds: 0,
         object: { a: "b", c: "d" },
         string: "Hello World",
+        name: "new document name",
       };
+      theDocument.value[iPk.value] = theDocumentUid.value;
+      theDocumentText.value = JSON.stringify(theDocument.value, null, 2);
     } else {
+      // Only fetch if it's an existing document
       theDocument.value = await mclient.getDocument(route.params.documentUid);
+      theDocumentUid.value =
+        theDocument.value[iPk.value] ?? route.params.documentUid;
+      theDocumentText.value = JSON.stringify(theDocument.value, null, 2);
     }
-    iPk.value = await mclient.fetchPrimaryKey();
-    theDocumentUid.value = theDocument.value[iPk.value];
+  } catch (error) {
+    showError(`Failed to load document: ${error.message}`);
   }
-};
+});
 
-const queryLanguages = ref(["javascript", "lodash", "jmespath"]);
-const onError = (error) => {
-  //
-};
-const onFocus = () => {
-  //
-};
-const onBlur = () => {
-  //
+const updateDocument = async () => {
+  try {
+    // Parse the JSON text from the editor
+    try {
+      theDocument.value = JSON.parse(theDocumentText.value);
+    } catch (parseError) {
+      showError(`Invalid JSON: ${parseError.message}`);
+      return;
+    }
+
+    const mclient = theSettings.getIndexClient(currentIndex.value);
+
+    // Get the document UID from the edited document
+    theDocumentUid.value = theDocument.value[iPk.value];
+
+    if (!theDocumentUid.value) {
+      showError(`Document must have a primary key field: ${iPk.value}`);
+      return;
+    }
+
+    const isNewDocument = route.params.documentUid === "new";
+    const updateResult = await mclient.addDocuments([theDocument.value]);
+
+    // waitForTask is on the client.tasks object in SDK 0.53.0
+    await theSettings.client.tasks.waitForTask(updateResult.taskUid, {
+      timeOutMs: 15000,
+    });
+
+    // Reload the document with the actual UID
+    theDocument.value = await mclient.getDocument(theDocumentUid.value);
+    theDocumentText.value = JSON.stringify(theDocument.value, null, 2);
+
+    // If this was a new document, navigate to the actual document URL
+    if (isNewDocument) {
+      await router.push(
+        `/documents/${currentIndex.value}/${theDocumentUid.value}`,
+      );
+      showSuccess("Document Created");
+    } else {
+      showSuccess("Document Updated");
+    }
+  } catch (error) {
+    showError(`Failed to save document: ${error.message}`);
+    // Reload the document to show current state (only if not "new")
+    if (route.params.documentUid !== "new") {
+      try {
+        const mclient = theSettings.getIndexClient(currentIndex.value);
+        theDocument.value = await mclient.getDocument(route.params.documentUid);
+        theDocumentText.value = JSON.stringify(theDocument.value, null, 2);
+      } catch (reloadError) {
+        console.error("Failed to reload document:", reloadError);
+      }
+    }
+  }
 };
 </script>

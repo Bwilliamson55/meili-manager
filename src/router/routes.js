@@ -51,19 +51,20 @@ const routes = [
       },
     ],
   },
-  {
-    path: "/",
-    component: () => import("layouts/PreviewLayout.vue"),
-    children: [
-      {
-        path: "/preview",
-        components: {
-          main: PreviewPageVue,
-          side: PreviewSidebarVue,
-        },
-      },
-    ],
-  },
+  // Preview mode disabled (alpha feature)
+  // {
+  //   path: "/",
+  //   component: () => import("layouts/PreviewLayout.vue"),
+  //   children: [
+  //     {
+  //       path: "/preview",
+  //       components: {
+  //         main: PreviewPageVue,
+  //         side: PreviewSidebarVue,
+  //       },
+  //     },
+  //   ],
+  // },
   // Always leave this as last one,
   // but you can also remove it
   {

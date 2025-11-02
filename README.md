@@ -1,11 +1,11 @@
-# MeiliSearch Manager (meili-manager)
+# Meili-Manager
 
-This is Meili-Manager, a Quasar app built to help manage your Meilisearch instance(s).
-You can run this locally or hosted. Currently the demo is at [https://meili-manager.vercel.app/#/](https://meili-manager.vercel.app/#/)
+A Quasar application for managing multiple Meilisearch instances across development, staging, and production environments.
 
-Full readme below the quickstart.
+**Version**: 2.0.0
+**Demo**: [https://meili-manager.vercel.app](https://meili-manager.vercel.app)
 
-# Quick start
+## Quick Start
 
 ## Install the dependencies
 
@@ -14,124 +14,170 @@ npm install
 npm install -g @quasar/cli
 ```
 
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
+### Development
 
 ```bash
 quasar dev
 ```
 
-### Lint the files
-
-```bash
-yarn lint
-# or
-npm run lint
-```
-
-### Format the files
-
-```bash
-yarn format
-# or
-npm run format
-```
-
-### Build the app for production
+### Production Build
 
 ```bash
 quasar build
 ```
 
-### Customize the configuration
+Output: `dist/spa/`
 
-See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
+### Changelog
 
-# Overview
+Generate changelog from git history:
 
-## What is this
+```bash
+npm run build-changelog
+```
 
-This is Meili-Manager, a Quasar app built to help manage your Meilisearch instance(s).
-You can run this locally or hosted. Currently the demo is at [https://meili-manager.vercel.app/#/](https://meili-manager.vercel.app/#/)
+Generates `changelog.json` with versioned entries grouped by ISO week. The changelog is automatically generated and deployed with each release to GitHub Pages.
 
-## Dependancies
+### Code Quality
 
-The `npm install` step should install everything you need, but certain packages are important to mention.
-Critical to this app's function are
+```bash
+npm run lint
+npm run format
+```
 
-- [Vue InstantSearch](https://github.com/algolia/vue-instantsearch/)
-- [Meilisearch Vue](https://github.com/meilisearch/meilisearch-vue)
-- [Meilisearch JS](https://github.com/meilisearch/meilisearch-js#-documentation)
-- [vue3-ts-jsoneditor](https://github.com/bestkolobok/vue3-jsoneditor)
-- [Quasar CLI](https://quasar.dev/start/quasar-cli#installation-project-scaffolding) to install project w/vue3 vite js
+## Core Features
+
+### Multi-Instance Management
+
+Save and switch between multiple Meilisearch instances (development, staging, production). Credentials are persisted locally with automatic connection validation.
+
+### Index Operations
+
+- List, create, edit, and delete indexes
+- View statistics and field distribution
+- Configure all index settings through an intuitive interface
+- Interactive search with Vue InstantSearch widgets
+
+### Document Management
+
+- Browse and search documents with advanced filters
+- Edit documents using a full-featured JSON editor
+- Add new documents with validation
+
+### API Key Management
+
+- Create and manage API keys with granular permissions
+- Update and delete existing keys
+- View all keys with detailed information
+
+### Task Monitoring
+
+- View the latest 1000 tasks in real-time
+- Sort and search through task history
+- View detailed error information for failed tasks
+
+### Preview Mode (Experimental)
+
+- Create custom search previews with configurable UI
+- Save multiple preview configurations
+- Independent instance/index selection per preview
+
+## Key Dependencies
+
+- **meilisearch** - JavaScript client for Meilisearch API
+- **@meilisearch/instant-meilisearch** - Adapter for Vue InstantSearch
+- **vue-instantsearch** - Search UI components
+- **vue3-ts-jsoneditor** - JSON editor for document editing
+- **jose** - JWT encoding for preview sharing
+- **pinia** + **pinia-plugin-persistedstate** - State management with persistence
+- **Quasar Framework** - Vue 3 UI framework
+- **Tailwind CSS** - Utility-first CSS framework (v4)
+
+## Architecture
+
+### Centralized Client Management
+
+All Meilisearch client creation goes through `settings-store.js`, providing:
+
+- Automatic connection validation
+- Client caching for performance
+- Consistent error handling across all components
+- Safe instance switching with validation
+
+### Named Router Views
+
+The application uses dual router views for flexible layouts:
+
+- `main` - Primary page content
+- `side` - Contextual sidebar content
+
+This allows pages to control both the main view and sidebar independently.
+
+### State Management
+
+- **settings-store.js** - Instance credentials, active client, connection state
+- **preview-store.js** - Preview configurations with tokenization support
 
 ---
 
-## Features
+## Deployment
 
-_No more manual API calls to change settings!_
+### Vercel (Recommended)
 
-- Instances
-  - Multiple instances can be saved for quick switching between environments
-- Indexes
-  - List, Create, Edit, Delete
-  - Statistics and status
-- Settings
-  - Per index, full settings object available to edit
-  - Intuitive web form rather than raw JSON
-- Search
-  - Interactive Vue Instantsearch widgets in each index view
-    - Stats
-    - Search Query
-    - Sort Options
-    - Filters
-    - Refinements
-    - Hits
-- Keys
-  - Create, edit, update, and delete API keys
-- Tasks
-  - View and search through the latest 1000 tasks in real time
-  - Details for each task, error details if present
-- Preview mode (Experimental)
-  - Customize and save a preview of your indexes
-  - Work in progress with the eventual goal of easily sharing settings
+- Build Command: `quasar build`
+- Output Directory: `dist/spa`
 
----
+### Other Platforms
 
-## Installation
+The application builds as a static SPA and can be hosted on any static file server.
 
-To install you can follow the quickstart above, or host this app on the service of your choice. The demo is hosted on vercel, with the following settings:
+### Native Applications
 
-- Build Command : `quasar build`
-- Output Directory : `dist/spa`
+Quasar supports building for:
 
-You can also follow the quasar docs to compile this app for the platform of your choosing:
+- **Mobile**: iOS/Android via Cordova or Capacitor
+- **Desktop**: Windows/macOS/Linux via Electron
 
-- [Mobile](https://quasar.dev/quasar-cli-webpack/developing-mobile-apps)
-  - iOS or Android via Cordova or Capacitor
-- [Desktop](https://quasar.dev/quasar-cli-webpack/developing-electron-apps/introduction)
-  - Uses Electron
-
----
+See [Quasar documentation](https://quasar.dev) for platform-specific build instructions.
 
 ## Customization
 
-PLEASE fork this and make it your own. I make no promises to maintain this over the years.
-All you need are vue3 (And all that implies) and the quasar docs to customize this.
+Fork this repository and adapt to your needs. The codebase uses Vue 3 Composition API with Quasar components and Tailwind utilities.
 
-Vue Instantsearch is used heavily when viewing results. See [their showcase](https://www.algolia.com/doc/guides/building-search-ui/widgets/showcase/vue/) for all the things.
+Key customization points:
+
+- `src/stores/settings-store.js` - Modify client management logic
+- `src/pages/` - Add new pages or modify existing ones
+- `src/components/` - Reusable components
+- `src/utils/notifications.js` - Centralized notification patterns
+- `generateChangelog.cjs` - Customize changelog generation logic
+
+**Styling**: Uses Tailwind CSS v4 for utility-first styling. All components use Tailwind utilities (e.g., `p-4`, `mt-2`) while retaining Quasar's Q\* components for complex UI elements.
 
 ---
 
-## Sidebar settings
+## Getting Started
 
-### Credentials
+### Adding Your First Instance
 
-By clicking the hamburger button in the top left, or bottom left, you can expand the sidebar settings.
+1. Open the sidebar (hamburger menu, top-left or bottom-left)
+2. Enter instance details:
+   - **Label**: Descriptive name (e.g., "Production")
+   - **URL**: Meilisearch endpoint (https://example.com or http://localhost:7700)
+   - **API Key**: Master key or admin key with sufficient permissions
 
-Your Index url needs to be in the form of https://myIndex.com - This can be local.
-You API key will require the `indexes.get` and `document.get` permissions at the least to work with this tool. I recommend making a key with most permissions for a short time while you configure to your liking, then let it expire in favor of more strict keys.
+3. Click "Add Instance"
 
-Once submitted, a notification will display if any serious errors occured. If you don't immediately see a list of indexes, then your permissions aren't wide enough or your credentials are incorrect.
+The connection is validated before the instance is saved. If validation fails, check your URL and API key.
+
+### Required Permissions
+
+Minimum permissions for basic functionality:
+
+- `indexes.get`
+- `documents.get`
+
+For full functionality (creating indexes, managing keys, etc.), use a master key or admin key. Create more restrictive keys once configuration is complete.
 
 ### Endpoints/Methods used
 

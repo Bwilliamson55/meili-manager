@@ -1,8 +1,8 @@
 <template>
   <q-page>
-    <div class="row justify-center">
-      <div class="col-xs-12 col-md-8">
-        <div v-if="confirmed" class="q-mt-sm">
+    <div class="flex justify-center">
+      <div class="w-full md:w-2/3">
+        <div v-if="confirmed" class="mt-2">
           <q-item>
             <q-item-section top
               ><q-item-label header class="text-bold"
@@ -27,13 +27,13 @@
                   icon="add_box"
                   name="newIndex"
                   label="New Index"
-                  @click="prompt = true"
+                  @click="(prompt = true)"
                 ></q-btn></q-item-section
             ></q-item>
             <div
               v-for="index in indexList"
               :key="index.id"
-              class="q-pa-md q-gutter-md"
+              class="p-4 space-y-4"
             >
               <q-item>
                 <q-item-section top>
@@ -47,19 +47,19 @@
                   </q-item-label>
                   <q-item-label
                     lines="1"
-                    class="q-mt-xs text-body2 text-weight-bold text-primary text-uppercase"
+                    class="mt-1 text-body2 text-weight-bold text-primary text-uppercase"
                   >
                     <q-btn
                       flat
                       :to="`/index-details/${index.uid}`"
-                      class="cursor-pointer q-pl-none"
+                      class="cursor-pointer pl-0"
                       >Show Me</q-btn
                     >
                   </q-item-label>
                 </q-item-section>
 
                 <q-item-section top side>
-                  <div class="text-grey-8 q-gutter-xs">
+                  <div class="text-grey-8 space-x-1">
                     <q-btn
                       class="gt-xs"
                       size="12px"
@@ -91,7 +91,7 @@
         <q-card-section>
           <p>
             Index Name
-            <q-input class="q-pt-none" dense v-model="newIndexName" autofocus />
+            <q-input class="pt-0" dense v-model="newIndexName" autofocus />
           </p>
         </q-card-section>
         <q-card-section>
@@ -109,9 +109,9 @@
     </q-dialog>
     <q-dialog v-model="delPrompt" persistent>
       <q-card>
-        <q-card-section class="row items-center">
+        <q-card-section class="flex items-center">
           <q-avatar icon="delete" color="primary" text-color="white" />
-          <span class="q-ml-sm"
+          <span class="ml-2"
             >Are you REALLY sure you want to delete this index?</span
           >
         </q-card-section>
@@ -136,9 +136,11 @@ import { useSettingsStore } from "src/stores/settings-store";
 import { storeToRefs } from "pinia";
 import { ref, onMounted, watch } from "vue";
 import { MeiliSearch } from "meilisearch";
-import { useQuasar } from "quasar";
-
-const $q = useQuasar();
+import {
+  showSuccess,
+  showError,
+  showConfirmation,
+} from "src/utils/notifications";
 
 const prompt = ref(false);
 const delPrompt = ref(false);
@@ -151,130 +153,83 @@ const indexList = ref([]);
 
 const formatDate = (dateString) =>
   new Intl.DateTimeFormat("default", { dateStyle: "long" }).format(
-    new Date(dateString)
+    new Date(dateString),
   );
-const getClient = () =>
-  new MeiliSearch({
-    host: indexUrl.value,
-    apiKey: indexKey.value,
-  });
+
+const getClient = () => {
+  return theSettings.client;
+};
 
 watch(currentInstance, async () => {
   await loadInstance();
 });
 
 const loadInstance = async () => {
-  const client = getClient();
   try {
+    const client = getClient();
     const indexes = await client.getRawIndexes();
     indexList.value = indexes.results;
   } catch (e) {
     console.log(e);
-    indexList.value = [];
+    if (e.message?.includes("not configured")) {
+      // Credentials not set up yet - this is ok, user needs to configure
+      indexList.value = [];
+    } else {
+      showError(`Failed to load indexes: ${e.message}`);
+      indexList.value = [];
+    }
   }
 };
 
 onMounted(async () => {
-  if (confirmed) {
+  // Load indexes if credentials are configured (not default values)
+  if (indexUrl.value && indexUrl.value !== "https://#") {
     loadInstance();
   }
 });
 
 const newIndex = async () => {
-  const client = getClient();
-  await client
-    .createIndex(newIndexName.value, { primaryKey: newIndexUuid.value })
-    .catch((error) => {
-      console.log(error);
-      $q.notify({
-        color: "red-5",
-        textColor: "white",
-        icon: "warning",
-        message: `Sorry there was an error: ${error.toString()}`,
-      });
+  try {
+    const client = await getClient();
+    await client.createIndex(newIndexName.value, {
+      primaryKey: newIndexUuid.value,
     });
-  $q.notify({
-    color: "green-4",
-    textColor: "white",
-    icon: "cloud_done",
-    message: "Index Created",
-  });
-  const indexes = await client.getRawIndexes();
-  indexList.value = indexes.results;
+
+    showSuccess("Index Created");
+
+    const indexes = await client.getRawIndexes();
+    indexList.value = indexes.results;
+  } catch (error) {
+    console.log(error);
+    showError(`Sorry there was an error: ${error.toString()}`);
+  }
 };
 const createDump = async () => {
-  $q.notify({
-    color: "orange-4",
-    textColor: "black",
-    icon: "download",
-    timeout: 7000,
-    message: `Create dump of ${indexUrl.value} ?`,
-    closeBtn: true,
-    actions: [
-      {
-        label: "Yes",
-        color: "red",
-        handler: async () => {
-          const client = getClient();
-          await client
-            .createDump()
-            .then((response) => {
-              $q.notify({
-                color: "green-4",
-                textColor: "white",
-                icon: "cloud_done",
-                timeout: 9000,
-                html: true,
-                message: `<h5>Dump task created successfully: <br/>
-                 Enqueued: ${response.enqueuedAt} <br/>
-                 Task ID: ${response.taskUid} <br/>
-                 Status: ${response.status} <br/></h5>`,
-              });
-            })
-            .catch((error) => {
-              console.log(error);
-              $q.notify({
-                color: "red-5",
-                textColor: "white",
-                icon: "warning",
-                message: `Sorry there was an error: ${error.toString()}`,
-              });
-            });
-        },
-      },
-    ],
+  showConfirmation(`Create dump of ${indexUrl.value}?`, async () => {
+    try {
+      const client = await getClient();
+      const response = await client.createDump();
+
+      showSuccess(
+        `Dump task created successfully:\nEnqueued: ${response.enqueuedAt}\nTask ID: ${response.taskUid}\nStatus: ${response.status}`,
+      );
+    } catch (error) {
+      console.log(error);
+      showError(`Sorry there was an error: ${error.toString()}`);
+    }
   });
 };
 const delIndex = async (indexUidString) => {
-  $q.notify({
-    color: "orange-4",
-    textColor: "black",
-    icon: "delete",
-    timeout: 7000,
-    message: `Really delete ${indexUidString} ?`,
-    closeBtn: true,
-    actions: [
-      {
-        label: "Yes",
-        color: "red",
-        handler: async () => {
-          const client = getClient();
-          const delRes = await client
-            .deleteIndex(indexUidString)
-            .catch((error) => {
-              console.log(error);
-              $q.notify({
-                color: "red-5",
-                textColor: "white",
-                icon: "warning",
-                message: `Sorry there was an error: ${error.toString()}`,
-              });
-            });
-          const indexes = await client.getRawIndexes();
-          indexList.value = indexes.results;
-        },
-      },
-    ],
+  showConfirmation(`Really delete ${indexUidString}?`, async () => {
+    try {
+      const client = await getClient();
+      await client.deleteIndex(indexUidString);
+      const indexes = await client.getRawIndexes();
+      indexList.value = indexes.results;
+    } catch (error) {
+      console.log(error);
+      showError(`Sorry there was an error: ${error.toString()}`);
+    }
   });
 };
 </script>

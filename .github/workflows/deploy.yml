@@ -3,30 +3,39 @@ on:
   push:
     branches:
       - master
+      - main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch full history for changelog generation
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "20"
 
-      - name: Install and Build 🔧
-        run: |
-          npm install
-          npm run build
+      - name: Install dependencies �
+        run: npm ci
+
+      - name: Generate changelog 📝
+        run: npm run build-changelog
+
+      - name: Build application 🔧
+        run: npm run build
+
+      - name: Move changelog to dist 📋
+        run: cp changelog.json dist/spa/changelog.json
 
       - name: Add .nojekyll file
-        run: |
-          touch dist/spa/.nojekyll
+        run: touch dist/spa/.nojekyll
 
-      - name: Deploy to Specific Branch 🚀
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Deploy to GitHub Pages 🚀
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist/spa

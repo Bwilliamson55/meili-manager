@@ -1,7 +1,7 @@
 <template>
   <q-page padding>
-    <div class="q-pa-xs row items-start q-gutter-xs">
-      <q-card class="col" flat bordered>
+    <div class="flex flex-col gap-4">
+      <q-card flat bordered>
         <q-card-section class="full-width">
           <div class="text-center">
             <p>All Tasks</p>
@@ -52,7 +52,7 @@
                         flat
                         bordered
                         v-for="col in Object.keys(
-                          rowDetails[props.row.uid]['details']
+                          rowDetails[props.row.uid]['details'],
                         )"
                         :key="col.uid"
                       >
@@ -63,7 +63,7 @@
                               JSON.stringify(
                                 rowDetails[props.row.uid]["details"][col],
                                 null,
-                                2
+                                2,
                               )
                             }}</pre>
                           </div>
@@ -95,38 +95,31 @@
 </template>
 
 <script setup>
-import { MeiliSearch } from "meilisearch";
 import { useSettingsStore } from "src/stores/settings-store";
-import { storeToRefs } from "pinia";
 import { onMounted, ref } from "vue";
 
 const theSettings = useSettingsStore();
-const { indexUrl, indexKey } = storeToRefs(theSettings);
 const filter = ref("");
 const iTasks = ref({});
 const loading = ref(false);
-const expanded = ref([
-  // Array of row keys
-]);
+const expanded = ref([]);
 const rowDetails = ref({});
-const meiliClient = new MeiliSearch({
-  host: indexUrl.value,
-  apiKey: indexKey.value,
-});
 
 const getTaskDetails = async (taskId) => {
   try {
-    let resp = await meiliClient.getTask(taskId);
+    const resp = await theSettings.client.getTask(taskId);
     return resp;
   } catch (e) {
-    console.log(e);
-    return "Failed to get task details";
+    console.error("Failed to get task details:", e);
+    return null;
   }
 };
 const fetchTaskDetails = async (props) => {
   loading.value = true;
-  let deets = await getTaskDetails(props.key);
-  rowDetails.value[props.key] = { ...deets };
+  const deets = await getTaskDetails(props.key);
+  if (deets) {
+    rowDetails.value[props.key] = { ...deets };
+  }
   loading.value = false;
 };
 const columns = [
@@ -205,11 +198,13 @@ const columns = [
         : "",
   },
 ];
+
 onMounted(async () => {
-  const meiliClient = new MeiliSearch({
-    host: indexUrl.value,
-    apiKey: indexKey.value,
-  });
-  iTasks.value = await meiliClient.getTasks({ limit: 1000 });
+  try {
+    iTasks.value = await theSettings.client.getTasks({ limit: 1000 });
+  } catch (error) {
+    console.error("Failed to load tasks:", error);
+    iTasks.value = { results: [] };
+  }
 });
 </script>

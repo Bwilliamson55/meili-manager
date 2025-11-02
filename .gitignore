@@ -2,6 +2,10 @@
 .thumbs.db
 node_modules
 
+# Node artifact files
+node_modules/
+dist/
+
 # Quasar core related directories
 .quasar
 

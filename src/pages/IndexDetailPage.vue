@@ -1,12 +1,15 @@
 <template>
   <q-page padding>
-    <div class="q-pa-md row items-start q-gutter-md full-width">
+    <div class="flex flex-col gap-4 w-full">
       <IndexDetailTabs>
         <template #overview-tab>
-          <q-card class="col" flat bordered>
+          <q-card flat bordered>
             <q-card-section>
               <q-card-section>
-                <div v-if="iStats && iPk" class="flex justify-around">
+                <div
+                  v-if="iStats && iPk"
+                  class="flex justify-around items-center"
+                >
                   <q-chip icon="numbers" class="bg-info"
                     >Count: {{ iStats.numberOfDocuments }}</q-chip
                   >
@@ -24,14 +27,15 @@
               <q-separator />
 
               <q-card-section>
-                <div v-if="iStats && iPk" class="flex">
-                  <div class="full-width text-center">
-                    <p>Field Distribution</p>
+                <div v-if="iStats && iPk" class="flex flex-col gap-4">
+                  <div class="w-full text-center">
+                    <p class="text-h6">Field Distribution</p>
                   </div>
-                  <div class="q-px-md q-mx-auto col">
+                  <div class="px-4 mx-auto w-full">
                     <q-table
                       dense
                       :rows="fdRows"
+                      :columns="fdColumns"
                       row-key="Field Name"
                       :rows-per-page-options="[5, 10, 15, 0]"
                       flat
@@ -48,15 +52,13 @@
         </template>
       </IndexDetailTabs>
     </div>
-    <div class="text-center row">
-      <span class="col-12 q-py-auto q-my-auto q-mx-auto"
-        >Documents in this Index</span
-      >
+    <div class="flex items-center justify-between mt-4">
+      <span class="flex-1 text-center text-h6">Documents in this Index</span>
       <q-btn
         flat
         icon="add_circle"
         :to="`/documents/${currentIndex}/new`"
-        class="cursor-pointer q-py-auto q-my-auto q-ml-auto"
+        class="flex-shrink-0"
         >New</q-btn
       >
     </div>
@@ -66,13 +68,13 @@
       :index-name="currentIndex"
     >
       <p class="text-center">Stats: <ais-stats /></p>
-      <div class="row justify-evenly q-mx-sm">
+      <div class="flex justify-evenly mx-2">
         <div class="col-12 col-sm-5">
-          <p class="text-center text-blue q-my-sm">Search Query</p>
+          <p class="text-center text-blue my-2">Search Query</p>
           <ais-search-box />
         </div>
         <div class="col-12 col-sm-5">
-          <p class="text-center text-blue q-my-sm">Sort Options</p>
+          <p class="text-center text-blue my-2">Sort Options</p>
           <ais-sort-by v-if="sortByItems" :items="sortByItems" />
         </div>
       </div>
@@ -82,16 +84,15 @@
           <div class="row">
             <div class="col text-center q-mx-auto">
               Current Refinements --
-              <ais-clear-refinements class="inline-block q-my-sm" />
+              <ais-clear-refinements class="inline-block my-2" />
               <ais-current-refinements
                 :class-names="{
                   'ais-CurrentRefinements': 'flex wrap',
                   'ais-CurrentRefinements-list': 'block row',
-                  'ais-CurrentRefinements-item':
-                    'flex row full-width wrap q-ma-xs',
-                  'ais-CurrentRefinements-label': 'text-bold q-mr-xs',
+                  'ais-CurrentRefinements-item': 'flex row full-width wrap m-1',
+                  'ais-CurrentRefinements-label': 'text-bold mr-1',
                   'ais-CurrentRefinements-category':
-                    'col-12 q-mx-xs q-pt-xs text-left',
+                    'col-12 mx-1 pt-1 text-left',
                 }"
                 style="width: 100%"
               />
@@ -99,20 +100,20 @@
           </div>
           <hr />
           <div
-            class="row q-pa-sm"
+            class="flex p-2"
             v-if="iSettings.filterableAttributes.length > 0"
           >
             <q-expansion-item
               v-model="filtersExpanded"
               icon="filter_alt"
               label="Filters"
-              class="col-12 text-center text-blue q-my-xs"
+              class="col-12 text-center text-blue my-1"
             >
               <q-card
                 dense
                 v-for="att in iSettings.filterableAttributes"
                 :key="att"
-                class="col-12 q-pa-sm q-mt-sm"
+                class="col-12 p-2 mt-2"
               >
                 <ais-panel
                   :class-names="{
@@ -143,17 +144,17 @@
             <template #item="{ item }">
               <q-card flat bordered class="col overflow-auto">
                 <q-card-section>
-                  <div class="hit-name text-center row">
+                  <div class="hit-name text-center flex">
                     <ais-highlight
                       :hit="item"
                       :attribute="docNameFieldChoice"
-                      class="col q-py-auto q-my-auto"
+                      class="col py-auto my-auto"
                     />
                     <q-btn
                       flat
                       icon="edit"
                       :to="`/documents/${currentIndex}/${item[iPk]}`"
-                      class="float-right cursor-pointer q-py-auto q-my-auto"
+                      class="float-right cursor-pointer py-auto my-auto"
                       >Edit</q-btn
                     >
                   </div>
@@ -175,7 +176,7 @@
                     ></q-select>
                     <q-img
                       width-full
-                      class="q-ma-sm"
+                      class="m-2"
                       :src="
                         item[imgFieldSelectChoice] ??
                         item.picture_url ??
@@ -251,7 +252,6 @@
 </template>
 
 <script setup>
-import { MeiliSearch } from "meilisearch";
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
 import { useSettingsStore } from "src/stores/settings-store";
 import { storeToRefs } from "pinia";
@@ -269,19 +269,34 @@ const iStats = ref({});
 const iSettings = ref({});
 const sortByItems = ref([]);
 const iPk = ref("");
-const searchClient = instantMeiliSearch(indexUrl.value, indexKey.value).searchClient;
+const searchClient = instantMeiliSearch(
+  indexUrl.value,
+  indexKey.value,
+).searchClient;
 const fdRows = ref([]);
+const fdColumns = [
+  {
+    name: "Field Name",
+    label: "Field Name",
+    field: "Field Name",
+    align: "left",
+    sortable: true,
+  },
+  {
+    name: "Count",
+    label: "Count",
+    field: "Count",
+    align: "right",
+    sortable: true,
+  },
+];
 const imgFieldSelectChoice = ref("");
 const docNameFieldChoice = ref("");
 const attributeCodes = ref([]);
 const filtersExpanded = ref(true);
 
 const loadInstance = async () => {
-  const meiliClient = new MeiliSearch({
-    host: indexUrl.value,
-    apiKey: indexKey.value,
-  });
-  const mclient = meiliClient.index(currentIndex.value);
+  const mclient = theSettings.getIndexClient(currentIndex.value);
   iStats.value = await mclient.getStats();
   iSettings.value = await mclient.getSettings();
   fdRows.value = Object.keys(iStats.value.fieldDistribution).map((key) => {

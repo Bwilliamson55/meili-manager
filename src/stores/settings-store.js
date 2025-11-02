@@ -1,5 +1,5 @@
-import { defineStore } from "pinia";
-import MeiliSearch from "meilisearch";
+import { defineStore, acceptHMRUpdate } from "pinia";
+import { MeiliSearch } from "meilisearch";
 
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
@@ -10,18 +10,39 @@ export const useSettingsStore = defineStore("settings", {
     currentInstance: null,
     instances: [],
   }),
-  actions: {
-    getIndexClient(indexName) {
-      try {
-        const meiliClient = new MeiliSearch({
-          host: this.indexUrl,
-          apiKey: this.indexKey,
-        });
-        return meiliClient.index(indexName);
-      } catch (error) {
-        console.error(error);
-        return false;
+  getters: {
+    // Create fresh client on-demand (no caching, no reactivity issues)
+    client: (state) => {
+      // Only create client if we have valid-looking credentials
+      if (
+        !state.indexUrl ||
+        state.indexUrl === "https://#" ||
+        !state.indexKey
+      ) {
+        throw new Error("Meilisearch credentials not configured");
       }
+      return new MeiliSearch({
+        host: state.indexUrl,
+        apiKey: state.indexKey,
+      });
+    },
+  },
+  actions: {
+    // Validate connection (separate from client creation)
+    async validateConnection() {
+      try {
+        const version = await this.client.getVersion();
+        this.confirmed = true;
+        return version;
+      } catch (error) {
+        this.confirmed = false;
+        throw error;
+      }
+    },
+
+    // Get index client
+    getIndexClient(indexName) {
+      return this.client.index(indexName);
     },
     async getIndexSettings(indexName) {
       try {
@@ -50,6 +71,71 @@ export const useSettingsStore = defineStore("settings", {
         return false;
       }
     },
+
+    // Switch instance with validation
+    async switchInstance(instanceIndex) {
+      const instance = this.instances[instanceIndex];
+      if (!instance) {
+        throw new Error("Instance not found");
+      }
+
+      // Update credentials (client getter will automatically use new values)
+      this.indexUrl = instance.indexUrl;
+      this.indexKey = instance.indexKey;
+      this.currentInstance = instanceIndex;
+
+      // Validate new instance
+      await this.validateConnection();
+    },
+
+    // Add instance with validation
+    async addInstance(label, url, key) {
+      const newInstance = { label, indexUrl: url, indexKey: key };
+
+      // Validate before adding
+      try {
+        const testClient = new MeiliSearch({
+          host: url,
+          apiKey: key,
+        });
+        await testClient.getVersion();
+
+        this.instances.push(newInstance);
+        return this.instances.length - 1;
+      } catch (error) {
+        throw new Error(`Invalid instance: ${error.message}`);
+      }
+    },
+
+    // Remove instance
+    removeInstance(instanceIndex) {
+      if (this.currentInstance === instanceIndex) {
+        throw new Error("Cannot remove active instance");
+      }
+      this.instances.splice(instanceIndex, 1);
+
+      // Adjust currentInstance if needed
+      if (this.currentInstance > instanceIndex) {
+        this.currentInstance--;
+      }
+    },
+
+    // Reset connection state (for credential changes)
+    resetConnectionState() {
+      this.confirmed = false;
+    },
   },
-  persist: true,
+  persist: {
+    paths: [
+      "indexUrl",
+      "indexKey",
+      "currentIndex",
+      "currentInstance",
+      "instances",
+    ],
+    // Exclude runtime state: activeClient, clientError, isConnecting, confirmed
+  },
 });
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useSettingsStore, import.meta.hot));
+}
