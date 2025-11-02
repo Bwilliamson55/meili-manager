@@ -27,7 +27,7 @@
                   icon="add_box"
                   name="newIndex"
                   label="New Index"
-                  @click="prompt = true"
+                  @click="(prompt = true)"
                 ></q-btn></q-item-section
             ></q-item>
             <div
@@ -136,9 +136,11 @@ import { useSettingsStore } from "src/stores/settings-store";
 import { storeToRefs } from "pinia";
 import { ref, onMounted, watch } from "vue";
 import { MeiliSearch } from "meilisearch";
-import { useQuasar } from "quasar";
-
-const $q = useQuasar();
+import {
+  showSuccess,
+  showError,
+  showConfirmation,
+} from "src/utils/notifications";
 
 const prompt = ref(false);
 const delPrompt = ref(false);
@@ -151,21 +153,25 @@ const indexList = ref([]);
 
 const formatDate = (dateString) =>
   new Intl.DateTimeFormat("default", { dateStyle: "long" }).format(
-    new Date(dateString)
+    new Date(dateString),
   );
-const getClient = () =>
-  new MeiliSearch({
-    host: indexUrl.value,
-    apiKey: indexKey.value,
-  });
+
+const getClient = async () => {
+  try {
+    return await theSettings.getMeiliClient();
+  } catch (error) {
+    showError(`Connection failed: ${error.message}`);
+    throw error;
+  }
+};
 
 watch(currentInstance, async () => {
   await loadInstance();
 });
 
 const loadInstance = async () => {
-  const client = getClient();
   try {
+    const client = await getClient();
     const indexes = await client.getRawIndexes();
     indexList.value = indexes.results;
   } catch (e) {
@@ -181,100 +187,47 @@ onMounted(async () => {
 });
 
 const newIndex = async () => {
-  const client = getClient();
-  await client
-    .createIndex(newIndexName.value, { primaryKey: newIndexUuid.value })
-    .catch((error) => {
-      console.log(error);
-      $q.notify({
-        color: "red-5",
-        textColor: "white",
-        icon: "warning",
-        message: `Sorry there was an error: ${error.toString()}`,
-      });
+  try {
+    const client = await getClient();
+    await client.createIndex(newIndexName.value, {
+      primaryKey: newIndexUuid.value,
     });
-  $q.notify({
-    color: "green-4",
-    textColor: "white",
-    icon: "cloud_done",
-    message: "Index Created",
-  });
-  const indexes = await client.getRawIndexes();
-  indexList.value = indexes.results;
+
+    showSuccess("Index Created");
+
+    const indexes = await client.getRawIndexes();
+    indexList.value = indexes.results;
+  } catch (error) {
+    console.log(error);
+    showError(`Sorry there was an error: ${error.toString()}`);
+  }
 };
 const createDump = async () => {
-  $q.notify({
-    color: "orange-4",
-    textColor: "black",
-    icon: "download",
-    timeout: 7000,
-    message: `Create dump of ${indexUrl.value} ?`,
-    closeBtn: true,
-    actions: [
-      {
-        label: "Yes",
-        color: "red",
-        handler: async () => {
-          const client = getClient();
-          await client
-            .createDump()
-            .then((response) => {
-              $q.notify({
-                color: "green-4",
-                textColor: "white",
-                icon: "cloud_done",
-                timeout: 9000,
-                html: true,
-                message: `<h5>Dump task created successfully: <br/>
-                 Enqueued: ${response.enqueuedAt} <br/>
-                 Task ID: ${response.taskUid} <br/>
-                 Status: ${response.status} <br/></h5>`,
-              });
-            })
-            .catch((error) => {
-              console.log(error);
-              $q.notify({
-                color: "red-5",
-                textColor: "white",
-                icon: "warning",
-                message: `Sorry there was an error: ${error.toString()}`,
-              });
-            });
-        },
-      },
-    ],
+  showConfirmation(`Create dump of ${indexUrl.value}?`, async () => {
+    try {
+      const client = await getClient();
+      const response = await client.createDump();
+
+      showSuccess(
+        `Dump task created successfully:\nEnqueued: ${response.enqueuedAt}\nTask ID: ${response.taskUid}\nStatus: ${response.status}`,
+      );
+    } catch (error) {
+      console.log(error);
+      showError(`Sorry there was an error: ${error.toString()}`);
+    }
   });
 };
 const delIndex = async (indexUidString) => {
-  $q.notify({
-    color: "orange-4",
-    textColor: "black",
-    icon: "delete",
-    timeout: 7000,
-    message: `Really delete ${indexUidString} ?`,
-    closeBtn: true,
-    actions: [
-      {
-        label: "Yes",
-        color: "red",
-        handler: async () => {
-          const client = getClient();
-          const delRes = await client
-            .deleteIndex(indexUidString)
-            .catch((error) => {
-              console.log(error);
-              $q.notify({
-                color: "red-5",
-                textColor: "white",
-                icon: "warning",
-                message: `Sorry there was an error: ${error.toString()}`,
-              });
-            });
-          const indexes = await client.getRawIndexes();
-          indexList.value = indexes.results;
-        },
-      },
-    ],
+  showConfirmation(`Really delete ${indexUidString}?`, async () => {
+    try {
+      const client = await getClient();
+      await client.deleteIndex(indexUidString);
+      const indexes = await client.getRawIndexes();
+      indexList.value = indexes.results;
+    } catch (error) {
+      console.log(error);
+      showError(`Sorry there was an error: ${error.toString()}`);
+    }
   });
 };
 </script>

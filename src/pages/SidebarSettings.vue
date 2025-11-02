@@ -33,7 +33,7 @@
           <q-icon
             :name="isPwd ? 'visibility_off' : 'visibility'"
             class="cursor-pointer"
-            @click="isPwd = !isPwd"
+            @click="(isPwd = !isPwd)"
           />
         </template>
       </q-input>
@@ -114,13 +114,16 @@
 </template>
 
 <script setup>
-import { useQuasar, copyToClipboard } from "quasar";
+import { copyToClipboard } from "quasar";
 import { useSettingsStore } from "src/stores/settings-store";
 import { ref } from "vue";
 import { MeiliSearch } from "meilisearch";
 import { storeToRefs } from "pinia";
-
-const $q = useQuasar();
+import {
+  showSuccess,
+  showError,
+  showConfirmation,
+} from "src/utils/notifications";
 const theSettings = useSettingsStore();
 const {
   indexUrl,
@@ -129,40 +132,41 @@ const {
   currentIndex,
   currentInstance,
   instances,
+  isConnecting,
+  clientError,
 } = storeToRefs(theSettings);
 const indexLabel = ref("");
 const version = ref("");
 const isPwd = ref(true);
-
-const getClient = () =>
-  new MeiliSearch({
-    host: instances.value[currentInstance.value].indexUrl,
-    apiKey: instances.value[currentInstance.value].indexKey,
-  });
 
 if (!instances.value?.length) {
   instances.value = [];
 }
 
 const onSubmit = async () => {
-  confirmed.value = true;
-  instances.value.push({
-    indexUrl: indexUrl.value,
-    indexKey: indexKey.value,
-    confirmed: confirmed.value,
-    label: indexLabel.value,
-  });
-  currentInstance.value = instances.value.length - 1;
   try {
-    const mclient = getClient();
-    version.value = (await mclient.getVersion()).pkgVersion ?? 0;
-  } catch {} // no worries it's just the version number
-  $q.notify({
-    color: "green-4",
-    textColor: "white",
-    icon: "cloud_done",
-    message: "Instance Added",
-  });
+    const instanceIndex = await theSettings.addInstance(
+      indexLabel.value,
+      indexUrl.value,
+      indexKey.value,
+    );
+
+    await theSettings.switchInstance(instanceIndex);
+
+    // Get version info
+    try {
+      const client = await theSettings.getMeiliClient();
+      version.value = (await client.getVersion()).pkgVersion ?? 0;
+    } catch (e) {
+      // Version is optional
+    }
+
+    showSuccess("Instance Added & Activated");
+
+    onReset();
+  } catch (error) {
+    showError(`Failed to add instance: ${error.message}`);
+  }
 };
 
 const onReset = () => {
@@ -172,37 +176,27 @@ const onReset = () => {
   version.value = "";
 };
 
-const selectInstance = (instanceKey) => {
-  currentInstance.value = instanceKey;
-  const inst = instances.value[currentInstance.value];
-  indexUrl.value = inst.indexUrl;
-  indexKey.value = inst.indexKey;
-  indexLabel.value = inst.label;
-  confirmed.value = inst.confirmed;
-  getClient();
+const selectInstance = async (instanceKey) => {
+  try {
+    await theSettings.switchInstance(instanceKey);
+
+    const inst = instances.value[instanceKey];
+    indexLabel.value = inst.label;
+
+    showSuccess(`Switched to ${inst.label}`);
+  } catch (error) {
+    showError(`Failed to switch instance: ${error.message}`);
+  }
 };
 
 const deleteInstance = (instanceKey) => {
-  $q.notify({
-    color: "red-4",
-    textColor: "white",
-    icon: "warning",
-    multiLine: true,
-    html: true,
-    closeBtn: true,
-    message: `<p>Are you sure you want to delete this instance?</p>`,
-    actions: [
-      {
-        label: "Yes",
-        color: "yellow",
-        handler: () => {
-          if (instanceKey == currentInstance.value) {
-            currentInstance.value = instanceKey - 1;
-          }
-          instances.value.splice(instanceKey, 1);
-        },
-      },
-    ],
+  showConfirmation("Are you sure you want to delete this instance?", () => {
+    try {
+      theSettings.removeInstance(instanceKey);
+      showSuccess("Instance removed");
+    } catch (error) {
+      showError(error.message);
+    }
   });
 };
 
@@ -210,13 +204,7 @@ const copyKey = async (instanceKey) => {
   console.log(instanceKey);
   console.log(instances.value[instanceKey]);
   await copyToClipboard(instances.value[instanceKey].indexKey).then(() => {
-    $q.notify({
-      color: "green-4",
-      textColor: "white",
-      icon: "key",
-      html: true,
-      message: "<h5>Key copied to clipboard</h5>",
-    });
+    showSuccess("Key copied to clipboard");
   });
 };
 </script>

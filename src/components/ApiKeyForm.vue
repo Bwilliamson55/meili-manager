@@ -177,7 +177,7 @@ const filterFnActions = (val, update) => {
         } else {
           const needle = val.toLowerCase();
           keyActionsFilter.value = keyActions.filter(
-            (v) => v.toLowerCase().indexOf(needle) > -1
+            (v) => v.toLowerCase().indexOf(needle) > -1,
           );
         }
       },
@@ -190,7 +190,7 @@ const filterFnActions = (val, update) => {
           ref.moveOptionSelection(1, true); // focus the first selectable option and do not update the input-value
           ref.toggleOption(ref.options[ref.optionIndex], true); // toggle the focused option
         }
-      }
+      },
     );
   }, 500);
 };
@@ -205,7 +205,7 @@ const filterFnIndexes = (val, update) => {
         } else {
           const needle = val.toLowerCase();
           availableIndexes.value = availableIndexes.value.filter(
-            (v) => v.toLowerCase().indexOf(needle) > -1
+            (v) => v.toLowerCase().indexOf(needle) > -1,
           );
         }
       },
@@ -218,7 +218,7 @@ const filterFnIndexes = (val, update) => {
           ref.moveOptionSelection(1, true); // focus the first selectable option and do not update the input-value
           ref.toggleOption(ref.options[ref.optionIndex], true); // toggle the focused option
         }
-      }
+      },
     );
   }, 500);
 };
@@ -247,7 +247,7 @@ const onSubmit = async () => {
       message: `<p>Something went wrong<br/><pre>${JSON.stringify(
         error,
         null,
-        2
+        2,
       )}</pre></p>`,
     });
     const client = getClient();

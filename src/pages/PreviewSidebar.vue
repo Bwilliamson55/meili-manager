@@ -320,7 +320,7 @@ const filterFnAttributes = (val, update) => {
           const needle = val.toLowerCase();
           attributeCodesForDropdowns.value =
             attributeCodesForDropdowns.value.filter(
-              (v) => v.toLowerCase().indexOf(needle) > -1
+              (v) => v.toLowerCase().indexOf(needle) > -1,
             );
         }
       },
@@ -334,7 +334,7 @@ const filterFnAttributes = (val, update) => {
           ref.moveOptionSelection(1, true); // focus the first selectable option and do not update the input-value
           ref.toggleOption(ref.options[ref.optionIndex], true); // toggle the focused option
         }
-      }
+      },
     );
   }, 500);
 };
@@ -352,12 +352,12 @@ const addFilterParent = (attribute) => {
 
 const removeFilter = (attribute) => {
   let filterKey = previewSettings.value.filterKeys.find(
-    (f) => f === attribute.value
+    (f) => f === attribute.value,
   );
   if (filterKey) {
     previewSettings.value.filterKeys.splice(
       previewSettings.value.filterKeys.indexOf(filterKey),
-      1
+      1,
     );
   }
   delete previewSettings.value.filters[attribute.value];
@@ -374,7 +374,7 @@ onMounted(async () => {
   previewCurrentIndex.value =
     deepClone(currentIndex.value) || previewCurrentIndex.value || "";
   indexSettings.value = await previewStore.getPreviewIndexSettings(
-    previewCurrentIndex.value
+    previewCurrentIndex.value,
   );
   attributeCodesForDropdowns.value =
     indexSettings.value.attributeCodes?.sort() ?? [];

@@ -269,7 +269,10 @@ const iStats = ref({});
 const iSettings = ref({});
 const sortByItems = ref([]);
 const iPk = ref("");
-const searchClient = instantMeiliSearch(indexUrl.value, indexKey.value).searchClient;
+const searchClient = instantMeiliSearch(
+  indexUrl.value,
+  indexKey.value,
+).searchClient;
 const fdRows = ref([]);
 const imgFieldSelectChoice = ref("");
 const docNameFieldChoice = ref("");

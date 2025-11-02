@@ -140,7 +140,7 @@
                   "
                   class="cursor-pointer"
                   @click="
-                    iKeys.results[i].kKeyToggle = !iKeys.results[i].kKeyToggle
+                    (iKeys.results[i].kKeyToggle = !iKeys.results[i].kKeyToggle)
                   "
                 />
               </template>
@@ -207,10 +207,12 @@ import { MeiliSearch } from "meilisearch";
 import { useSettingsStore } from "src/stores/settings-store";
 import { storeToRefs } from "pinia";
 import { onMounted, ref } from "vue";
-import { useQuasar } from "quasar";
 import ApiKeyForm from "src/components/ApiKeyForm.vue";
-
-const $q = useQuasar();
+import {
+  showSuccess,
+  showError,
+  showConfirmation,
+} from "src/utils/notifications";
 const theSettings = useSettingsStore();
 const { indexUrl, indexKey } = storeToRefs(theSettings);
 const iKeys = ref({});
@@ -237,63 +239,24 @@ const onSubmit = async (i) => {
       description: iKeys.value.results[i].description ?? "",
     });
     iKeys.value = await meiliClient.getKeys();
-    $q.notify({
-      color: "green-4",
-      textColor: "white",
-      icon: "cloud_done",
-      message: `${iKeys.value.results[i].uid} Updated`,
-    });
+    showSuccess(`${iKeys.value.results[i].uid} Updated`);
   } catch (error) {
-    $q.notify({
-      color: "red-5",
-      textColor: "white",
-      icon: "warning",
-      multiLine: true,
-      html: true,
-      message: `<p>Something went wrong<br/><pre>${JSON.stringify(
-        error,
-        null,
-        2
-      )}</pre></p>`,
-    });
+    showError(`Something went wrong: ${JSON.stringify(error, null, 2)}`);
     const meiliClient = getClient();
     iKeys.value = await meiliClient.getKeys();
   }
 };
 const delKey = async (uid) => {
-  $q.notify({
-    color: "orange-4",
-    textColor: "black",
-    icon: "delete",
-    timeout: 7000,
-    message: `Really delete ${uid} ?`,
-    actions: [
-      {
-        label: "Cancel",
-        color: "black",
-        handler: () => {
-          /* ... */
-        },
-      },
-      {
-        label: "Yes",
-        color: "red",
-        handler: async () => {
-          const client = getClient();
-          const delRes = await client.deleteKey(uid).catch((error) => {
-            console.log(error);
-            $q.notify({
-              color: "red-5",
-              textColor: "white",
-              icon: "warning",
-              message: `Sorry there was an error: ${error.toString()}`,
-            });
-          });
-          iKeys.value = {};
-          refresh();
-        },
-      },
-    ],
+  showConfirmation(`Really delete ${uid}?`, async () => {
+    try {
+      const client = getClient();
+      await client.deleteKey(uid);
+      iKeys.value = {};
+      refresh();
+    } catch (error) {
+      console.log(error);
+      showError(`Sorry there was an error: ${error.toString()}`);
+    }
   });
 };
 </script>

@@ -186,7 +186,7 @@ const {
 const searchClient = ref(null);
 searchClient.value = instantMeiliSearch(
   previewIndexUrl.value,
-  previewIndexKey.value
+  previewIndexKey.value,
 ).searchClient;
 const sortByItems = computed(() => {
   let items = [];
@@ -218,13 +218,13 @@ watchEffect(() => {
   setTimeout(() => {
     searchClient.value = instantMeiliSearch(
       previewIndexUrl.value,
-      previewIndexKey.value
+      previewIndexKey.value,
     ).searchClient;
   }, 500);
 });
 
 const formatDate = (dateString) =>
   new Intl.DateTimeFormat("default", { dateStyle: "long" }).format(
-    new Date(dateString)
+    new Date(dateString),
   );
 </script>

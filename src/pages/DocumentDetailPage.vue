@@ -48,76 +48,54 @@ import { useSettingsStore } from "src/stores/settings-store";
 import { storeToRefs } from "pinia";
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
-import { useQuasar } from "quasar";
 import VueJsoneditor from "vue3-ts-jsoneditor";
-
-const $q = useQuasar();
+import { showSuccess, showError } from "src/utils/notifications";
 const theSettings = useSettingsStore();
-const { indexUrl, indexKey, currentIndex } = storeToRefs(theSettings);
+const { currentIndex } = storeToRefs(theSettings);
 const route = useRoute();
 const theDocument = ref({});
 const theDocumentUid = ref("");
 const iPk = ref("");
 
-const getClient = () =>
-  new MeiliSearch({
-    host: indexUrl.value,
-    apiKey: indexKey.value,
-  });
-
 onMounted(async () => {
-  const meiliClient = getClient();
-  currentIndex.value = route.params.indexUid;
-  const mclient = meiliClient.index(currentIndex.value);
-  iPk.value = await mclient.fetchPrimaryKey();
-  theDocument.value = await mclient.getDocument(route.params.documentUid);
-  theDocumentUid.value = theDocument.value[iPk.value] ?? "newIdChangeMe1234";
-  if (route.params.documentUid == "new") {
-    theDocument.value = {
-      array: [1, 2, 3],
-      boolean: true,
-      Null: null,
-      number: 123,
-      seconds: 0,
-      object: { a: "b", c: "d" },
-      string: "Hello World",
-      name: "new document name",
-    };
-    theDocument.value[iPk.value] = theDocumentUid.value;
-  } else {
+  try {
+    currentIndex.value = route.params.indexUid;
+    const mclient = await theSettings.getIndexClient(currentIndex.value);
+    iPk.value = await mclient.fetchPrimaryKey();
     theDocument.value = await mclient.getDocument(route.params.documentUid);
+    theDocumentUid.value = theDocument.value[iPk.value] ?? "newIdChangeMe1234";
+    if (route.params.documentUid == "new") {
+      theDocument.value = {
+        array: [1, 2, 3],
+        boolean: true,
+        Null: null,
+        number: 123,
+        seconds: 0,
+        object: { a: "b", c: "d" },
+        string: "Hello World",
+        name: "new document name",
+      };
+      theDocument.value[iPk.value] = theDocumentUid.value;
+    } else {
+      theDocument.value = await mclient.getDocument(route.params.documentUid);
+    }
+  } catch (error) {
+    showError(`Failed to load document: ${error.message}`);
   }
 });
 
 const updateDocument = async () => {
   try {
-    const meiliClient = getClient();
-    const mclient = meiliClient.index(currentIndex.value);
+    const mclient = await theSettings.getIndexClient(currentIndex.value);
     theDocumentUid.value = theDocument.value[iPk.value];
     const updateResult = await mclient.addDocuments([theDocument.value]);
     const waitForTaskRes = await mclient.waitForTask(updateResult.taskUid, {
       timeOutMs: 15000,
     });
     theDocument.value = await mclient.getDocument(theDocumentUid.value);
-    $q.notify({
-      color: "green-4",
-      textColor: "white",
-      icon: "cloud_done",
-      message: "Document Updated",
-    });
+    showSuccess("Document Updated");
   } catch (error) {
-    $q.notify({
-      color: "red-5",
-      textColor: "white",
-      icon: "warning",
-      multiLine: true,
-      html: true,
-      message: `<p>Something went wrong<br/><pre>${JSON.stringify(
-        error,
-        null,
-        2
-      )}</pre></p>`,
-    });
+    showError(`Something went wrong: ${JSON.stringify(error, null, 2)}`);
     const meiliClient = getClient();
     const mclient = meiliClient.index(currentIndex.value);
     currentIndex.value = route.params.indexUid;

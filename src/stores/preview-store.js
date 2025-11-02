@@ -70,7 +70,7 @@ export const usePreviewStore = defineStore("preview", {
     savePreviewSettings() {
       let rawSettings = this.deepClone(this.previewSettings);
       let settingsInstance = this.previewInstances.find(
-        (instance) => instance.name === rawSettings.name
+        (instance) => instance.name === rawSettings.name,
       );
       if (settingsInstance) {
         settingsInstance = this.deepClone(this.previewSettings);
@@ -87,7 +87,7 @@ export const usePreviewStore = defineStore("preview", {
       let settingsInstance = null;
       if (name) {
         settingsInstance = this.previewInstances.find(
-          (instance) => instance.name === name
+          (instance) => instance.name === name,
         );
       } else {
         settingsInstance = this.previewInstances[key];
@@ -104,7 +104,7 @@ export const usePreviewStore = defineStore("preview", {
       let settingsInstance = null;
       if (name) {
         settingsInstance = this.previewInstances.find(
-          (instance) => instance.name === name
+          (instance) => instance.name === name,
         );
       } else {
         settingsInstance = this.previewInstances[key];
@@ -112,7 +112,7 @@ export const usePreviewStore = defineStore("preview", {
       if (settingsInstance) {
         this.previewInstances.splice(
           this.previewInstances.indexOf(settingsInstance),
-          1
+          1,
         );
       }
     },
@@ -120,7 +120,7 @@ export const usePreviewStore = defineStore("preview", {
     async tokenizePreviewSettings() {
       try {
         let token = await jose.base64url.encode(
-          JSON.stringify(this.previewSettings)
+          JSON.stringify(this.previewSettings),
         );
         return token;
       } catch (error) {

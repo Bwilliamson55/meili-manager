@@ -315,7 +315,7 @@ const onSubmit = async () => {
       message: `<p>Something went wrong<br/><pre>${JSON.stringify(
         error,
         null,
-        2
+        2,
       )}</pre></p>`,
     });
     const meiliClient = new MeiliSearch({

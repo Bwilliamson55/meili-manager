@@ -52,7 +52,7 @@
                         flat
                         bordered
                         v-for="col in Object.keys(
-                          rowDetails[props.row.uid]['details']
+                          rowDetails[props.row.uid]['details'],
                         )"
                         :key="col.uid"
                       >
@@ -63,7 +63,7 @@
                               JSON.stringify(
                                 rowDetails[props.row.uid]["details"][col],
                                 null,
-                                2
+                                2,
                               )
                             }}</pre>
                           </div>
