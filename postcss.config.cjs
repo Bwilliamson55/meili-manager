@@ -1,11 +1,10 @@
 /* eslint-disable */
 // https://github.com/michael-ciniawsky/postcss-load-config
-const tailwindcss = require("@tailwindcss/postcss");
-const autoprefixer = require("autoprefixer");
 
 module.exports = {
   plugins: [
-    autoprefixer({
+    require("@tailwindcss/postcss"),
+    require("autoprefixer")({
       overrideBrowserslist: [
         "last 4 Chrome versions",
         "last 4 Firefox versions",
@@ -17,7 +16,6 @@ module.exports = {
         "last 4 iOS versions",
       ],
     }),
-    tailwindcss,
     // https://github.com/elchininet/postcss-rtlcss
     // If you want to support RTL css, then
     // 1. yarn/npm install postcss-rtlcss

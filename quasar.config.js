@@ -30,7 +30,7 @@ export default configure(function (/* ctx */) {
     boot: ["instant-search"],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
-    css: ["tailwind.css", "app.scss", "satellite.css"],
+    css: ["tailwind.css", "app.scss"],
 
     // https://github.com/quasarframework/quasar/tree/dev/extras
     extras: [
@@ -98,7 +98,7 @@ export default configure(function (/* ctx */) {
       // directives: [],
 
       // Quasar plugins
-      plugins: ["Notify"],
+      plugins: ["Notify", "Dark"],
     },
 
     // animations: 'all', // --- includes all animations

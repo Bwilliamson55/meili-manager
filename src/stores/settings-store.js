@@ -9,6 +9,9 @@ export const useSettingsStore = defineStore("settings", {
     currentIndex: "",
     currentInstance: null,
     instances: [],
+    // Per-index display preferences
+    indexDisplaySettings: {}, // { indexName: { imageField: 'image_url', viewMode: 'compact' } }
+    darkMode: true,
   }),
   getters: {
     // Create fresh client on-demand (no caching, no reactivity issues)
@@ -124,6 +127,24 @@ export const useSettingsStore = defineStore("settings", {
     resetConnectionState() {
       this.confirmed = false;
     },
+
+    // Get display settings for an index
+    getIndexDisplaySettings(indexName) {
+      return (
+        this.indexDisplaySettings[indexName] || {
+          imageField: null,
+          viewMode: "compact",
+        }
+      );
+    },
+
+    // Set display settings for an index
+    setIndexDisplaySettings(indexName, settings) {
+      this.indexDisplaySettings[indexName] = {
+        ...this.getIndexDisplaySettings(indexName),
+        ...settings,
+      };
+    },
   },
   persist: {
     paths: [
@@ -132,6 +153,8 @@ export const useSettingsStore = defineStore("settings", {
       "currentIndex",
       "currentInstance",
       "instances",
+      "indexDisplaySettings",
+      "darkMode",
     ],
     // Exclude runtime state: activeClient, clientError, isConnecting, confirmed
   },

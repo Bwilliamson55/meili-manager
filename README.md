@@ -241,19 +241,14 @@ Between the refinements and the document list, there is a dynamic filter area. W
 
 ### Result Cards
 
-Each card header displays the documents "name" field value, if present, and an "EDIT" button.
+Each document card displays:
 
-The edit button will take you to a full featured JSON editor, just as creating a new record would. Any incorrect json data will be rejected, and the form reloaded.
+- **Document ID** (primary key value) in the header
+- **Edit button** to open the JSON editor
+- **All document fields** in a clean key-value list
+- **Nested objects** are shown as compact JSON strings
 
-The body of the cards will display an image, and the fields of the document in a table. Any nested or complex fields will be shown as a JSON string. Use the "EDIT" button to better examine complex documents.
-
-The image displayed will be assumed to be a URL in a one of three fields (First one populated is used):
-
-- picture_url
-- image
-- image_url
-
-  Change this to your needs in your fork.
+Click "Edit" to open the full JSON editor where you can modify any field.
 
 ### Endpoints/Methods used
 
@@ -270,7 +265,7 @@ The image displayed will be assumed to be a URL in a one of three fields (First 
 
 ### Overview
 
-The document detail page can update your documents via raw json. The json editor used has all the features you could ever need, including JMESpath query language. See [vue3-ts-jsoneditor](https://github.com/bestkolobok/vue3-jsoneditor) for full documentation.
+The document detail page uses a clean text-mode JSON editor with syntax highlighting and validation. Edit documents as raw JSON with real-time error checking.
 
 ### Endpoints/Methods used
 
