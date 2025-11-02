@@ -117,16 +117,13 @@
 </template>
 
 <script setup>
-import { MeiliSearch } from "meilisearch";
 import { useSettingsStore } from "src/stores/settings-store";
-import { storeToRefs } from "pinia";
 import { onMounted, ref } from "vue";
-import { useQuasar } from "quasar";
+import { showSuccess, showError } from "src/utils/notifications";
+
 const emit = defineEmits(["refresh"]);
 
-const $q = useQuasar();
 const theSettings = useSettingsStore();
-const { indexUrl, indexKey } = storeToRefs(theSettings);
 const newKeyObj = ref({ expiresAt: null });
 const iKeys = ref({});
 
@@ -156,17 +153,17 @@ const keyActions = [
 ];
 const keyActionsFilter = ref(keyActions);
 const availableIndexes = ref([]);
-const getClient = () =>
-  new MeiliSearch({
-    host: indexUrl.value,
-    apiKey: indexKey.value,
-  });
 
 onMounted(async () => {
-  const client = getClient();
-  const indexes = await client.getRawIndexes();
-  availableIndexes.value = indexes.results.map((i) => i.uid);
-  iKeys.value = await client.getKeys();
+  try {
+    const client = theSettings.client;
+    const indexes = await client.getRawIndexes();
+    availableIndexes.value = indexes.results.map((i) => i.uid);
+    iKeys.value = await client.getKeys();
+  } catch (error) {
+    console.error("Failed to load API key form data:", error);
+    showError(`Failed to load: ${error.message}`);
+  }
 });
 const filterFnActions = (val, update) => {
   setTimeout(() => {
@@ -199,9 +196,13 @@ const filterFnIndexes = (val, update) => {
     update(
       async () => {
         if (val === "") {
-          const client = getClient();
-          const indexes = await client.getRawIndexes();
-          availableIndexes.value = indexes.results.map((i) => i.uid);
+          try {
+            const client = theSettings.client;
+            const indexes = await client.getRawIndexes();
+            availableIndexes.value = indexes.results.map((i) => i.uid);
+          } catch (error) {
+            console.error("Failed to load indexes:", error);
+          }
         } else {
           const needle = val.toLowerCase();
           availableIndexes.value = availableIndexes.value.filter(
@@ -227,30 +228,14 @@ const abortFilterFn = () => {
 };
 const onSubmit = async () => {
   try {
-    const client = getClient();
-    const res = await client.createKey(newKeyObj.value);
-    $q.notify({
-      color: "green-4",
-      textColor: "white",
-      icon: "cloud_done",
-      message: `Saved`,
-    });
+    const client = theSettings.client;
+    await client.createKey(newKeyObj.value);
+    showSuccess("API Key created successfully");
     onReset();
     emit("refresh");
   } catch (error) {
-    $q.notify({
-      color: "red-5",
-      textColor: "white",
-      icon: "warning",
-      multiLine: true,
-      html: true,
-      message: `<p>Something went wrong<br/><pre>${JSON.stringify(
-        error,
-        null,
-        2,
-      )}</pre></p>`,
-    });
-    const client = getClient();
+    console.error("Failed to create API key:", error);
+    showError(`Failed to create key: ${error.message}`);
   }
 };
 const onReset = () => {

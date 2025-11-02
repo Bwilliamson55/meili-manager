@@ -241,9 +241,9 @@
 <script setup>
 import { useQuasar } from "quasar";
 import { ref, onMounted, computed } from "vue";
-import { MeiliSearch } from "meilisearch";
 import { useSettingsStore } from "src/stores/settings-store";
 import { storeToRefs } from "pinia";
+import { showSuccess, showError } from "src/utils/notifications";
 
 const $q = useQuasar();
 const fetching = ref(true);
@@ -251,19 +251,19 @@ const iSettings = ref({});
 const iSettingsProcessing = ref({ taskId: 0, processing: false });
 
 const theSettings = useSettingsStore();
-const { indexUrl, indexKey, currentIndex, confirmed } =
-  storeToRefs(theSettings);
+const { currentIndex, confirmed } = storeToRefs(theSettings);
 
 onMounted(async () => {
-  if (confirmed) {
-    const meiliClient = new MeiliSearch({
-      host: indexUrl.value,
-      apiKey: indexKey.value,
-    });
-    const mclient = meiliClient.index(currentIndex.value);
-    fetching.value = true;
-    iSettings.value = await mclient.getSettings();
-    fetching.value = false;
+  if (confirmed.value) {
+    try {
+      const mclient = theSettings.getIndexClient(currentIndex.value);
+      fetching.value = true;
+      iSettings.value = await mclient.getSettings();
+      fetching.value = false;
+    } catch (error) {
+      fetching.value = false;
+      showError(`Failed to load settings: ${error.message}`);
+    }
   }
 });
 
@@ -283,47 +283,33 @@ const removeSynonym = (details) => {
 const onSubmit = async () => {
   iSettingsProcessing.value.processing = true;
   try {
-    const meiliClient = new MeiliSearch({
-      host: indexUrl.value,
-      apiKey: indexKey.value,
-    });
-    const mclient = meiliClient.index(currentIndex.value);
+    const mclient = theSettings.getIndexClient(currentIndex.value);
     const updateRes = await mclient.updateSettings(iSettings.value);
     iSettingsProcessing.value.taskId = updateRes.taskUid ?? 0;
-    const waitForTaskRes = await mclient
-      .waitForTask(updateRes.taskUid, {
-        intervalMs: 5000,
-      })
-      .catch((error) => console.log(error));
+
+    // waitForTask is on the client.tasks object in SDK 0.53.0
+    await theSettings.client.tasks.waitForTask(updateRes.taskUid, {
+      intervalMs: 5000,
+    });
+
     iSettingsProcessing.value.processing = false;
     iSettings.value = await mclient.getSettings();
-    $q.notify({
-      color: "green-4",
-      textColor: "white",
-      icon: "cloud_done",
-      message: "Settings Updated",
-    });
+
+    showSuccess("Settings Updated");
   } catch (error) {
     iSettingsProcessing.value.processing = false;
     iSettingsProcessing.value.taskId = 0;
-    $q.notify({
-      color: "red-5",
-      textColor: "white",
-      icon: "warning",
-      multiLine: true,
-      html: true,
-      message: `<p>Something went wrong<br/><pre>${JSON.stringify(
-        error,
-        null,
-        2,
-      )}</pre></p>`,
-    });
-    const meiliClient = new MeiliSearch({
-      host: indexUrl.value,
-      apiKey: indexKey.value,
-    });
-    const mclient = meiliClient.index(currentIndex.value);
-    iSettings.value = await mclient.getSettings();
+
+    console.error("Settings update error:", error);
+    showError(`Failed to update settings: ${error.message}`);
+
+    // Reload settings to show current state
+    try {
+      const mclient = theSettings.getIndexClient(currentIndex.value);
+      iSettings.value = await mclient.getSettings();
+    } catch (reloadError) {
+      console.error("Failed to reload settings:", reloadError);
+    }
   }
 };
 </script>

@@ -10,13 +10,14 @@
           >
         </q-toolbar-title>
         <q-tabs>
-          <q-route-tab
+          <!-- Preview mode hidden (alpha feature) -->
+          <!-- <q-route-tab
             to="/preview"
             exact
             name="preview"
             label="Preview"
             class="bg-grey-7 text-white"
-          />
+          /> -->
           <q-route-tab to="/keys" exact name="keys" label="Keys" />
           <q-route-tab to="/tasks" exact name="tasks" label="Tasks" />
         </q-tabs>

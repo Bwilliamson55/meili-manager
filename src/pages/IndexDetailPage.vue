@@ -1,12 +1,15 @@
 <template>
   <q-page padding>
-    <div class="p-4 flex items-start gap-4 full-width">
+    <div class="flex flex-col gap-4 w-full">
       <IndexDetailTabs>
         <template #overview-tab>
-          <q-card class="col" flat bordered>
+          <q-card flat bordered>
             <q-card-section>
               <q-card-section>
-                <div v-if="iStats && iPk" class="flex justify-around">
+                <div
+                  v-if="iStats && iPk"
+                  class="flex justify-around items-center"
+                >
                   <q-chip icon="numbers" class="bg-info"
                     >Count: {{ iStats.numberOfDocuments }}</q-chip
                   >
@@ -24,14 +27,15 @@
               <q-separator />
 
               <q-card-section>
-                <div v-if="iStats && iPk" class="flex">
-                  <div class="full-width text-center">
-                    <p>Field Distribution</p>
+                <div v-if="iStats && iPk" class="flex flex-col gap-4">
+                  <div class="w-full text-center">
+                    <p class="text-h6">Field Distribution</p>
                   </div>
-                  <div class="px-4 mx-auto col">
+                  <div class="px-4 mx-auto w-full">
                     <q-table
                       dense
                       :rows="fdRows"
+                      :columns="fdColumns"
                       row-key="Field Name"
                       :rows-per-page-options="[5, 10, 15, 0]"
                       flat
@@ -48,15 +52,13 @@
         </template>
       </IndexDetailTabs>
     </div>
-    <div class="text-center flex">
-      <span class="col-12 py-auto my-auto mx-auto"
-        >Documents in this Index</span
-      >
+    <div class="flex items-center justify-between mt-4">
+      <span class="flex-1 text-center text-h6">Documents in this Index</span>
       <q-btn
         flat
         icon="add_circle"
         :to="`/documents/${currentIndex}/new`"
-        class="cursor-pointer py-auto my-auto ml-auto"
+        class="flex-shrink-0"
         >New</q-btn
       >
     </div>
@@ -250,7 +252,6 @@
 </template>
 
 <script setup>
-import { MeiliSearch } from "meilisearch";
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
 import { useSettingsStore } from "src/stores/settings-store";
 import { storeToRefs } from "pinia";
@@ -273,17 +274,29 @@ const searchClient = instantMeiliSearch(
   indexKey.value,
 ).searchClient;
 const fdRows = ref([]);
+const fdColumns = [
+  {
+    name: "Field Name",
+    label: "Field Name",
+    field: "Field Name",
+    align: "left",
+    sortable: true,
+  },
+  {
+    name: "Count",
+    label: "Count",
+    field: "Count",
+    align: "right",
+    sortable: true,
+  },
+];
 const imgFieldSelectChoice = ref("");
 const docNameFieldChoice = ref("");
 const attributeCodes = ref([]);
 const filtersExpanded = ref(true);
 
 const loadInstance = async () => {
-  const meiliClient = new MeiliSearch({
-    host: indexUrl.value,
-    apiKey: indexKey.value,
-  });
-  const mclient = meiliClient.index(currentIndex.value);
+  const mclient = theSettings.getIndexClient(currentIndex.value);
   iStats.value = await mclient.getStats();
   iSettings.value = await mclient.getSettings();
   fdRows.value = Object.keys(iStats.value.fieldDistribution).map((key) => {
