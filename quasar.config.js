@@ -30,7 +30,7 @@ export default configure(function (/* ctx */) {
     boot: ["instant-search"],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
-    css: ["app.scss", "satellite.css"],
+    css: ["tailwind.css", "app.scss", "satellite.css"],
 
     // https://github.com/quasarframework/quasar/tree/dev/extras
     extras: [
@@ -72,8 +72,9 @@ export default configure(function (/* ctx */) {
       // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},
 
-      // Tailwind v4 plugin temporarily disabled due to compatibility issues
-      // vitePlugins: [["@tailwindcss/vite", {}]],
+      // vitePlugins: [
+      //   [ 'package-name', { ..options.. } ]
+      // ]
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
