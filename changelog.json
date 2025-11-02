@@ -1,0 +1,508 @@
+[
+  {
+    "version": "1.14.13",
+    "week": "2025-W44",
+    "dateRange": "2025, Week 44",
+    "changes": [
+      {
+        "subject": "Merge pull request #3 from Bwilliamson55/dev",
+        "notes": [
+          "Dev"
+        ]
+      },
+      {
+        "subject": "Fix document add and edit errors",
+        "notes": [
+          "Document editor greatly simplified to just json text",
+          "Adding and updating documents works reliably again"
+        ]
+      },
+      {
+        "subject": "Hide preview mode for now and fix as testing",
+        "notes": [
+          "Styles and functionality updated or fixed as testing continues"
+        ]
+      },
+      {
+        "subject": "Fix Meilisearch client getter and fix changelog generation",
+        "notes": []
+      },
+      {
+        "subject": "Add changelog generation",
+        "notes": []
+      },
+      {
+        "subject": "replace Quasar utility classes with Tailwind across all pages",
+        "notes": []
+      },
+      {
+        "subject": "Add Tailwind v4",
+        "notes": [
+          "PostCSS configured with @tailwindcss/postcss plugin",
+          "Tailwind config files updated"
+        ]
+      },
+      {
+        "subject": "Centralize client creation and storage",
+        "notes": [
+          "Also ran linter and prettier project wide"
+        ]
+      },
+      {
+        "subject": "Simplify notifications utility for now",
+        "notes": []
+      },
+      {
+        "subject": "Add notifications utility for DRY coding",
+        "notes": []
+      },
+      {
+        "subject": "Update all the things",
+        "notes": [
+          "Prepping for refactor to bring this all up to date.",
+          "Tailwind v4 implemented"
+        ]
+      },
+      {
+        "subject": "Update README",
+        "notes": []
+      },
+      {
+        "subject": "Drop dist",
+        "notes": []
+      }
+    ]
+  },
+  {
+    "version": "1.13.7",
+    "week": "2024-W45",
+    "dateRange": "2024, Week 45",
+    "changes": [
+      {
+        "subject": "Merge pull request #2 from Bwilliamson55/dev",
+        "notes": [
+          "Fix search client and pipeline branch name"
+        ]
+      },
+      {
+        "subject": "Fix pipeline branch name",
+        "notes": []
+      },
+      {
+        "subject": "Fix required searchClient param",
+        "notes": []
+      },
+      {
+        "subject": "Merge pull request #1 from Bwilliamson55/dev",
+        "notes": [
+          "Upgrade to 1.10 and more"
+        ]
+      },
+      {
+        "subject": "Configure workflow for main branch",
+        "notes": [
+          "Main branch cloned to pre-v1 branch to maintain vercel app supporting pre-v1 instances",
+          "Main branch is now transitioning to DO app platform via github actions"
+        ]
+      },
+      {
+        "subject": "Fix file location",
+        "notes": []
+      },
+      {
+        "subject": "Upgrade all and add github workflow",
+        "notes": [
+          "Vue upgraded to 3.5",
+          "Quasar to 2.17",
+          "And more, via npx npm-check-updates -u"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.12.1",
+    "week": "2023-W23",
+    "dateRange": "2023, Week 23",
+    "changes": [
+      {
+        "subject": "Roll back meilisearch for pre 1.1 support",
+        "notes": []
+      }
+    ]
+  },
+  {
+    "version": "1.11.9",
+    "week": "2023-W22",
+    "dateRange": "2023, Week 22",
+    "changes": [
+      {
+        "subject": "Update Readme",
+        "notes": []
+      },
+      {
+        "subject": "Update all the things and adjust attribute",
+        "notes": []
+      },
+      {
+        "subject": "Update preview page for settings",
+        "notes": []
+      },
+      {
+        "subject": "Update preview sidebar with settings",
+        "notes": []
+      },
+      {
+        "subject": "Update preview layout",
+        "notes": []
+      },
+      {
+        "subject": "Tweak main layout logo",
+        "notes": []
+      },
+      {
+        "subject": "Create preview settings store",
+        "notes": []
+      },
+      {
+        "subject": "Add store actions for settings",
+        "notes": []
+      },
+      {
+        "subject": "Update workspace settings",
+        "notes": []
+      }
+    ]
+  },
+  {
+    "version": "1.10.4",
+    "week": "2023-W21",
+    "dateRange": "2023, Week 21",
+    "changes": [
+      {
+        "subject": "Remove filter limit in IDP and ripple from LIs",
+        "notes": [
+          "Add scroller element to homepage and keys page",
+          "Fix sidebar settings so no label for instance is allowed"
+        ]
+      },
+      {
+        "subject": "Add preview layout page and links",
+        "notes": []
+      },
+      {
+        "subject": "Install Jose for JWT usage later",
+        "notes": []
+      },
+      {
+        "subject": "Add some spelling for workspace",
+        "notes": []
+      }
+    ]
+  },
+  {
+    "version": "1.9.1",
+    "week": "2023-W19",
+    "dateRange": "2023, Week 19",
+    "changes": [
+      {
+        "subject": "Add task details via expandible rows",
+        "notes": []
+      }
+    ]
+  },
+  {
+    "version": "1.8.3",
+    "week": "2023-W18",
+    "dateRange": "2023, Week 18",
+    "changes": [
+      {
+        "subject": "Update sidebar settings to support multiple instances",
+        "notes": [
+          "An instance is the connection details needed for meilisearch",
+          "Instances are no longer validated on save",
+          "Instances can be labeled, added, deleted at will",
+          "Instance keys are hidden, but can be copied via the key button icon"
+        ]
+      },
+      {
+        "subject": "Update settings store to track instances",
+        "notes": []
+      },
+      {
+        "subject": "Increase sidebar settings width",
+        "notes": []
+      }
+    ]
+  },
+  {
+    "version": "1.7.2",
+    "week": "2023-W14",
+    "dateRange": "2023, Week 14",
+    "changes": [
+      {
+        "subject": "Improve current refinements UI",
+        "notes": []
+      },
+      {
+        "subject": "Make IDP filter UI more friendly",
+        "notes": [
+          "Filters now in a column, and expandable",
+          "Readme updated to include installing quasar cli"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.6.1",
+    "week": "2023-W10",
+    "dateRange": "2023, Week 10",
+    "changes": [
+      {
+        "subject": "Update key form and Index Detail Page",
+        "notes": [
+          "Key form changes",
+          "Description no longer required",
+          "Add mode enabled for Actions and Indexes",
+          "expiresAt allows a null value",
+          "* added as an option for actions",
+          "Keys Page changes",
+          "Date fields on existing keys are no longer input fields",
+          "IndexDetailPage changes",
+          "refinement lists refactored for a ais-panel"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.5.4",
+    "week": "2023-W09",
+    "dateRange": "2023, Week 09",
+    "changes": [
+      {
+        "subject": "Index Detail Page tweaks",
+        "notes": []
+      },
+      {
+        "subject": "Update Tasks Page",
+        "notes": [
+          "Tasks page grid now has proper formatting and sorting",
+          "Tasks page error column now shows values correctly"
+        ]
+      },
+      {
+        "subject": "Typo",
+        "notes": []
+      },
+      {
+        "subject": "Update settings and doc edit forms",
+        "notes": [
+          "Settings form update button now shows feedback",
+          "JSON editor now loads correctly on first load"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.4.1",
+    "week": "2023-W07",
+    "dateRange": "2023, Week 07",
+    "changes": [
+      {
+        "subject": "Add dynamic image and header",
+        "notes": [
+          "IndexDetailPage now has inputs for",
+          "image attribute - url will be shown",
+          "heading attribute - whats on the top of card",
+          "document attribute table refactored to highlight relevant matches"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.10",
+    "week": "2023-W06",
+    "dateRange": "2023, Week 06",
+    "changes": [
+      {
+        "subject": "Silently fail if missing get task permission",
+        "notes": []
+      },
+      {
+        "subject": "Update readme with feature list",
+        "notes": []
+      },
+      {
+        "subject": "Update Readme",
+        "notes": []
+      },
+      {
+        "subject": "Relax credential authentication",
+        "notes": [
+          "Removed dead buttons in index list",
+          "Relaxed sidebar authentication so lower permission keys can be used"
+        ]
+      },
+      {
+        "subject": "Add the add document feature",
+        "notes": [
+          "The Document Detail Page now accepts a route param of \"new\"",
+          "New documents can be triggered from the index detail page",
+          "A small json template is used to demonstrate options"
+        ]
+      },
+      {
+        "subject": "Add document edit page",
+        "notes": [
+          "Json editor wysiwyg boot file added",
+          "Document Detail Page added",
+          "Index detail page modified to link docs to ddp",
+          "DDP has full featured json editor with a save button"
+        ]
+      },
+      {
+        "subject": "Add key management",
+        "notes": [
+          "Updated Index detail page with better styling around the search box",
+          "Added a keys route and page",
+          "Keys page fetches all keys and displays them in a list",
+          "Keys page can update key names and description per key",
+          "Keys page can create new keys and delete existing keys",
+          "Sidebar settings updated with a link to permissions docs"
+        ]
+      },
+      {
+        "subject": "Add delete index ability index list",
+        "notes": []
+      },
+      {
+        "subject": "Fix for index detail page",
+        "notes": [
+          "Page no longer uses the previous index on first load"
+        ]
+      },
+      {
+        "subject": "Add new index functionality",
+        "notes": []
+      }
+    ]
+  },
+  {
+    "version": "1.2.11",
+    "week": "2023-W05",
+    "dateRange": "2023, Week 05",
+    "changes": [
+      {
+        "subject": "Sorts and Filters",
+        "notes": [
+          "Index Detail Page updated",
+          "sortable and filterable options now dynamically show",
+          "current refinements now show",
+          "current result stats now show",
+          "Settings store trimmed",
+          "Console logs removed"
+        ]
+      },
+      {
+        "subject": "Sorts and Filters",
+        "notes": [
+          "Index Detail Page updated",
+          "sortable and filterable options now dynamically show",
+          "current refinements now show",
+          "current result stats now show",
+          "Settings store trimmed",
+          "Console logs removed"
+        ]
+      },
+      {
+        "subject": "Build for prod",
+        "notes": []
+      },
+      {
+        "subject": "Index settings form working",
+        "notes": [
+          "Index settings form communication with meilisearch working",
+          "Error checking pretty prints json when saving an invalid object"
+        ]
+      },
+      {
+        "subject": "Merge branch 'master' of https://github.com/Bwilliamson55/meili-manager",
+        "notes": []
+      },
+      {
+        "subject": "First pass at settings form with dynamic inputs",
+        "notes": []
+      },
+      {
+        "subject": "Update README.md",
+        "notes": []
+      },
+      {
+        "subject": "Prod build",
+        "notes": []
+      },
+      {
+        "subject": "Hotfix",
+        "notes": []
+      },
+      {
+        "subject": "Build for prod",
+        "notes": []
+      },
+      {
+        "subject": "Begin index settings form",
+        "notes": [
+          "Favicons updated",
+          "IndexDetailPage updated with a tabs component and a settings tab",
+          "Settings tab has an example form",
+          "Also shows the current index settings via ugly json"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.1.5",
+    "week": "2023-W04",
+    "dateRange": "2023, Week 04",
+    "changes": [
+      {
+        "subject": "Add vercel routing and dist",
+        "notes": []
+      },
+      {
+        "subject": "Add pages and tables",
+        "notes": [
+          "Dynamic route added for index details pdp",
+          "IndexDetailsPage built to show as much about the index as can",
+          "Index settings are todo",
+          "currentIndex tracked in pinia storage",
+          "Tasks page built with interactive table and search",
+          "Sidebar refactored for comp api",
+          "Algolia CSS added for ais-instant components",
+          "Meili instant search added via boot file"
+        ]
+      },
+      {
+        "subject": "Add indexes to index",
+        "notes": [
+          "Async Index list added to homepage",
+          "Nav tabs added to toolbar",
+          "Reactive tweaks",
+          "Tasks page skeleton"
+        ]
+      },
+      {
+        "subject": "Initial Commit - Add Settings",
+        "notes": [
+          "Settings added to the Q-sidebar",
+          "Settings are url and auth key for meilisearch instance",
+          "Settings are saved and persisted with pinia",
+          "Settings are tested upon submit via axios"
+        ]
+      },
+      {
+        "subject": "first commit",
+        "notes": []
+      }
+    ]
+  }
+]
