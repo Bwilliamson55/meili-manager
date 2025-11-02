@@ -15,65 +15,63 @@
               :hits-per-page.camel="previewSettings.paginationSize"
             />
             <div class="col col-12 col-sm-3">
-              <span class="text-center">
-                <ais-stats />
-              </span>
+              <div class="text-center q-mb-md">
+                <AisStatsDisplay />
+              </div>
               <div
                 v-if="previewSettings.sortableAttributes?.length > 0"
-                class="col-12"
+                class="col-12 q-mb-md"
               >
-                <p class="text-center text-primary mb-0">Sort Options:</p>
-                <ais-sort-by :items="sortByItems" />
+                <AisSortBySelect
+                  :items="sortByItems"
+                  select-class="full-width"
+                />
               </div>
               <q-expansion-item
                 v-model="filtersExpanded"
                 icon="list"
                 label="Filters"
               >
-                <span class="bg-warning text-black p-1"
-                  >Warning - Experimental</span
-                >
+                <q-banner class="bg-warning text-black q-mb-md">
+                  Warning - Experimental
+                </q-banner>
                 <q-card
-                  dense
                   v-for="att in filters"
                   :key="att"
-                  class="col-12 p-2 mt-2"
+                  flat
+                  bordered
+                  class="q-mb-md"
                 >
-                  <ais-panel
-                    :class-names="{
-                      'ais-Panel': 'no-margin',
-                    }"
-                  >
-                    <template #header="{ hasRefinements }">
-                      <p>
-                        {{ att
-                        }}<span v-if="!hasRefinements"> (no results) </span>
-                      </p>
-                    </template>
-                    <template #default>
-                      <ais-refinement-list
-                        :attribute="att"
-                        show-more
-                        :show-more-limit="1000"
-                      />
-                    </template>
-                  </ais-panel>
+                  <q-card-section class="q-pa-md">
+                    <div class="text-subtitle2 font-semibold q-mb-sm">
+                      {{ att }}
+                    </div>
+                    <AisRefinementList
+                      :attribute="att"
+                      :show-more="true"
+                      :show-more-limit="1000"
+                    />
+                  </q-card-section>
                 </q-card>
               </q-expansion-item>
             </div>
-            <div class="col col-12 col-sm-8 mx-2 px-2">
-              <ais-clear-refinements
-                v-if="previewSettings.showClearRefinements"
-              />
-              <ais-current-refinements v-if="previewSettings.showRefinements" />
-              <ais-search-box placeholder="Search here…" class="searchbox" />
+            <div class="col col-12 col-sm-8 q-px-md">
+              <div class="flex gap-3 q-mb-md">
+                <AisClearButton
+                  v-if="previewSettings.showClearRefinements"
+                  label="Clear Filters"
+                  icon="clear"
+                />
+                <AisCurrentRefinements v-if="previewSettings.showRefinements" />
+              </div>
+              <AisSearchInput placeholder="Search here…" />
               <component
                 :is="
                   previewSettings.pagination ? 'ais-hits' : 'ais-infinite-hits'
                 "
               >
                 <template v-slot:item="{ item }">
-                  <q-card class="result-card" flat bordered>
+                  <q-card class="result-card q-mb-md" flat bordered>
                     <q-carousel
                       v-if="previewSettings.imageAttributes.length > 0"
                       animated
@@ -139,9 +137,9 @@
               </component>
               <div
                 v-if="previewSettings.pagination"
-                class="pagination justify-center m-2 text-center flex"
+                class="flex justify-center q-mt-lg"
               >
-                <ais-pagination :padding="3" />
+                <AisPaginationNav :padding="3" />
               </div>
             </div>
           </ais-instant-search>
@@ -173,6 +171,13 @@ import { usePreviewStore } from "src/stores/preview-store";
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
 import { storeToRefs } from "pinia";
 import { ref, watchEffect, computed } from "vue";
+import AisSearchInput from "components/aisComponents/AisSearchInput.vue";
+import AisStatsDisplay from "components/aisComponents/AisStatsDisplay.vue";
+import AisSortBySelect from "components/aisComponents/AisSortBySelect.vue";
+import AisClearButton from "components/aisComponents/AisClearButton.vue";
+import AisCurrentRefinements from "components/aisComponents/AisCurrentRefinements.vue";
+import AisRefinementList from "components/aisComponents/AisRefinementList.vue";
+import AisPaginationNav from "components/aisComponents/AisPaginationNav.vue";
 
 const autoplay = ref(false);
 const filtersExpanded = ref(true);

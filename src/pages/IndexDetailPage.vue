@@ -52,13 +52,28 @@
         </template>
       </IndexDetailTabs>
     </div>
-    <div class="flex items-center justify-between mt-4">
-      <span class="flex-1 text-center text-h6">Documents in this Index</span>
-      <q-btn
-        flat
-        icon="add_circle"
-        :to="`/documents/${currentIndex}/new`"
-        class="flex-shrink-0"
+    <div class="flex items-center justify-between mt-4 mb-3">
+      <div class="flex items-center gap-4">
+        <span class="text-h6 w-full">Documents</span>
+        <div class="flex items-center gap-2">
+          <span class="text-caption text-grey-7 mr-1">Show thumbnails:</span>
+          <q-select
+            v-model="displaySettings.imageField"
+            :options="imageFieldOptions"
+            placeholder="None"
+            dense
+            outlined
+            clearable
+            class="w-40"
+            @update:model-value="saveDisplaySettings"
+          >
+            <template #prepend>
+              <q-icon name="image" size="xs" />
+            </template>
+          </q-select>
+        </div>
+      </div>
+      <q-btn flat dense icon="add_circle" :to="`/documents/${currentIndex}/new`"
         >New</q-btn
       >
     </div>
@@ -67,186 +82,176 @@
       :search-client="searchClient"
       :index-name="currentIndex"
     >
-      <p class="text-center">Stats: <ais-stats /></p>
-      <div class="flex justify-evenly mx-2">
-        <div class="col-12 col-sm-5">
-          <p class="text-center text-blue my-2">Search Query</p>
-          <ais-search-box />
-        </div>
-        <div class="col-12 col-sm-5">
-          <p class="text-center text-blue my-2">Sort Options</p>
-          <ais-sort-by v-if="sortByItems" :items="sortByItems" />
-        </div>
-      </div>
-      <hr />
-      <div class="row">
-        <div class="col-12 col-md-3">
-          <div class="row">
-            <div class="col text-center q-mx-auto">
-              Current Refinements --
-              <ais-clear-refinements class="inline-block my-2" />
-              <ais-current-refinements
-                :class-names="{
-                  'ais-CurrentRefinements': 'flex wrap',
-                  'ais-CurrentRefinements-list': 'block row',
-                  'ais-CurrentRefinements-item': 'flex row full-width wrap m-1',
-                  'ais-CurrentRefinements-label': 'text-bold mr-1',
-                  'ais-CurrentRefinements-category':
-                    'col-12 mx-1 pt-1 text-left',
-                }"
-                style="width: 100%"
-              />
+      <q-card flat bordered class="q-mb-md">
+        <q-card-section class="q-pa-md">
+          <div class="flex items-center gap-4">
+            <AisStatsDisplay />
+            <div class="flex gap-3 flex-1">
+              <AisSearchInput placeholder="Search documents..." />
+              <AisSortBySelect :items="sortByItems" />
             </div>
           </div>
-          <hr />
-          <div
-            class="flex p-2"
-            v-if="iSettings.filterableAttributes.length > 0"
-          >
-            <q-expansion-item
-              v-model="filtersExpanded"
-              icon="filter_alt"
-              label="Filters"
-              class="col-12 text-center text-blue my-1"
-            >
-              <q-card
-                dense
-                v-for="att in iSettings.filterableAttributes"
-                :key="att"
-                class="col-12 p-2 mt-2"
-              >
-                <ais-panel
-                  :class-names="{
-                    'ais-Panel': 'no-margin',
-                    // 'ais-Panel-body': 'MyCustomPanelBody',
-                  }"
-                >
-                  <template #header="{ hasRefinements }">
-                    <p>
-                      {{ att
-                      }}<span v-if="!hasRefinements"> (no results) </span>
-                    </p>
-                  </template>
-                  <template #default>
-                    <ais-refinement-list
-                      :attribute="att"
-                      show-more
-                      :show-more-limit="1000"
-                    />
-                  </template>
-                </ais-panel>
-              </q-card>
-            </q-expansion-item>
-          </div>
-        </div>
-        <div class="col-12 col-md-9">
-          <ais-infinite-hits :escapeHTML="true">
-            <template #item="{ item }">
-              <q-card flat bordered class="col overflow-auto">
-                <q-card-section>
-                  <div class="hit-name text-center flex">
-                    <ais-highlight
-                      :hit="item"
-                      :attribute="docNameFieldChoice"
-                      class="col py-auto my-auto"
-                    />
+        </q-card-section>
+      </q-card>
+      <div class="flex gap-3">
+        <!-- Filters Column with toggle -->
+        <div v-if="filtersVisible" class="w-64 flex-shrink-0">
+          <div class="sticky top-2">
+            <q-card flat bordered>
+              <q-card-section class="q-pa-md">
+                <div class="flex items-center justify-between q-mb-md">
+                  <span class="text-subtitle2 font-semibold">Filters</span>
+                  <div class="flex gap-2">
+                    <AisClearButton label="Clear" />
                     <q-btn
                       flat
-                      icon="edit"
-                      :to="`/documents/${currentIndex}/${item[iPk]}`"
-                      class="float-right cursor-pointer py-auto my-auto"
-                      >Edit</q-btn
-                    >
-                  </div>
-                </q-card-section>
-                <q-separator horizontal />
-                <div class="row wrap">
-                  <q-card-section class="col">
-                    <q-select
-                      v-model="docNameFieldChoice"
-                      :options="attributeCodes"
-                      label="Heading Attribute"
-                      width-full
-                    ></q-select>
-                    <q-select
-                      v-model="imgFieldSelectChoice"
-                      :options="attributeCodes"
-                      label="Attribute for Image"
-                      width-full
-                    ></q-select>
-                    <q-img
-                      width-full
-                      class="m-2"
-                      :src="
-                        item[imgFieldSelectChoice] ??
-                        item.picture_url ??
-                        item.image ??
-                        item.image_url
-                      "
-                      :alt="
-                        item[imgFieldSelectChoice] ??
-                        item.picture_url ??
-                        item.image ??
-                        item.image_url
-                      "
+                      dense
+                      size="sm"
+                      icon="close"
+                      @click="(filtersVisible = false)"
                     />
-                  </q-card-section>
-                  <q-card-section class="col-xs-12 col-sm-8 col-lg-10">
-                    <span class="text-center text-italic row"
-                      >Displayed attributes</span
-                    >
-                    <div v-show="item.description" class="hit-description">
-                      <ais-snippet :hit="item" attribute="description" />
-                    </div>
-                    <q-list
-                      bordered
-                      separator
-                      style="max-height: 30vh; overflow-y: scroll"
-                    >
-                      <template
-                        v-for="field in Object.keys(item)
-                          .filter((i) => {
-                            return (
-                              !String(i).startsWith('_') &&
-                              !String(i).startsWith('__') && // make sure there's a value and it's not a system value
-                              i
-                            );
-                          })
-                          .map((k) => {
-                            return {
-                              fieldName: k,
-                              fieldValue:
-                                typeof item[k] == 'object'
-                                  ? JSON.stringify(item[k], null, 2) // make the json pretty plz
-                                  : item[k],
-                            };
-                          })"
-                        :key="field.fieldName"
-                      >
-                        <q-item>
-                          <q-item-section>
-                            <q-item-label overline>{{
-                              field.fieldName
-                            }}</q-item-label>
-                            <q-item-label>
-                              {{ field.fieldValue }}
-                            </q-item-label>
-                          </q-item-section>
-                        </q-item>
-                      </template>
-                    </q-list>
-                  </q-card-section>
+                  </div>
                 </div>
-              </q-card>
+
+                <AisCurrentRefinements />
+
+                <div
+                  v-if="
+                    iSettings.filterableAttributes &&
+                    iSettings.filterableAttributes.length > 0
+                  "
+                >
+                  <q-separator class="q-my-md" />
+                  <div class="text-subtitle2 font-semibold q-mb-sm">
+                    Filter By
+                  </div>
+                  <q-list dense>
+                    <q-expansion-item
+                      v-for="att in iSettings.filterableAttributes"
+                      :key="att"
+                      :label="att"
+                      dense
+                      header-class="text-body2"
+                      class="q-mb-xs"
+                    >
+                      <AisRefinementList
+                        :attribute="att"
+                        :show-more-limit="50"
+                      />
+                    </q-expansion-item>
+                  </q-list>
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
+        </div>
+
+        <!-- Documents Column -->
+        <div class="flex-1 min-w-0">
+          <!-- Filter toggle button when hidden -->
+          <div v-if="!filtersVisible" class="q-mb-md">
+            <q-btn
+              flat
+              dense
+              icon="filter_list"
+              label="Show Filters"
+              color="primary"
+              @click="(filtersVisible = true)"
+            />
+          </div>
+
+          <ais-hits :escapeHTML="true">
+            <template #default="{ items }">
+              <div v-if="items.length === 0" class="text-center q-py-xl">
+                <q-icon name="search_off" size="48px" color="grey-5" />
+                <p class="text-subtitle1 text-grey-7 q-mt-md">
+                  No documents found
+                </p>
+              </div>
+              <div v-else class="flex flex-col gap-3">
+                <q-card
+                  v-for="item in items"
+                  :key="item[iPk]"
+                  flat
+                  bordered
+                  class="cursor-pointer transition-colors"
+                >
+                  <q-card-section class="q-pa-md">
+                    <div class="flex gap-3">
+                      <!-- Optional Image -->
+                      <div
+                        v-if="
+                          displaySettings.imageField &&
+                          item[displaySettings.imageField]
+                        "
+                        class="flex-shrink-0"
+                      >
+                        <q-img
+                          :src="item[displaySettings.imageField]"
+                          :alt="item[iPk]"
+                          class="rounded"
+                          style="width: 80px; height: 80px; object-fit: cover"
+                          @error="(e) => (e.target.style.display = 'none')"
+                        />
+                      </div>
+
+                      <!-- Content -->
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between q-mb-sm">
+                          <span class="font-semibold text-sm truncate">{{
+                            item[iPk]
+                          }}</span>
+                          <q-btn
+                            flat
+                            dense
+                            size="sm"
+                            icon="edit"
+                            color="primary"
+                            :to="`/documents/${currentIndex}/${item[iPk]}`"
+                          />
+                        </div>
+
+                        <!-- Compact field display - 2 columns -->
+                        <div class="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
+                          <template
+                            v-for="field in Object.keys(item)
+                              .filter((i) => {
+                                return (
+                                  !String(i).startsWith('_') &&
+                                  !String(i).startsWith('__') &&
+                                  i !== iPk &&
+                                  i !== displaySettings.imageField &&
+                                  i
+                                );
+                              })
+                              .slice(0, 8)"
+                            :key="field"
+                          >
+                            <div class="truncate">
+                              <span class="text-grey-7">{{ field }}:</span>
+                              <span class="ml-1">
+                                {{
+                                  typeof item[field] === "object"
+                                    ? JSON.stringify(item[field])
+                                    : item[field]
+                                }}
+                              </span>
+                            </div>
+                          </template>
+                        </div>
+                      </div>
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </div>
             </template>
-          </ais-infinite-hits>
+          </ais-hits>
+          <div class="flex justify-center q-mt-lg">
+            <AisPaginationNav :padding="2" />
+          </div>
         </div>
       </div>
-      <ais-configure
-        :attributesToSnippet="['description:50']"
-        :hits-per-page="10"
-        snippetEllipsisText="…"
-      />
+      <ais-configure :hits-per-page="50" />
     </ais-instant-search>
   </q-page>
 </template>
@@ -260,6 +265,13 @@ import { useRoute } from "vue-router";
 import { useQuasar } from "quasar";
 import IndexDetailTabs from "components/IndexDetailTabs.vue";
 import SettingsForm from "components/SettingsForm.vue";
+import AisSearchInput from "components/aisComponents/AisSearchInput.vue";
+import AisStatsDisplay from "components/aisComponents/AisStatsDisplay.vue";
+import AisSortBySelect from "components/aisComponents/AisSortBySelect.vue";
+import AisClearButton from "components/aisComponents/AisClearButton.vue";
+import AisCurrentRefinements from "components/aisComponents/AisCurrentRefinements.vue";
+import AisRefinementList from "components/aisComponents/AisRefinementList.vue";
+import AisPaginationNav from "components/aisComponents/AisPaginationNav.vue";
 
 const $q = useQuasar();
 
@@ -290,10 +302,16 @@ const fdColumns = [
     sortable: true,
   },
 ];
-const imgFieldSelectChoice = ref("");
-const docNameFieldChoice = ref("");
-const attributeCodes = ref([]);
-const filtersExpanded = ref(true);
+const displaySettings = ref({ imageField: null });
+const imageFieldOptions = ref([]);
+const filtersVisible = ref(true);
+
+const saveDisplaySettings = () => {
+  theSettings.setIndexDisplaySettings(
+    currentIndex.value,
+    displaySettings.value,
+  );
+};
 
 const loadInstance = async () => {
   const mclient = theSettings.getIndexClient(currentIndex.value);
@@ -303,7 +321,18 @@ const loadInstance = async () => {
     return { "Field Name": key, Count: iStats.value.fieldDistribution[key] };
   });
   iPk.value = await mclient.fetchPrimaryKey();
-  attributeCodes.value = fdRows.value.map((row) => row["Field Name"]); // use the stats table for attribute codes
+
+  // Load display settings for this index
+  displaySettings.value = theSettings.getIndexDisplaySettings(
+    currentIndex.value,
+  );
+
+  // Build image field options from all fields
+  imageFieldOptions.value = [
+    "(none)",
+    ...fdRows.value.map((row) => row["Field Name"]),
+  ];
+
   for (const atString of iSettings.value.sortableAttributes) {
     sortByItems.value.push({
       value: `${currentIndex.value}:${atString}:asc`,

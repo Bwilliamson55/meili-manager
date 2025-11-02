@@ -9,6 +9,15 @@
             &nbsp;Meilisearch Manager</q-btn
           >
         </q-toolbar-title>
+        <q-btn
+          dense
+          flat
+          round
+          :icon="darkMode ? 'light_mode' : 'dark_mode'"
+          @click="toggleDarkMode"
+        >
+          <q-tooltip>Toggle dark mode</q-tooltip>
+        </q-btn>
         <q-tabs>
           <!-- Preview mode hidden (alpha feature) -->
           <!-- <q-route-tab
@@ -55,14 +64,29 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useSettingsStore } from "src/stores/settings-store";
 import { storeToRefs } from "pinia";
+import { useQuasar } from "quasar";
 
+const $q = useQuasar();
 const theSettings = useSettingsStore();
-const { confirmed } = storeToRefs(theSettings);
+const { confirmed, darkMode } = storeToRefs(theSettings);
 const leftDrawerOpen = ref(false);
+
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value;
 };
+
+const toggleDarkMode = () => {
+  theSettings.darkMode = !theSettings.darkMode;
+};
+
+// Initialize dark mode from store on mount
+$q.dark.set(darkMode.value);
+
+// Watch for dark mode changes and update Quasar
+watch(darkMode, (newVal) => {
+  $q.dark.set(newVal);
+});
 </script>
