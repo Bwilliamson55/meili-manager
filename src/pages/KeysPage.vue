@@ -1,6 +1,6 @@
 <template>
   <q-page padding>
-    <div class="q-pa-xs row items-start q-gutter-xs">
+    <div class="p-1 flex items-start gap-1">
       <q-card class="col" flat bordered>
         <q-card-section class="full-width">
           <div class="text-center">
@@ -14,7 +14,7 @@
                 icon="key"
                 label="Raw Keys JSON"
                 header-class="text-blue"
-                class="q-my-auto"
+                class="my-auto"
               >
                 <q-card bordered>
                   <q-card-section>
@@ -31,7 +31,7 @@
         </q-card-section>
       </q-card>
     </div>
-    <div class="q-pa-xs row items-start q-gutter-xs">
+    <div class="p-1 flex items-start gap-1">
       <q-card class="col" flat bordered>
         <q-card-section class="full-width">
           <div class="row">
@@ -43,7 +43,7 @@
                 icon="key"
                 label="New Key Form"
                 header-class="text-blue"
-                class="q-my-auto"
+                class="my-auto"
               >
                 <q-card bordered>
                   <q-card-section>
@@ -56,7 +56,7 @@
         </q-card-section>
       </q-card>
     </div>
-    <div class="q-pa-xs row items-start q-gutter-xs">
+    <div class="p-1 flex items-start gap-1">
       <template v-for="(key, i) in iKeys.results" :key="key.uid">
         <q-expansion-item
           expand-separator
@@ -64,13 +64,13 @@
           icon="key"
           :label="`${key.name} -- UID: ${key.uid}`"
           header-class="text-primary"
-          class="q-mb-md col-12"
+          class="mb-4 col-12"
         >
-          <q-card class="col q-pa-md" flat bordered>
+          <q-card class="col p-4" flat bordered>
             <p class="col text-center">
               <strong>{{ iKeys.results[i].name }}</strong>
             </p>
-            <q-form @submit="onSubmit(i)" class="q-gutter-md">
+            <q-form @submit="onSubmit(i)" class="space-y-4">
               <q-input
                 filled
                 v-model="iKeys.results[i].name"
@@ -129,7 +129,7 @@
               :type="iKeys.results[i].kKeyToggle ? 'text' : 'password'"
               hint="The Keys Key"
               label="The Keys key"
-              class="q-my-sm"
+              class="my-2"
             >
               <template v-slot:append>
                 <q-icon
@@ -150,12 +150,10 @@
               v-model="iKeys.results[i].uid"
               label="The Keys UID"
               hint="This is the id used when fetching a single key"
-              class="q-my-sm"
+              class="my-2"
             />
-            <div class="row justify-evenly">
-              <div
-                class="bg-grey-2 q-pa-sm q-my-sm rounded-borders col-12 col-sm-5"
-              >
+            <div class="flex justify-evenly">
+              <div class="bg-grey-2 p-2 my-2 rounded-borders col-12 col-sm-5">
                 Granted Actions:
                 <ul>
                   <template
@@ -166,9 +164,7 @@
                   </template>
                 </ul>
               </div>
-              <div
-                class="bg-grey-2 q-pa-sm q-my-sm rounded-borders col-12 col-sm-5"
-              >
+              <div class="bg-grey-2 p-2 my-2 rounded-borders col-12 col-sm-5">
                 Granted Indexes:
                 <ul>
                   <template v-for="idx in iKeys.results[i].indexes" :key="idx">

@@ -1,6 +1,6 @@
 <template>
-  <div class="q-pa-md">
-    <div class="text-center text-bold border-bottom q-mb-sm">
+  <div class="p-4">
+    <div class="text-center text-bold border-bottom mb-2">
       MeiliSearch Preview Settings
     </div>
     <q-card flat bordered>
@@ -28,7 +28,7 @@
               <q-icon
                 :name="isPwd ? 'visibility_off' : 'visibility'"
                 class="cursor-pointer"
-                @click="isPwd = !isPwd"
+                @click="(isPwd = !isPwd)"
               />
             </template>
           </q-input>
@@ -108,7 +108,7 @@
         </q-card-section>
       </q-expansion-item>
     </q-card>
-    <div class="text-center text-bold border-bottom q-my-sm">Configuration</div>
+    <div class="text-center text-bold border-bottom my-2">Configuration</div>
     <q-card flat bordered>
       <q-banner rounded dense class="bg-primary text-white text-bold">
         Auto filled dropdown values from your index will
@@ -122,13 +122,13 @@
           label="Name"
           filled
           dense
-          class="q-mb-sm"
+          class="mb-2"
         />
         <q-toggle
           v-model="previewSettings.pagination"
           label="Pagination"
           dense
-          class="q-mb-sm"
+          class="mb-2"
         />
         <q-select
           v-if="previewSettings.pagination"
@@ -137,19 +137,19 @@
           label="Pagination Size"
           filled
           dense
-          class="q-mb-sm"
+          class="mb-2"
         />
         <q-toggle
           v-model="previewSettings.showRefinements"
           label="Show Refinements"
           dense
-          class="q-mb-sm"
+          class="mb-2"
         />
         <q-toggle
           v-model="previewSettings.showClearRefinements"
           label="Show Clear Refinements"
           dense
-          class="q-mb-sm"
+          class="mb-2"
         />
         <q-item-label header
           >Input text to filter, press enter to add the value, or click one of
@@ -167,7 +167,7 @@
           :options="attributeCodesForDropdowns"
           new-value-mode="add-unique"
           @filter="filterFnAttributes"
-          class="q-mb-sm"
+          class="mb-2"
         />
         <q-select
           v-model="previewSettings.filterKeys"
@@ -183,7 +183,7 @@
           :options="attributeCodesForDropdowns"
           @filter="filterFnAttributes"
           @remove="removeFilter"
-          class="q-mb-sm"
+          class="mb-2"
         />
         <q-select
           v-model="previewSettings.imageAttributes"
@@ -197,7 +197,7 @@
           input-debounce="0"
           new-value-mode="toggle"
           @filter="filterFnAttributes"
-          class="q-mb-sm"
+          class="mb-2"
         />
         <q-select
           v-model="previewSettings.headingAttributes"
@@ -211,7 +211,7 @@
           input-debounce="0"
           new-value-mode="toggle"
           @filter="filterFnAttributes"
-          class="q-mb-sm"
+          class="mb-2"
         />
         <q-select
           v-model="previewSettings.descriptionAttributes"
@@ -225,13 +225,13 @@
           input-debounce="0"
           new-value-mode="toggle"
           @filter="filterFnAttributes"
-          class="q-mb-sm"
+          class="mb-2"
         />
       </q-card-section>
       <q-btn
         label="Save"
         color="primary"
-        class="q-mb-md q-ml-md"
+        class="mb-4 ml-4"
         @click="previewStore.savePreviewSettings()"
       />
     </q-card>
@@ -262,7 +262,7 @@
           </q-item-section>
 
           <q-item-section top side>
-            <div class="text-grey-8 q-gutter-xs">
+            <div class="text-grey-8 space-x-1">
               <q-btn
                 size="12px"
                 flat

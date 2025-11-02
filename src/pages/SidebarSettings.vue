@@ -1,11 +1,11 @@
 <template>
-  <div class="q-pa-md">
+  <div class="p-4">
     <div class="text-center text-bold border-bottom">
       MeiliSearch Manager Settings <br />Your Current Version: {{ version
       }}<br />Your Current Instance:
       {{ instances[currentInstance]?.indexUrl ?? "none" }}
     </div>
-    <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
+    <q-form @submit="onSubmit" @reset="onReset" class="space-y-4">
       <q-input
         filled
         v-model="indexLabel"
@@ -39,13 +39,7 @@
       </q-input>
       <div>
         <q-btn label="Add Instance" type="submit" color="primary" />
-        <q-btn
-          label="Reset"
-          type="reset"
-          color="primary"
-          flat
-          class="q-ml-sm"
-        />
+        <q-btn label="Reset" type="reset" color="primary" flat class="ml-2" />
       </div>
     </q-form>
     <q-separator spaced />
@@ -54,7 +48,7 @@
         >Permissions Documentation Here</a
       ></q-item-label
     >
-    <div v-if="currentIndex" class="q-pa-sm q-gutter-sm">
+    <div v-if="currentIndex" class="p-2 space-y-2">
       <span
         >Current index: <strong>{{ currentIndex ?? "" }}</strong></span
       ><br />
@@ -85,7 +79,7 @@
           </q-item-section>
 
           <q-item-section top side>
-            <div class="text-grey-8 q-gutter-xs">
+            <div class="text-grey-8 space-x-1">
               <q-btn
                 class="gt-xs"
                 size="12px"

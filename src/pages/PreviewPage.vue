@@ -1,8 +1,8 @@
 <template>
   <q-page>
-    <div class="row justify-center">
+    <div class="flex justify-center">
       <div class="col-12">
-        <div v-if="searchClient" class="q-ma-xs">
+        <div v-if="searchClient" class="m-1">
           <ais-instant-search
             :search-client="searchClient"
             :index-name="previewCurrentIndex"
@@ -22,7 +22,7 @@
                 v-if="previewSettings.sortableAttributes?.length > 0"
                 class="col-12"
               >
-                <p class="text-center text-primary q-mb-none">Sort Options:</p>
+                <p class="text-center text-primary mb-0">Sort Options:</p>
                 <ais-sort-by :items="sortByItems" />
               </div>
               <q-expansion-item
@@ -30,14 +30,14 @@
                 icon="list"
                 label="Filters"
               >
-                <span class="bg-warning text-black q-pa-xs"
+                <span class="bg-warning text-black p-1"
                   >Warning - Experimental</span
                 >
                 <q-card
                   dense
                   v-for="att in filters"
                   :key="att"
-                  class="col-12 q-pa-sm q-mt-sm"
+                  class="col-12 p-2 mt-2"
                 >
                   <ais-panel
                     :class-names="{
@@ -61,7 +61,7 @@
                 </q-card>
               </q-expansion-item>
             </div>
-            <div class="col col-12 col-sm-8 q-mx-sm q-px-sm">
+            <div class="col col-12 col-sm-8 mx-2 px-2">
               <ais-clear-refinements
                 v-if="previewSettings.showClearRefinements"
               />
@@ -85,8 +85,8 @@
                       swipeable
                       transition-prev="slide-right"
                       transition-next="slide-left"
-                      @mouseenter="autoplay = false"
-                      @mouseleave="autoplay = true"
+                      @mouseenter="(autoplay = false)"
+                      @mouseleave="(autoplay = true)"
                     >
                       <template
                         :key="imgAttribute"
@@ -139,15 +139,15 @@
               </component>
               <div
                 v-if="previewSettings.pagination"
-                class="pagination justify-center q-ma-sm text-center flex"
+                class="pagination justify-center m-2 text-center flex"
               >
                 <ais-pagination :padding="3" />
               </div>
             </div>
           </ais-instant-search>
         </div>
-        <div v-else class="q-ma-sm">
-          <q-card class="q-pa-sm">
+        <div v-else class="m-2">
+          <q-card class="p-2">
             <q-card-section>
               <div class="text-h6">Preview</div>
               <div class="text-subtitle2">

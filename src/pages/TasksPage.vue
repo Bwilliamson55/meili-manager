@@ -1,6 +1,6 @@
 <template>
   <q-page padding>
-    <div class="q-pa-xs row items-start q-gutter-xs">
+    <div class="p-1 flex items-start gap-1">
       <q-card class="col" flat bordered>
         <q-card-section class="full-width">
           <div class="text-center">

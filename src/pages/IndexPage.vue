@@ -1,8 +1,8 @@
 <template>
   <q-page>
-    <div class="row justify-center">
-      <div class="col-xs-12 col-md-8">
-        <div v-if="confirmed" class="q-mt-sm">
+    <div class="flex justify-center">
+      <div class="w-full md:w-2/3">
+        <div v-if="confirmed" class="mt-2">
           <q-item>
             <q-item-section top
               ><q-item-label header class="text-bold"
@@ -33,7 +33,7 @@
             <div
               v-for="index in indexList"
               :key="index.id"
-              class="q-pa-md q-gutter-md"
+              class="p-4 space-y-4"
             >
               <q-item>
                 <q-item-section top>
@@ -47,19 +47,19 @@
                   </q-item-label>
                   <q-item-label
                     lines="1"
-                    class="q-mt-xs text-body2 text-weight-bold text-primary text-uppercase"
+                    class="mt-1 text-body2 text-weight-bold text-primary text-uppercase"
                   >
                     <q-btn
                       flat
                       :to="`/index-details/${index.uid}`"
-                      class="cursor-pointer q-pl-none"
+                      class="cursor-pointer pl-0"
                       >Show Me</q-btn
                     >
                   </q-item-label>
                 </q-item-section>
 
                 <q-item-section top side>
-                  <div class="text-grey-8 q-gutter-xs">
+                  <div class="text-grey-8 space-x-1">
                     <q-btn
                       class="gt-xs"
                       size="12px"
@@ -91,7 +91,7 @@
         <q-card-section>
           <p>
             Index Name
-            <q-input class="q-pt-none" dense v-model="newIndexName" autofocus />
+            <q-input class="pt-0" dense v-model="newIndexName" autofocus />
           </p>
         </q-card-section>
         <q-card-section>
@@ -109,9 +109,9 @@
     </q-dialog>
     <q-dialog v-model="delPrompt" persistent>
       <q-card>
-        <q-card-section class="row items-center">
+        <q-card-section class="flex items-center">
           <q-avatar icon="delete" color="primary" text-color="white" />
-          <span class="q-ml-sm"
+          <span class="ml-2"
             >Are you REALLY sure you want to delete this index?</span
           >
         </q-card-section>

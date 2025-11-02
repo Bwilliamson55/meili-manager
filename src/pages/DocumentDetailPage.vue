@@ -1,17 +1,17 @@
 <template>
   <q-page padding>
-    <div class="q-pa-xs row items-start q-gutter-xs">
+    <div class="p-1 flex items-start gap-1">
       <q-card class="col" flat bordered>
         <q-card-section class="full-width">
-          <div class="text-center row">
+          <div class="text-center flex">
             <q-btn
               flat
               icon="arrow_back"
-              class="float-left cursor-pointer q-py-auto q-my-auto"
+              class="float-left cursor-pointer py-auto my-auto"
               :to="`/index-details/${currentIndex}`"
               >Back</q-btn
             >
-            <p class="col q-py-auto q-my-auto">
+            <p class="col py-auto my-auto">
               Document Details for UID
               <strong>{{ theDocumentUid ?? "???" }}</strong> in
               <strong>{{ currentIndex ?? "???" }}</strong>
@@ -19,7 +19,7 @@
             <q-btn
               flat
               icon="save"
-              class="float-right cursor-pointer q-py-auto q-my-auto"
+              class="float-right cursor-pointer py-auto my-auto"
               @click="updateDocument"
               >Save</q-btn
             >
