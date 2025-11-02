@@ -1,5 +1,5 @@
-import { defineStore } from "pinia";
-import MeiliSearch from "meilisearch";
+import { defineStore, acceptHMRUpdate } from "pinia";
+import { MeiliSearch } from "meilisearch";
 
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
@@ -9,52 +9,40 @@ export const useSettingsStore = defineStore("settings", {
     currentIndex: "",
     currentInstance: null,
     instances: [],
-    // Centralized client management
-    activeClient: null,
-    clientError: null,
-    isConnecting: false,
   }),
-  actions: {
-    // Centralized client factory with caching and validation
-    async getMeiliClient() {
-      if (this.activeClient && !this.clientError) {
-        return this.activeClient;
+  getters: {
+    // Create fresh client on-demand (no caching, no reactivity issues)
+    client: (state) => {
+      // Only create client if we have valid-looking credentials
+      if (
+        !state.indexUrl ||
+        state.indexUrl === "https://#" ||
+        !state.indexKey
+      ) {
+        throw new Error("Meilisearch credentials not configured");
       }
-
+      return new MeiliSearch({
+        host: state.indexUrl,
+        apiKey: state.indexKey,
+      });
+    },
+  },
+  actions: {
+    // Validate connection (separate from client creation)
+    async validateConnection() {
       try {
-        this.isConnecting = true;
-        this.clientError = null;
-
-        const client = new MeiliSearch({
-          host: this.indexUrl,
-          apiKey: this.indexKey,
-        });
-
-        // Validate connection
-        await client.getVersion();
-
-        this.activeClient = client;
+        const version = await this.client.getVersion();
         this.confirmed = true;
-        return client;
+        return version;
       } catch (error) {
-        this.clientError = error.message;
-        this.activeClient = null;
         this.confirmed = false;
         throw error;
-      } finally {
-        this.isConnecting = false;
       }
     },
 
-    // Get index client (uses centralized client)
-    async getIndexClient(indexName) {
-      try {
-        const client = await this.getMeiliClient();
-        return client.index(indexName);
-      } catch (error) {
-        console.error(error);
-        throw error;
-      }
+    // Get index client
+    getIndexClient(indexName) {
+      return this.client.index(indexName);
     },
     async getIndexSettings(indexName) {
       try {
@@ -75,7 +63,7 @@ export const useSettingsStore = defineStore("settings", {
     },
     async getIndexStats(indexName) {
       try {
-        const mclient = await this.getIndexClient(indexName);
+        const mclient = this.getIndexClient(indexName);
         let stats = await mclient.getStats();
         return stats;
       } catch (error) {
@@ -91,23 +79,13 @@ export const useSettingsStore = defineStore("settings", {
         throw new Error("Instance not found");
       }
 
-      // Update credentials
+      // Update credentials (client getter will automatically use new values)
       this.indexUrl = instance.indexUrl;
       this.indexKey = instance.indexKey;
       this.currentInstance = instanceIndex;
 
-      // Clear cached client to force re-validation
-      this.activeClient = null;
-      this.clientError = null;
-
       // Validate new instance
-      try {
-        await this.getMeiliClient();
-        this.confirmed = true;
-      } catch (error) {
-        this.confirmed = false;
-        throw error;
-      }
+      await this.validateConnection();
     },
 
     // Add instance with validation
@@ -142,12 +120,22 @@ export const useSettingsStore = defineStore("settings", {
       }
     },
 
-    // Invalidate cached client (for credential changes)
-    invalidateClient() {
-      this.activeClient = null;
-      this.clientError = null;
+    // Reset connection state (for credential changes)
+    resetConnectionState() {
       this.confirmed = false;
     },
   },
-  persist: true,
+  persist: {
+    paths: [
+      "indexUrl",
+      "indexKey",
+      "currentIndex",
+      "currentInstance",
+      "instances",
+    ],
+    // Exclude runtime state: activeClient, clientError, isConnecting, confirmed
+  },
 });
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useSettingsStore, import.meta.hot));
+}

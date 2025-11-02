@@ -32,6 +32,7 @@
 
 **Dev Server**: `quasar dev` (opens browser automatically, hot-reload enabled)
 **Build**: `quasar build` → outputs to `dist/spa/`
+**Changelog**: `npm run build-changelog` → generates `changelog.json` from git history
 **Lint**: `npm run lint` (ESLint with Vue plugin)
 **Format**: `npm run format` (Prettier with ignore patterns)
 
@@ -44,6 +45,11 @@
 - `jose` (latest): JWT/token encoding (for preview sharing feature)
 - `pinia-plugin-persistedstate` (latest): Auto-persist stores to localStorage
 - `tailwindcss` (v4) + `@tailwindcss/postcss`: CSS framework via PostCSS (not Vite plugin)
+
+**Developer Tools**:
+
+- `generateChangelog.cjs`: Generates `changelog.json` from git history, grouped by ISO week
+- GitHub Actions: Automated deployment with changelog generation to GitHub Pages
 
 ## Behavior in Agent Mode (Local Only)
 
@@ -121,38 +127,36 @@ showConfirmation("Really delete this item?", async () => {
   Do **not** persist volatile collections or server caches.
 - **API placement**: if components call APIs directly, **move them into store actions** and update imports/calls.
 
-## Recent Improvements (v1.0.0)
+## Version 2.0.0 Changes
 
-**Centralized Client Management** (✅ Complete):
+**Tailwind CSS v4 Migration** (✅ Complete):
 
-- All MeiliSearch client creation now goes through `settings-store.js`
+- All Quasar utility classes replaced with Tailwind equivalents
+- PostCSS configuration with `@tailwindcss/postcss` plugin
+- Traditional @tailwind directives (base, components, utilities)
+- CommonJS config files (.cjs extension) for ES module compatibility
+- All 8 page components refactored with consistent Tailwind patterns
+
+**Centralized Notifications** (✅ Complete):
+
+- Simplified `src/utils/notifications.js` utility
+- All components use `showSuccess()`, `showError()`, `showWarning()`, `showConfirmation()`
+- Zero direct `$q.notify()` calls in components
+- Consistent notification styling across application
+
+**Changelog Generation** (✅ Complete):
+
+- `generateChangelog.cjs` script generates version history from git commits
+- Grouped by ISO week with semantic versioning
+- Integrated into GitHub Actions deployment workflow
+- `changelog.json` deployed with application to GitHub Pages
+
+**Centralized Client Management** (v1.0.0 baseline):
+
+- All MeiliSearch client creation goes through `settings-store.js`
 - Components use `await theSettings.getMeiliClient()` with validation and caching
 - Connection errors handled gracefully with user notifications
-
-**Instance Management** (✅ Complete):
-
 - Store actions for `switchInstance()`, `addInstance()`, `removeInstance()`
-- Automatic validation when adding or switching instances
-- Protected deletion (can't delete active instance)
-
-**Dependency Updates** (✅ Complete):
-
-- All dependencies updated to latest versions
-- Removed unused `axios` and `autoprefixer`
-- Migrated to ES modules throughout project
-- Connection errors handled gracefully with user notifications
-
-**Instance Management** (✅ Complete):
-
-- Store actions for `switchInstance()`, `addInstance()`, `removeInstance()`
-- Automatic validation when adding or switching instances
-- Protected deletion (can't delete active instance)
-
-**Dependency Updates** (✅ Complete):
-
-- All dependencies updated to latest versions
-- Removed unused `axios` and `autoprefixer`
-- Migrated to ES modules throughout project
 
 ## Edit Checklist (Agent)
 

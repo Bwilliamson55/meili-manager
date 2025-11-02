@@ -2,7 +2,7 @@
 
 A Quasar application for managing multiple Meilisearch instances across development, staging, and production environments.
 
-**Version**: 1.0.0
+**Version**: 2.0.0
 **Demo**: [https://meili-manager.vercel.app](https://meili-manager.vercel.app)
 
 ## Quick Start
@@ -35,6 +35,8 @@ Generate changelog from git history:
 ```bash
 npm run build-changelog
 ```
+
+Generates `changelog.json` with versioned entries grouped by ISO week. The changelog is automatically generated and deployed with each release to GitHub Pages.
 
 ### Code Quality
 
@@ -89,6 +91,7 @@ Save and switch between multiple Meilisearch instances (development, staging, pr
 - **jose** - JWT encoding for preview sharing
 - **pinia** + **pinia-plugin-persistedstate** - State management with persistence
 - **Quasar Framework** - Vue 3 UI framework
+- **Tailwind CSS** - Utility-first CSS framework (v4)
 
 ## Architecture
 
@@ -147,6 +150,9 @@ Key customization points:
 - `src/pages/` - Add new pages or modify existing ones
 - `src/components/` - Reusable components
 - `src/utils/notifications.js` - Centralized notification patterns
+- `generateChangelog.cjs` - Customize changelog generation logic
+
+**Styling**: Uses Tailwind CSS v4 for utility-first styling. All components use Tailwind utilities (e.g., `p-4`, `mt-2`) while retaining Quasar's Q\* components for complex UI elements.
 
 ---
 

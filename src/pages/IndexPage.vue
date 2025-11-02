@@ -156,13 +156,8 @@ const formatDate = (dateString) =>
     new Date(dateString),
   );
 
-const getClient = async () => {
-  try {
-    return await theSettings.getMeiliClient();
-  } catch (error) {
-    showError(`Connection failed: ${error.message}`);
-    throw error;
-  }
+const getClient = () => {
+  return theSettings.client;
 };
 
 watch(currentInstance, async () => {
@@ -171,17 +166,24 @@ watch(currentInstance, async () => {
 
 const loadInstance = async () => {
   try {
-    const client = await getClient();
+    const client = getClient();
     const indexes = await client.getRawIndexes();
     indexList.value = indexes.results;
   } catch (e) {
     console.log(e);
-    indexList.value = [];
+    if (e.message?.includes("not configured")) {
+      // Credentials not set up yet - this is ok, user needs to configure
+      indexList.value = [];
+    } else {
+      showError(`Failed to load indexes: ${e.message}`);
+      indexList.value = [];
+    }
   }
 };
 
 onMounted(async () => {
-  if (confirmed) {
+  // Load indexes if credentials are configured (not default values)
+  if (indexUrl.value && indexUrl.value !== "https://#") {
     loadInstance();
   }
 });

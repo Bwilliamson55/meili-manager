@@ -1,6 +1,6 @@
 {
   "name": "meili-manager",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A Quasar app to manage multiple Meilisearch instances",
   "productName": "MeiliSearch Manager",
   "author": "bwilliamson55@github.com",
@@ -19,7 +19,7 @@
     "@quasar/cli": "^2.5.0",
     "@quasar/extras": "^1.17.0",
     "jose": "^6.1.0",
-    "meilisearch": "^0.54.0",
+    "meilisearch": "0.53.0",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.7.1",
     "quasar": "^2.18.5",
