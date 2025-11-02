@@ -8,6 +8,7 @@
   "type": "module",
   "scripts": {
     "build": "quasar build",
+    "build-changelog": "node ./generateChangelog.cjs",
     "deploy": "vercel",
     "lint": "eslint --ext .js,.vue ./",
     "format": "prettier --write \"**/*.{js,vue,scss,html,md,json}\" --ignore-path .gitignore",
