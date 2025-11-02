@@ -1,9 +1,22 @@
 [
   {
-    "version": "1.14.13",
+    "version": "1.14.15",
     "week": "2025-W44",
     "dateRange": "2025, Week 44",
     "changes": [
+      {
+        "subject": "Merge pull request #4 from Bwilliamson55/dev",
+        "notes": [
+          "Abstract ais components to their own SFCs, fix Tailwind, implement da…"
+        ]
+      },
+      {
+        "subject": "Abstract ais components to their own SFCs, fix Tailwind, implement dark-mode",
+        "notes": [
+          "Dark mode now supported and persisted",
+          "Tailwind v4 fixed"
+        ]
+      },
       {
         "subject": "Merge pull request #3 from Bwilliamson55/dev",
         "notes": [
