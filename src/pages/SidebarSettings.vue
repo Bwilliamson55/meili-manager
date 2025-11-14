@@ -1,11 +1,20 @@
 <template>
   <div class="p-4">
-    <div class="text-center text-bold border-bottom">
-      MeiliSearch Manager Settings <br />Your Current Version: {{ version
-      }}<br />Your Current Instance:
-      {{ instances[currentInstance]?.indexUrl ?? "none" }}
+    <!-- Header -->
+    <div
+      class="text-center font-bold border-b border-gray-300 dark:border-gray-700 pb-4 mb-4 dark:text-white"
+    >
+      <div class="text-lg">Meilisearch Manager Settings</div>
+      <div class="text-sm font-normal text-gray-600 dark:text-gray-400 mt-2">
+        Version: {{ version || "N/A" }}
+      </div>
+      <div class="text-sm font-normal text-gray-600 dark:text-gray-400">
+        Instance: {{ instances[currentInstance]?.indexUrl ?? "none" }}
+      </div>
     </div>
-    <q-form @submit="onSubmit" @reset="onReset" class="space-y-4">
+
+    <!-- Add Instance Form -->
+    <q-form @submit="onSubmit" @reset="onReset" class="space-y-4 mb-6">
       <q-input
         filled
         v-model="indexLabel"
@@ -33,77 +42,120 @@
           <q-icon
             :name="isPwd ? 'visibility_off' : 'visibility'"
             class="cursor-pointer"
-            @click="(isPwd = !isPwd)"
+            @click="isPwd = !isPwd"
           />
         </template>
       </q-input>
       <div>
-        <q-btn label="Add Instance" type="submit" color="primary" />
+        <q-btn
+          label="Add Instance"
+          type="submit"
+          color="primary"
+          :loading="isConnecting"
+        />
         <q-btn label="Reset" type="reset" color="primary" flat class="ml-2" />
       </div>
     </q-form>
-    <q-separator spaced />
-    <q-item-label header
-      ><a href="https://docs.meilisearch.com/reference/api/keys.html#actions"
-        >Permissions Documentation Here</a
-      ></q-item-label
-    >
-    <div v-if="currentIndex" class="p-2 space-y-2">
-      <span
-        >Current index: <strong>{{ currentIndex ?? "" }}</strong></span
-      ><br />
-      <span
-        >Current instance:
-        <strong>{{ instances[currentInstance]?.label ?? "" }}</strong></span
+
+    <q-separator class="my-6" />
+
+    <!-- Documentation Link -->
+    <div class="mb-4">
+      <a
+        href="https://docs.meilisearch.com/reference/api/keys.html#actions"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-primary hover:underline text-sm dark:text-blue-400"
       >
+        <q-icon name="help_outline" size="xs" class="mr-1" />
+        Permissions Documentation
+      </a>
     </div>
-    <q-list bordered class="rounded-borders">
-      <q-item-label header>Instances</q-item-label>
-      <div v-if="instances.length > 0">
+
+    <!-- Current Context Info -->
+    <div
+      v-if="currentIndex"
+      class="p-3 bg-gray-100 dark:bg-gray-800 rounded mb-4"
+    >
+      <div class="text-sm space-y-1 dark:text-gray-300">
+        <div>
+          <span class="font-semibold">Current index:</span>
+          <span class="ml-2">{{ currentIndex ?? "" }}</span>
+        </div>
+        <div>
+          <span class="font-semibold">Current instance:</span>
+          <span class="ml-2">{{
+            instances[currentInstance]?.label ?? ""
+          }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instances List -->
+    <q-card flat bordered>
+      <q-card-section class="pb-0">
+        <div class="text-lg font-semibold dark:text-white">Your Instances</div>
+      </q-card-section>
+
+      <q-list v-if="instances.length > 0" separator>
         <q-item
           v-for="(value, key) in instances"
           :key="key"
           clickable
           v-ripple
-          active-class="bg-blue-1"
-          class="cursor-pointer"
-          :active="currentInstance == key"
+          class="cursor-pointer dark:hover:bg-gray-800"
+          :class="{
+            'bg-blue-50 dark:bg-blue-900': currentInstance == key,
+          }"
         >
-          <q-item-section top @click="selectInstance(key)">
-            <q-item-label lines="1">
+          <q-item-section @click="selectInstance(key)">
+            <q-item-label class="font-semibold dark:text-white">
               {{ value?.label ?? "" }}
             </q-item-label>
-            <q-item-label caption lines="1">
+            <q-item-label caption class="dark:text-gray-400">
               {{ value?.indexUrl ?? "" }}
             </q-item-label>
           </q-item-section>
 
-          <q-item-section top side>
-            <div class="text-grey-8 space-x-1">
-              <q-btn
-                class="gt-xs"
-                size="12px"
-                flat
-                dense
-                round
-                icon="delete"
-                @click="deleteInstance(key)"
-              />
-              <q-btn
-                class="gt-xs"
-                size="12px"
-                flat
-                dense
-                round
-                icon="key"
-                @click="copyKey(key)"
-              />
-            </div>
+          <q-item-section side class="flex-row gap-1">
+            <q-btn
+              size="sm"
+              flat
+              dense
+              round
+              icon="key"
+              @click="copyKey(key)"
+              class="dark:text-gray-300"
+            >
+              <q-tooltip>Copy API Key</q-tooltip>
+            </q-btn>
+            <q-btn
+              size="sm"
+              flat
+              dense
+              round
+              icon="delete"
+              color="negative"
+              @click="deleteInstance(key)"
+            >
+              <q-tooltip>Delete Instance</q-tooltip>
+            </q-btn>
           </q-item-section>
         </q-item>
+      </q-list>
+
+      <!-- Empty state -->
+      <div v-else class="text-center py-8">
+        <q-icon
+          name="cloud_off"
+          size="48px"
+          class="text-gray-400 dark:text-gray-600"
+        />
+        <p class="text-gray-600 dark:text-gray-400 mt-2 text-sm">
+          No instances configured yet
+        </p>
       </div>
-      <q-separator spaced />
-    </q-list>
+    </q-card>
   </div>
 </template>
 
@@ -111,7 +163,6 @@
 import { copyToClipboard } from "quasar";
 import { useSettingsStore } from "src/stores/settings-store";
 import { ref } from "vue";
-import { MeiliSearch } from "meilisearch";
 import { storeToRefs } from "pinia";
 import {
   showSuccess,
