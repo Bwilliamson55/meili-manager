@@ -59,7 +59,7 @@
 
 ## UX Patterns
 
-### Notifications
+### Notifications & Dialogs
 
 **Always use the centralized utility** in `src/utils/notifications.js`:
 
@@ -69,6 +69,7 @@ import {
   showError,
   showWarning,
   showConfirmation,
+  showPrompt,
 } from "src/utils/notifications";
 
 // Simple notifications
@@ -80,7 +81,18 @@ showWarning("Please review this");
 showConfirmation("Really delete this item?", async () => {
   /* delete logic */
 });
+
+// Prompts
+showPrompt("Enter name", "What's your name?", (value) => {
+  /* handle value */
+});
 ```
+
+**Never use `$q.dialog()` or `$q.notify()` directly in components.** Always use the notifications utility to:
+
+- Avoid importing heavy Quasar composables in every component
+- Maintain consistent notification styling across the app
+- Make notifications easier to test and modify globally
 
 ### Quasar Components
 
@@ -164,7 +176,7 @@ showConfirmation("Really delete this item?", async () => {
 2. If a composable holds shared mutable state → convert to a store.
 3. If a component/composable uses custom UI → replace custom UI with Quasar equivalents (QTable/QForm/QMenu/QDrawer) when present.
 4. If a component uses Quasar utility classes → replace with Tailwind equivalents (q-pa-md → p-4, q-mt-sm → mt-2, etc.)
-5. If a component calls $q.notify() → use centralized notification utilities from `src/utils/notifications.js`
+5. If a component calls `$q.notify()` or `$q.dialog()` → use centralized notification utilities from `src/utils/notifications.js`
 6. Remove duplicate helpers/composables; keep one tiny, obvious version.
 7. Keep diffs tight; avoid unrelated refactors.
 8. Add inline comments only when they improve clarity.
