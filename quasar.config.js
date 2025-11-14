@@ -98,7 +98,7 @@ export default configure(function (/* ctx */) {
       // directives: [],
 
       // Quasar plugins
-      plugins: ["Notify", "Dark"],
+      plugins: ["Notify", "Dark", "Dialog"],
     },
 
     // animations: 'all', // --- includes all animations

@@ -21,10 +21,12 @@
     "instantsearch.css": "^8.6.0",
     "jose": "^6.1.0",
     "meilisearch": "0.53.0",
+    "papaparse": "^5.5.3",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.7.1",
     "quasar": "^2.18.5",
     "vue": "^3.5.22",
+    "vue-draggable-plus": "^0.6.0",
     "vue-instantsearch": "^4.22.0",
     "vue-router": "^4.6.3",
     "vue3-ts-jsoneditor": "^3.1.2"
