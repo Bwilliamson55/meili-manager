@@ -12,6 +12,8 @@ export const useSettingsStore = defineStore("settings", {
     // Per-index display preferences
     indexDisplaySettings: {}, // { indexName: { imageField: 'image_url', viewMode: 'compact' } }
     darkMode: true,
+    // Unsaved settings tracking
+    hasUnsavedSettings: false,
   }),
   getters: {
     // Create fresh client on-demand (no caching, no reactivity issues)
@@ -145,6 +147,15 @@ export const useSettingsStore = defineStore("settings", {
         ...settings,
       };
     },
+
+    // Track unsaved settings changes
+    markSettingsUnsaved() {
+      this.hasUnsavedSettings = true;
+    },
+
+    markSettingsSaved() {
+      this.hasUnsavedSettings = false;
+    },
   },
   persist: {
     paths: [
@@ -155,6 +166,7 @@ export const useSettingsStore = defineStore("settings", {
       "instances",
       "indexDisplaySettings",
       "darkMode",
+      // Don't persist hasUnsavedSettings - should reset on page load
     ],
     // Exclude runtime state: activeClient, clientError, isConnecting, confirmed
   },

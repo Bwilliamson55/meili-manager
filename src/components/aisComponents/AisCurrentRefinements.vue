@@ -1,7 +1,7 @@
 <template>
   <ais-current-refinements :class="containerClass">
     <template #default="{ items, refine }">
-      <div v-if="items.length" class="flex flex-wrap gap-2">
+      <div v-if="items.length" class="flex flex-wrap gap-2 mb-4">
         <template v-for="item in items" :key="item.attribute">
           <q-chip
             v-for="refinement in item.refinements"
@@ -10,6 +10,7 @@
             removable
             color="primary"
             text-color="white"
+            class="dark:bg-primary dark:text-white"
             @remove="refine(refinement)"
           >
             <span class="font-semibold">{{ item.attribute }}:</span>
@@ -25,7 +26,7 @@
 defineProps({
   containerClass: {
     type: String,
-    default: "q-mb-md",
+    default: "",
   },
   chipSize: {
     type: String,

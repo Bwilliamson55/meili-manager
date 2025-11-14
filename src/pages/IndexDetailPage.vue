@@ -54,9 +54,11 @@
     </div>
     <div class="flex items-center justify-between mt-4 mb-3">
       <div class="flex items-center gap-4">
-        <span class="text-h6 w-full">Documents</span>
+        <span class="text-h6 w-full dark:text-white">Documents</span>
         <div class="flex items-center gap-2">
-          <span class="text-caption text-grey-7 mr-1">Show thumbnails:</span>
+          <span class="text-caption text-gray-600 dark:text-gray-400 mr-1"
+            >Show thumbnails:</span
+          >
           <q-select
             v-model="displaySettings.imageField"
             :options="imageFieldOptions"
@@ -82,8 +84,8 @@
       :search-client="searchClient"
       :index-name="currentIndex"
     >
-      <q-card flat bordered class="q-mb-md">
-        <q-card-section class="q-pa-md">
+      <q-card flat bordered class="mb-4">
+        <q-card-section class="p-4">
           <div class="flex items-center gap-4">
             <AisStatsDisplay />
             <div class="flex gap-3 flex-1">
@@ -98,9 +100,11 @@
         <div v-if="filtersVisible" class="w-64 flex-shrink-0">
           <div class="sticky top-2">
             <q-card flat bordered>
-              <q-card-section class="q-pa-md">
-                <div class="flex items-center justify-between q-mb-md">
-                  <span class="text-subtitle2 font-semibold">Filters</span>
+              <q-card-section class="p-4">
+                <div class="flex items-center justify-between mb-4">
+                  <span class="text-subtitle2 font-semibold dark:text-white"
+                    >Filters</span
+                  >
                   <div class="flex gap-2">
                     <AisClearButton label="Clear" />
                     <q-btn
@@ -108,7 +112,8 @@
                       dense
                       size="sm"
                       icon="close"
-                      @click="(filtersVisible = false)"
+                      class="dark:text-gray-300"
+                      @click="filtersVisible = false"
                     />
                   </div>
                 </div>
@@ -121,25 +126,51 @@
                     iSettings.filterableAttributes.length > 0
                   "
                 >
-                  <q-separator class="q-my-md" />
-                  <div class="text-subtitle2 font-semibold q-mb-sm">
+                  <q-separator class="my-4" />
+                  <div
+                    class="text-subtitle2 font-semibold mb-2 dark:text-white"
+                  >
                     Filter By
                   </div>
-                  <q-list dense>
-                    <q-expansion-item
-                      v-for="att in iSettings.filterableAttributes"
-                      :key="att"
-                      :label="att"
-                      dense
-                      header-class="text-body2"
-                      class="q-mb-xs"
-                    >
-                      <AisRefinementList
-                        :attribute="att"
-                        :show-more-limit="50"
-                      />
-                    </q-expansion-item>
-                  </q-list>
+                  <q-scroll-area
+                    :thumb-style="{ width: '4px', opacity: 0.5 }"
+                    style="height: calc(100vh - 300px)"
+                  >
+                    <q-list dense>
+                      <q-expansion-item
+                        v-for="att in iSettings.filterableAttributes"
+                        :key="att"
+                        :label="att"
+                        dense
+                        header-class="text-body2 dark:text-gray-200"
+                        class="mb-1"
+                        :default-opened="false"
+                      >
+                        <template #header>
+                          <q-item-section>
+                            <div
+                              class="flex items-center justify-between w-full"
+                            >
+                              <span class="text-sm dark:text-gray-200">{{
+                                att
+                              }}</span>
+                              <q-badge
+                                v-if="getActiveFilterCount(att) > 0"
+                                :label="getActiveFilterCount(att)"
+                                color="primary"
+                                class="ml-2"
+                              />
+                            </div>
+                          </q-item-section>
+                        </template>
+                        <AisRefinementList
+                          :attribute="att"
+                          :show-more="true"
+                          :show-more-limit="50"
+                        />
+                      </q-expansion-item>
+                    </q-list>
+                  </q-scroll-area>
                 </div>
               </q-card-section>
             </q-card>
@@ -149,22 +180,26 @@
         <!-- Documents Column -->
         <div class="flex-1 min-w-0">
           <!-- Filter toggle button when hidden -->
-          <div v-if="!filtersVisible" class="q-mb-md">
+          <div v-if="!filtersVisible" class="mb-4">
             <q-btn
               flat
               dense
               icon="filter_list"
               label="Show Filters"
               color="primary"
-              @click="(filtersVisible = true)"
+              @click="filtersVisible = true"
             />
           </div>
 
           <ais-hits :escapeHTML="true">
             <template #default="{ items }">
-              <div v-if="items.length === 0" class="text-center q-py-xl">
-                <q-icon name="search_off" size="48px" color="grey-5" />
-                <p class="text-subtitle1 text-grey-7 q-mt-md">
+              <div v-if="items.length === 0" class="text-center py-16">
+                <q-icon
+                  name="search_off"
+                  size="48px"
+                  class="text-gray-400 dark:text-gray-600"
+                />
+                <p class="text-subtitle1 text-gray-600 dark:text-gray-400 mt-4">
                   No documents found
                 </p>
               </div>
@@ -174,9 +209,9 @@
                   :key="item[iPk]"
                   flat
                   bordered
-                  class="cursor-pointer transition-colors"
+                  class="cursor-pointer transition-colors hover:border-primary dark:hover:border-primary"
                 >
-                  <q-card-section class="q-pa-md">
+                  <q-card-section class="p-4">
                     <div class="flex gap-3">
                       <!-- Optional Image -->
                       <div
@@ -197,10 +232,11 @@
 
                       <!-- Content -->
                       <div class="flex-1 min-w-0">
-                        <div class="flex items-center justify-between q-mb-sm">
-                          <span class="font-semibold text-sm truncate">{{
-                            item[iPk]
-                          }}</span>
+                        <div class="flex items-center justify-between mb-2">
+                          <span
+                            class="font-semibold text-sm truncate dark:text-white"
+                            >{{ item[iPk] }}</span
+                          >
                           <q-btn
                             flat
                             dense
@@ -228,8 +264,10 @@
                             :key="field"
                           >
                             <div class="truncate">
-                              <span class="text-grey-7">{{ field }}:</span>
-                              <span class="ml-1">
+                              <span class="text-gray-600 dark:text-gray-400"
+                                >{{ field }}:</span
+                              >
+                              <span class="ml-1 dark:text-gray-200">
                                 {{
                                   typeof item[field] === "object"
                                     ? JSON.stringify(item[field])
@@ -246,7 +284,7 @@
               </div>
             </template>
           </ais-hits>
-          <div class="flex justify-center q-mt-lg">
+          <div class="flex justify-center mt-8">
             <AisPaginationNav :padding="2" />
           </div>
         </div>
@@ -305,12 +343,18 @@ const fdColumns = [
 const displaySettings = ref({ imageField: null });
 const imageFieldOptions = ref([]);
 const filtersVisible = ref(true);
+const activeFilters = ref({});
 
 const saveDisplaySettings = () => {
   theSettings.setIndexDisplaySettings(
     currentIndex.value,
     displaySettings.value,
   );
+};
+
+// Helper to get count of active filters for an attribute
+const getActiveFilterCount = (attribute) => {
+  return activeFilters.value[attribute] || 0;
 };
 
 const loadInstance = async () => {

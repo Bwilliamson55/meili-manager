@@ -1,4 +1,4 @@
-import { Notify } from "quasar";
+import { Notify, Dialog } from "quasar";
 
 export function showSuccess(message, position = "bottom-left") {
   Notify.create({
@@ -39,7 +39,7 @@ export function showInfo(message, position = "bottom-left") {
 export function showConfirmation(message, onConfirm, onCancel = () => {}) {
   Notify.create({
     message,
-    position: "bottom-left",
+    position: "center",
     timeout: 0,
     actions: [
       {
@@ -54,4 +54,19 @@ export function showConfirmation(message, onConfirm, onCancel = () => {}) {
       },
     ],
   });
+}
+
+export function showPrompt(title, message, onConfirm, onCancel = () => {}) {
+  Dialog.create({
+    title,
+    message,
+    prompt: {
+      model: "",
+      type: "text",
+    },
+    cancel: true,
+    persistent: false,
+  })
+    .onOk(onConfirm)
+    .onCancel(onCancel);
 }

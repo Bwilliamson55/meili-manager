@@ -1,4 +1,4 @@
-import { defineStore } from "pinia";
+import { defineStore, acceptHMRUpdate } from "pinia";
 import MeiliSearch from "meilisearch";
 import * as jose from "jose";
 
@@ -140,3 +140,6 @@ export const usePreviewStore = defineStore("preview", {
   },
   persist: true,
 });
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(usePreviewStore, import.meta.hot));
+}

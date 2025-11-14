@@ -1,10 +1,10 @@
 <template>
-  <div class="q-pa-xs row items-start q-gutter-xs">
-    <q-card class="col q-pa-md" flat>
-      <p class="col text-center">
-        <strong>{{ newKeyObj.name }}</strong>
+  <div class="flex flex-wrap gap-2 p-2">
+    <q-card class="w-full p-6" flat>
+      <p class="text-center font-bold mb-4">
+        {{ newKeyObj.name }}
       </p>
-      <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
+      <q-form @submit="onSubmit" @reset="onReset" class="space-y-4">
         <q-input
           filled
           v-model="newKeyObj.name"
@@ -20,9 +20,9 @@
           hint="Something descriptive"
           lazy-rules
         />
-        <div class="row justify-evenly">
-          <div class="bg-grey-2 q-pa-sm q-my-sm rounded-borders col-12 col-sm">
-            Granted Actions:
+        <div class="flex flex-col md:flex-row justify-evenly gap-4">
+          <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded flex-1">
+            <div class="font-semibold mb-2">Granted Actions:</div>
             <q-select
               filled
               v-model="newKeyObj.actions"
@@ -40,8 +40,8 @@
               @filter-abort="abortFilterFn"
             />
           </div>
-          <div class="bg-grey-2 q-pa-sm q-my-sm rounded-borders col-12 col-sm">
-            Granted Indexes:
+          <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded flex-1">
+            <div class="font-semibold mb-2">Granted Indexes:</div>
             <q-select
               filled
               v-model="newKeyObj.indexes"
@@ -59,14 +59,14 @@
             />
           </div>
         </div>
-        <div class="row justify-evenly">
+        <div class="flex flex-col md:flex-row justify-evenly gap-4">
           <q-input
             filled
             v-model="newKeyObj.expiresAt"
             label="Expires At"
             hint="Required but can be null"
             clearable
-            class="col-12 col-sm-6"
+            class="flex-1"
           >
             <template v-slot:prepend>
               <q-icon name="event" class="cursor-pointer">
@@ -79,7 +79,7 @@
                     v-model="newKeyObj.expiresAt"
                     mask="YYYY-MM-DD HH:mm:ss"
                   >
-                    <div class="row items-center justify-end">
+                    <div class="flex items-center justify-end">
                       <q-btn v-close-popup label="Close" color="primary" flat />
                     </div>
                   </q-date>
@@ -99,7 +99,7 @@
                     mask="YYYY-MM-DD HH:mm:ss"
                     format24h
                   >
-                    <div class="row items-center justify-end">
+                    <div class="flex items-center justify-end">
                       <q-btn v-close-popup label="Close" color="primary" flat />
                     </div>
                   </q-time>
