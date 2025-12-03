@@ -1,9 +1,23 @@
 [
   {
-    "version": "1.16.5",
+    "version": "1.16.7",
     "week": "2025-W49",
     "dateRange": "2025, Week 49",
     "changes": [
+      {
+        "subject": "Merge pull request #8 from Bwilliamson55/dev",
+        "notes": [
+          "Fix missing mclient variable in DocumentDetailPage"
+        ]
+      },
+      {
+        "subject": "Fix missing mclient variable in DocumentDetailPage",
+        "notes": [
+          "Re-add mclient declaration that was accidentally removed during refactoring",
+          "mclient is needed to fetch existing documents via getDocument()",
+          "Fixes ReferenceError when loading existing documents"
+        ]
+      },
       {
         "subject": "Merge pull request #7 from Bwilliamson55/dev",
         "notes": [
