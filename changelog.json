@@ -1,9 +1,26 @@
 [
   {
-    "version": "1.16.3",
+    "version": "1.16.5",
     "week": "2025-W49",
     "dateRange": "2025, Week 49",
     "changes": [
+      {
+        "subject": "Merge pull request #7 from Bwilliamson55/dev",
+        "notes": [
+          "Fix primary key retrieval to use getRawIndexes instead of fetchPrimar…"
+        ]
+      },
+      {
+        "subject": "Fix primary key retrieval to use getRawIndexes instead of fetchPrimaryKey",
+        "notes": [
+          "Replace mclient.fetchPrimaryKey() with indexesStore.getPrimaryKey()",
+          "fetchPrimaryKey() was incorrectly returning the distinct attribute instead of the actual primary key",
+          "getPrimaryKey() now correctly retrieves primaryKey from getRawIndexes() response",
+          "Added getPrimaryKey method to indexes-store with caching and fallback logic",
+          "Updated IndexDetailPage and DocumentDetailPage to use the new method",
+          "Fixes issue where document IDs showed as undefined when primary key wasn't 'id'"
+        ]
+      },
       {
         "subject": "Merge pull request #6 from Bwilliamson55/dev",
         "notes": [
