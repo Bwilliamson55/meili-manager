@@ -44,12 +44,14 @@
 
 <script setup>
 import { useSettingsStore } from "src/stores/settings-store";
+import { useIndexesStore } from "src/stores/indexes-store";
 import { storeToRefs } from "pinia";
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import VueJsoneditor from "vue3-ts-jsoneditor";
 import { showSuccess, showError } from "src/utils/notifications";
 const theSettings = useSettingsStore();
+const indexesStore = useIndexesStore();
 const { currentIndex } = storeToRefs(theSettings);
 const route = useRoute();
 const router = useRouter();
@@ -61,8 +63,8 @@ const iPk = ref("");
 onMounted(async () => {
   try {
     currentIndex.value = route.params.indexUid;
-    const mclient = theSettings.getIndexClient(currentIndex.value);
-    iPk.value = (await mclient.fetchPrimaryKey()) || "id";
+    // Get primary key from indexes store (which has the correct primaryKey from getRawIndexes)
+    iPk.value = await indexesStore.getPrimaryKey(currentIndex.value);
 
     // Check if creating a new document BEFORE trying to fetch
     if (route.params.documentUid == "new") {

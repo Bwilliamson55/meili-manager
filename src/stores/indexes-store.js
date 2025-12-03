@@ -108,6 +108,29 @@ export const useIndexesStore = defineStore("indexes", {
         throw error;
       }
     },
+
+    // Get primary key for an index (with fallback to fetching if not in cache)
+    async getPrimaryKey(indexUid) {
+      // First try to get from cached indexes
+      const cachedIndex = this.indexes.find((idx) => idx.uid === indexUid);
+      if (cachedIndex?.primaryKey) {
+        return cachedIndex.primaryKey;
+      }
+
+      // If not in cache, try to fetch indexes first
+      try {
+        await this.fetchIndexes();
+        const index = this.indexes.find((idx) => idx.uid === indexUid);
+        if (index?.primaryKey) {
+          return index.primaryKey;
+        }
+      } catch (error) {
+        console.error("Failed to fetch indexes for primary key:", error);
+      }
+
+      // Fallback to 'id' if not found
+      return "id";
+    },
   },
 });
 
