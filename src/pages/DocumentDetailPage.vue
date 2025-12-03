@@ -65,7 +65,7 @@ onMounted(async () => {
     currentIndex.value = route.params.indexUid;
     // Get primary key from indexes store (which has the correct primaryKey from getRawIndexes)
     iPk.value = await indexesStore.getPrimaryKey(currentIndex.value);
-
+    const mclient = theSettings.getIndexClient(currentIndex.value);
     // Check if creating a new document BEFORE trying to fetch
     if (route.params.documentUid == "new") {
       theDocumentUid.value = "newIdChangeMe1234";
