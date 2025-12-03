@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { watch } from "vue";
+import { watch, ref, onMounted } from "vue";
 import { useSettingsStore } from "src/stores/settings-store";
 
 const props = defineProps({
@@ -20,6 +20,8 @@ const props = defineProps({
 const emit = defineEmits(["state-changed"]);
 
 const theSettings = useSettingsStore();
+const isInitialized = ref(false);
+const hasSeenNonEmptyState = ref(false);
 
 // Watch for state changes and save them
 watch(
@@ -35,14 +37,59 @@ watch(
       page: newState.page || 1,
     };
 
-    // Save to store
-    theSettings.setIndexSearchState(props.indexName, searchState);
+    // Check if this is a meaningful state change (not just initial empty state)
+    const hasState =
+      searchState.query ||
+      Object.keys(searchState.filters).length > 0 ||
+      searchState.sort ||
+      searchState.page > 1;
 
-    // Emit event for parent component
-    emit("state-changed", searchState);
+    // On initial mount, wait until we see a non-empty state or until initialized
+    // This prevents overwriting saved state with empty initial state
+    if (!isInitialized.value) {
+      if (hasState) {
+        hasSeenNonEmptyState.value = true;
+        isInitialized.value = true;
+      } else {
+        // Wait a bit for ais-configure to apply saved state
+        // If state is still empty after initialization delay, it's likely truly empty
+        return;
+      }
+    }
+
+    // Only save if we've seen a non-empty state or if this is a meaningful change
+    // This prevents overwriting saved state with empty state on initial mount
+    if (hasSeenNonEmptyState.value || hasState) {
+      // Save to store
+      theSettings.setIndexSearchState(props.indexName, searchState);
+
+      // Emit event for parent component
+      emit("state-changed", searchState);
+    }
   },
-  { deep: true, immediate: true }
+  { deep: true },
 );
+
+// Mark as initialized after a short delay to allow ais-configure to apply saved state
+onMounted(() => {
+  // Give ais-configure time to apply the saved state before we start watching
+  setTimeout(() => {
+    isInitialized.value = true;
+    // If we haven't seen a non-empty state yet, check if current state has any value
+    const currentState = props.state;
+    if (currentState) {
+      const hasState =
+        currentState.query ||
+        (currentState.refinementList &&
+          Object.keys(currentState.refinementList).length > 0) ||
+        currentState.sortBy ||
+        (currentState.page && currentState.page > 1);
+      if (hasState) {
+        hasSeenNonEmptyState.value = true;
+      }
+    }
+  }, 100);
+});
 
 // Helper to extract filters from state
 function extractFilters(state) {
@@ -57,4 +104,3 @@ function extractFilters(state) {
   return filters;
 }
 </script>
-

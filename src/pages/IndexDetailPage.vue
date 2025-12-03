@@ -356,6 +356,7 @@ const displaySettings = ref({ imageField: null });
 const imageFieldOptions = ref([]);
 const filtersVisible = ref(true);
 const activeFilters = ref({});
+const previousIndex = ref("");
 
 // Search state persistence
 const savedSearchState = ref({
@@ -439,34 +440,46 @@ const handleSearchStateChange = (state) => {
   });
 };
 
-onMounted(async () => {
-  currentIndex.value = route.params.uid;
-  await loadInstance();
-
-  // Set up watchers for search state after component is mounted
-  await nextTick();
-
-  // Watch filtersVisible to save it
-  watch(filtersVisible, () => {
+// Watch filtersVisible to save it for the current index
+watch(filtersVisible, () => {
+  if (currentIndex.value) {
     const currentState = theSettings.getIndexSearchState(currentIndex.value);
     theSettings.setIndexSearchState(currentIndex.value, {
       ...currentState,
       filtersVisible: filtersVisible.value,
     });
-  });
+  }
 });
 
-// Watch for navigation away to save filtersVisible
+// Watch route params to handle navigation between indices
 watch(
-  () => currentIndex.value,
-  (newIndex, oldIndex) => {
-    if (oldIndex) {
-      const currentState = theSettings.getIndexSearchState(oldIndex);
-      theSettings.setIndexSearchState(oldIndex, {
-        ...currentState,
+  () => route.params.uid,
+  async (newIndexUid, oldIndexUid) => {
+    // Save filtersVisible for the old index BEFORE loading the new one
+    if (oldIndexUid && previousIndex.value === oldIndexUid) {
+      const oldState = theSettings.getIndexSearchState(oldIndexUid);
+      theSettings.setIndexSearchState(oldIndexUid, {
+        ...oldState,
         filtersVisible: filtersVisible.value,
       });
     }
+
+    // Update currentIndex and previousIndex
+    if (newIndexUid) {
+      previousIndex.value = newIndexUid;
+      currentIndex.value = newIndexUid;
+      await loadInstance();
+    }
   },
+  { immediate: false },
 );
+
+onMounted(async () => {
+  currentIndex.value = route.params.uid;
+  previousIndex.value = currentIndex.value;
+  await loadInstance();
+
+  // Set up watchers for search state after component is mounted
+  await nextTick();
+});
 </script>
