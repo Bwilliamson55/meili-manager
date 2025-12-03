@@ -11,6 +11,8 @@ export const useSettingsStore = defineStore("settings", {
     instances: [],
     // Per-index display preferences
     indexDisplaySettings: {}, // { indexName: { imageField: 'image_url', viewMode: 'compact' } }
+    // Per-index search state persistence
+    indexSearchState: {}, // { indexName: { query: '', filters: {}, sort: '', page: 1, filtersVisible: true } }
     darkMode: true,
     // Unsaved settings tracking
     hasUnsavedSettings: false,
@@ -148,6 +150,27 @@ export const useSettingsStore = defineStore("settings", {
       };
     },
 
+    // Get search state for an index
+    getIndexSearchState(indexName) {
+      return (
+        this.indexSearchState[indexName] || {
+          query: "",
+          filters: {},
+          sort: "",
+          page: 1,
+          filtersVisible: true,
+        }
+      );
+    },
+
+    // Set search state for an index
+    setIndexSearchState(indexName, state) {
+      this.indexSearchState[indexName] = {
+        ...this.getIndexSearchState(indexName),
+        ...state,
+      };
+    },
+
     // Track unsaved settings changes
     markSettingsUnsaved() {
       this.hasUnsavedSettings = true;
@@ -165,6 +188,7 @@ export const useSettingsStore = defineStore("settings", {
       "currentInstance",
       "instances",
       "indexDisplaySettings",
+      "indexSearchState",
       "darkMode",
       // Don't persist hasUnsavedSettings - should reset on page load
     ],

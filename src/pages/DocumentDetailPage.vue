@@ -62,7 +62,7 @@ onMounted(async () => {
   try {
     currentIndex.value = route.params.indexUid;
     const mclient = theSettings.getIndexClient(currentIndex.value);
-    iPk.value = await mclient.fetchPrimaryKey();
+    iPk.value = (await mclient.fetchPrimaryKey()) || "id";
 
     // Check if creating a new document BEFORE trying to fetch
     if (route.params.documentUid == "new") {

@@ -206,7 +206,7 @@
               <div v-else class="flex flex-col gap-3">
                 <q-card
                   v-for="item in items"
-                  :key="item[iPk]"
+                  :key="getDocumentId(item)"
                   flat
                   bordered
                   class="cursor-pointer transition-colors hover:border-primary dark:hover:border-primary"
@@ -223,7 +223,7 @@
                       >
                         <q-img
                           :src="item[displaySettings.imageField]"
-                          :alt="item[iPk]"
+                          :alt="getDocumentId(item)"
                           class="rounded"
                           style="width: 80px; height: 80px; object-fit: cover"
                           @error="(e) => (e.target.style.display = 'none')"
@@ -235,7 +235,7 @@
                         <div class="flex items-center justify-between mb-2">
                           <span
                             class="font-semibold text-sm truncate dark:text-white"
-                            >{{ item[iPk] }}</span
+                            >{{ getDocumentId(item) }}</span
                           >
                           <q-btn
                             flat
@@ -243,7 +243,7 @@
                             size="sm"
                             icon="edit"
                             color="primary"
-                            :to="`/documents/${currentIndex}/${item[iPk]}`"
+                            :to="`/documents/${currentIndex}/${getDocumentId(item)}`"
                           />
                         </div>
 
@@ -289,7 +289,16 @@
           </div>
         </div>
       </div>
-      <ais-configure :hits-per-page="50" />
+      <ais-configure
+        :hits-per-page="50"
+        :query="savedSearchState.query || undefined"
+        :sort-by="savedSearchState.sort || undefined"
+        :page="savedSearchState.page || undefined"
+      />
+      <SearchStatePersistence
+        :index-name="currentIndex"
+        @state-changed="handleSearchStateChange"
+      />
     </ais-instant-search>
   </q-page>
 </template>
@@ -298,8 +307,8 @@
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
 import { useSettingsStore } from "src/stores/settings-store";
 import { storeToRefs } from "pinia";
-import { onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
+import { onMounted, ref, watch, nextTick, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useQuasar } from "quasar";
 import IndexDetailTabs from "components/IndexDetailTabs.vue";
 import SettingsForm from "components/SettingsForm.vue";
@@ -310,8 +319,11 @@ import AisClearButton from "components/aisComponents/AisClearButton.vue";
 import AisCurrentRefinements from "components/aisComponents/AisCurrentRefinements.vue";
 import AisRefinementList from "components/aisComponents/AisRefinementList.vue";
 import AisPaginationNav from "components/aisComponents/AisPaginationNav.vue";
+import SearchStatePersistence from "components/SearchStatePersistence.vue";
 
 const $q = useQuasar();
+const route = useRoute();
+const router = useRouter();
 
 const theSettings = useSettingsStore();
 const { indexUrl, indexKey, currentIndex } = storeToRefs(theSettings);
@@ -345,6 +357,15 @@ const imageFieldOptions = ref([]);
 const filtersVisible = ref(true);
 const activeFilters = ref({});
 
+// Search state persistence
+const savedSearchState = ref({
+  query: "",
+  filters: {},
+  sort: "",
+  page: 1,
+  filtersVisible: true,
+});
+
 const saveDisplaySettings = () => {
   theSettings.setIndexDisplaySettings(
     currentIndex.value,
@@ -357,6 +378,19 @@ const getActiveFilterCount = (attribute) => {
   return activeFilters.value[attribute] || 0;
 };
 
+// Helper to safely get the document ID from a search result item
+const getDocumentId = (item) => {
+  if (!item || !iPk.value) return undefined;
+  // Try to get the primary key value
+  const id = item[iPk.value];
+  // If not found, try common fallbacks (shouldn't happen, but defensive)
+  if (id === undefined || id === null) {
+    // Try 'id' as fallback
+    return item.id;
+  }
+  return id;
+};
+
 const loadInstance = async () => {
   const mclient = theSettings.getIndexClient(currentIndex.value);
   iStats.value = await mclient.getStats();
@@ -364,12 +398,17 @@ const loadInstance = async () => {
   fdRows.value = Object.keys(iStats.value.fieldDistribution).map((key) => {
     return { "Field Name": key, Count: iStats.value.fieldDistribution[key] };
   });
-  iPk.value = await mclient.fetchPrimaryKey();
+  iPk.value = (await mclient.fetchPrimaryKey()) || "id";
 
   // Load display settings for this index
   displaySettings.value = theSettings.getIndexDisplaySettings(
     currentIndex.value,
   );
+
+  // Load saved search state for this index
+  const savedState = theSettings.getIndexSearchState(currentIndex.value);
+  savedSearchState.value = { ...savedState };
+  filtersVisible.value = savedState.filtersVisible ?? true;
 
   // Build image field options from all fields
   imageFieldOptions.value = [
@@ -389,9 +428,45 @@ const loadInstance = async () => {
   }
 };
 
+// Handle search state changes from persistence component
+const handleSearchStateChange = (state) => {
+  // Update local state
+  savedSearchState.value = { ...state };
+  // Also save filtersVisible
+  theSettings.setIndexSearchState(currentIndex.value, {
+    ...state,
+    filtersVisible: filtersVisible.value,
+  });
+};
+
 onMounted(async () => {
-  const route = useRoute();
   currentIndex.value = route.params.uid;
-  loadInstance();
+  await loadInstance();
+
+  // Set up watchers for search state after component is mounted
+  await nextTick();
+
+  // Watch filtersVisible to save it
+  watch(filtersVisible, () => {
+    const currentState = theSettings.getIndexSearchState(currentIndex.value);
+    theSettings.setIndexSearchState(currentIndex.value, {
+      ...currentState,
+      filtersVisible: filtersVisible.value,
+    });
+  });
 });
+
+// Watch for navigation away to save filtersVisible
+watch(
+  () => currentIndex.value,
+  (newIndex, oldIndex) => {
+    if (oldIndex) {
+      const currentState = theSettings.getIndexSearchState(oldIndex);
+      theSettings.setIndexSearchState(oldIndex, {
+        ...currentState,
+        filtersVisible: filtersVisible.value,
+      });
+    }
+  },
+);
 </script>
