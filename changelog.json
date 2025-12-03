@@ -1,5 +1,47 @@
 [
   {
+    "version": "1.16.3",
+    "week": "2025-W49",
+    "dateRange": "2025, Week 49",
+    "changes": [
+      {
+        "subject": "Merge pull request #6 from Bwilliamson55/dev",
+        "notes": [
+          "Dev"
+        ]
+      },
+      {
+        "subject": "Fix search state persistence bugs",
+        "notes": [
+          "Bug 1: Prevent SearchStateWatcher from overwriting saved state on initial mount",
+          "Remove immediate: true from watcher to prevent firing before ais-configure applies saved state",
+          "Add initialization delay to allow ais-configure to restore saved state first",
+          "Add checks to prevent saving empty state that would overwrite saved settings",
+          "Only save state after seeing meaningful changes or after initialization period",
+          "Bug 2: Fix filtersVisible handling when switching between indices",
+          "Watch route.params.uid instead of currentIndex to properly detect navigation",
+          "Save old index's filtersVisible BEFORE loading new index state",
+          "Reload filtersVisible from saved state when switching indices via loadInstance()",
+          "Prevent saving new index's filtersVisible to old index's state"
+        ]
+      },
+      {
+        "subject": "Fix primary key handling and add search state persistence",
+        "notes": [
+          "Fix undefined document ID in URL when primary key is not 'id'",
+          "Add fallback to 'id' when fetchPrimaryKey() returns null",
+          "Add getDocumentId() helper function for safe primary key access",
+          "Apply fix to both IndexDetailPage and DocumentDetailPage",
+          "Add search state persistence across page navigation",
+          "Store search query, filters, sort, page, and filter visibility per index",
+          "Restore search state when returning to index detail page",
+          "Persist state using Pinia store with localStorage",
+          "Add SearchStatePersistence component to watch and save state changes"
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.15.8",
     "week": "2025-W46",
     "dateRange": "2025, Week 46",
