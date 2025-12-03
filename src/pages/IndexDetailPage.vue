@@ -306,6 +306,7 @@
 <script setup>
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
 import { useSettingsStore } from "src/stores/settings-store";
+import { useIndexesStore } from "src/stores/indexes-store";
 import { storeToRefs } from "pinia";
 import { onMounted, ref, watch, nextTick, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -326,6 +327,7 @@ const route = useRoute();
 const router = useRouter();
 
 const theSettings = useSettingsStore();
+const indexesStore = useIndexesStore();
 const { indexUrl, indexKey, currentIndex } = storeToRefs(theSettings);
 const iStats = ref({});
 const iSettings = ref({});
@@ -399,7 +401,8 @@ const loadInstance = async () => {
   fdRows.value = Object.keys(iStats.value.fieldDistribution).map((key) => {
     return { "Field Name": key, Count: iStats.value.fieldDistribution[key] };
   });
-  iPk.value = (await mclient.fetchPrimaryKey()) || "id";
+  // Get primary key from indexes store (which has the correct primaryKey from getRawIndexes)
+  iPk.value = await indexesStore.getPrimaryKey(currentIndex.value);
 
   // Load display settings for this index
   displaySettings.value = theSettings.getIndexDisplaySettings(
