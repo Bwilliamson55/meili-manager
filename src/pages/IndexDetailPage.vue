@@ -293,7 +293,7 @@
         :hits-per-page="50"
         :query="savedSearchState.query || undefined"
         :sort-by="savedSearchState.sort || undefined"
-        :page="savedSearchState.page || undefined"
+        :page="savedSearchState.page && savedSearchState.page > 0 ? savedSearchState.page : undefined"
       />
       <SearchStatePersistence
         :index-name="currentIndex"
@@ -359,6 +359,7 @@ const imageFieldOptions = ref([]);
 const filtersVisible = ref(true);
 const activeFilters = ref({});
 const previousIndex = ref("");
+const previousQuery = ref("");
 
 // Search state persistence
 const savedSearchState = ref({
@@ -413,6 +414,12 @@ const loadInstance = async () => {
   const savedState = theSettings.getIndexSearchState(currentIndex.value);
   savedSearchState.value = { ...savedState };
   filtersVisible.value = savedState.filtersVisible ?? true;
+  // Initialize previous query to detect query changes
+  previousQuery.value = savedState.query || "";
+  // If there's no saved query, reset page to 1 (don't restore pagination for empty searches)
+  if (!savedState.query) {
+    savedSearchState.value.page = 1;
+  }
 
   // Build image field options from all fields
   imageFieldOptions.value = [
@@ -434,6 +441,12 @@ const loadInstance = async () => {
 
 // Handle search state changes from persistence component
 const handleSearchStateChange = (state) => {
+  // If query changed, reset page to 1
+  if (state.query !== previousQuery.value) {
+    state.page = 1;
+    previousQuery.value = state.query;
+  }
+
   // Update local state
   savedSearchState.value = { ...state };
   // Also save filtersVisible
