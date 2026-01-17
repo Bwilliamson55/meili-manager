@@ -1,5 +1,42 @@
 [
   {
+    "version": "1.17.3",
+    "week": "2026-W03",
+    "dateRange": "2026, Week 03",
+    "changes": [
+      {
+        "subject": "Merge pull request #9 from Bwilliamson55/dev",
+        "notes": [
+          "Fix pagination and sort by on index detail pages"
+        ]
+      },
+      {
+        "subject": "Fix pagination and improve sort-by dropdown UX",
+        "notes": [
+          "Pagination fixes:",
+          "Fix pagination offset calculation by using 0-based page indexing (matches InstantSearch internal format)",
+          "Reset page to 0 (first page) when query changes",
+          "Reset page to 0 for empty searches (don't restore pagination when no query)",
+          "Move pagination controls to top of document list for better UX",
+          "Sort-by dropdown improvements:",
+          "Remove index name from sort labels (show 'card_affinity asc' instead of 'back4blood:card_affinity:asc')",
+          "Show 'Relevance' placeholder when no sort is selected instead of confusing index name",
+          "Normalize sort value display to always show clean labels"
+        ]
+      },
+      {
+        "subject": "Fix pagination always landing on page 2 when searching or refreshing",
+        "notes": [
+          "Reset page to 1 when query changes to ensure new searches start on page 1",
+          "Reset page to 1 for empty searches (don't restore pagination when no query)",
+          "Add previousQuery tracking to detect query changes",
+          "Improve page value validation in ais-configure to handle edge cases",
+          "Fix duplicate previousQuery declaration error"
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.16.7",
     "week": "2025-W49",
     "dateRange": "2025, Week 49",
