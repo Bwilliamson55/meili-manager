@@ -30,11 +30,12 @@ watch(
     if (!newState || !props.indexName) return;
 
     // Extract relevant state
+    // Note: InstantSearch uses 0-based page indexing internally (0 = first page, 1 = second page)
     const searchState = {
       query: newState.query || "",
       filters: extractFilters(newState),
       sort: newState.sortBy || "",
-      page: newState.page || 1,
+      page: newState.page !== undefined ? newState.page : 0,
     };
 
     // Check if this is a meaningful state change (not just initial empty state)
@@ -42,7 +43,7 @@ watch(
       searchState.query ||
       Object.keys(searchState.filters).length > 0 ||
       searchState.sort ||
-      searchState.page > 1;
+      searchState.page > 0;
 
     // On initial mount, wait until we see a non-empty state or until initialized
     // This prevents overwriting saved state with empty initial state
@@ -83,7 +84,7 @@ onMounted(() => {
         (currentState.refinementList &&
           Object.keys(currentState.refinementList).length > 0) ||
         currentState.sortBy ||
-        (currentState.page && currentState.page > 1);
+        (currentState.page !== undefined && currentState.page > 0);
       if (hasState) {
         hasSeenNonEmptyState.value = true;
       }
