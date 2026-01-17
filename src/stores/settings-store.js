@@ -151,13 +151,14 @@ export const useSettingsStore = defineStore("settings", {
     },
 
     // Get search state for an index
+    // Note: page is 0-based to match InstantSearch's internal format (0 = first page)
     getIndexSearchState(indexName) {
       return (
         this.indexSearchState[indexName] || {
           query: "",
           filters: {},
           sort: "",
-          page: 1,
+          page: 0,
           filtersVisible: true,
         }
       );

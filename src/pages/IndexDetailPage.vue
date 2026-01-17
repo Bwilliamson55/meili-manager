@@ -191,6 +191,11 @@
             />
           </div>
 
+          <!-- Pagination at the top -->
+          <div class="flex justify-center mb-4">
+            <AisPaginationNav :padding="2" />
+          </div>
+
           <ais-hits :escapeHTML="true">
             <template #default="{ items }">
               <div v-if="items.length === 0" class="text-center py-16">
@@ -284,16 +289,13 @@
               </div>
             </template>
           </ais-hits>
-          <div class="flex justify-center mt-8">
-            <AisPaginationNav :padding="2" />
-          </div>
         </div>
       </div>
       <ais-configure
         :hits-per-page="50"
         :query="savedSearchState.query || undefined"
         :sort-by="savedSearchState.sort || undefined"
-        :page="savedSearchState.page || undefined"
+        :page="savedSearchState.page !== undefined && savedSearchState.page >= 0 ? savedSearchState.page : undefined"
       />
       <SearchStatePersistence
         :index-name="currentIndex"
@@ -359,13 +361,15 @@ const imageFieldOptions = ref([]);
 const filtersVisible = ref(true);
 const activeFilters = ref({});
 const previousIndex = ref("");
+const previousQuery = ref("");
 
 // Search state persistence
+// Note: page is 0-based to match InstantSearch's internal format (0 = first page, 1 = second page)
 const savedSearchState = ref({
   query: "",
   filters: {},
   sort: "",
-  page: 1,
+  page: 0,
   filtersVisible: true,
 });
 
@@ -413,6 +417,13 @@ const loadInstance = async () => {
   const savedState = theSettings.getIndexSearchState(currentIndex.value);
   savedSearchState.value = { ...savedState };
   filtersVisible.value = savedState.filtersVisible ?? true;
+  // Initialize previous query to detect query changes
+  previousQuery.value = savedState.query || "";
+  // If there's no saved query, reset page to 0 (first page, 0-based)
+  // Don't restore pagination for empty searches
+  if (!savedState.query) {
+    savedSearchState.value.page = 0;
+  }
 
   // Build image field options from all fields
   imageFieldOptions.value = [
@@ -420,6 +431,8 @@ const loadInstance = async () => {
     ...fdRows.value.map((row) => row["Field Name"]),
   ];
 
+  // Build sort by items (no default relevance option - just sortable attributes)
+  sortByItems.value = [];
   for (const atString of iSettings.value.sortableAttributes) {
     sortByItems.value.push({
       value: `${currentIndex.value}:${atString}:asc`,
@@ -434,6 +447,12 @@ const loadInstance = async () => {
 
 // Handle search state changes from persistence component
 const handleSearchStateChange = (state) => {
+  // If query changed, reset page to 0 (first page, 0-based)
+  if (state.query !== previousQuery.value) {
+    state.page = 0;
+    previousQuery.value = state.query;
+  }
+
   // Update local state
   savedSearchState.value = { ...state };
   // Also save filtersVisible
