@@ -137,13 +137,12 @@ export const useKeysStore = defineStore("keys", {
         const settingsStore = useSettingsStore();
         const response = await settingsStore.client.updateKey(keyUid, updates);
 
-        // Update key in local state
+        // Update key in local state from server response
         const index = this.keys.findIndex((k) => k.uid === keyUid);
         if (index !== -1) {
           this.keys[index] = {
-            ...this.keys[index],
-            ...updates,
-            updatedAt: new Date().toISOString(),
+            ...response,
+            keyVisible: this.keys[index].keyVisible,
           };
         }
 

@@ -15,12 +15,12 @@
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
-    "@meilisearch/instant-meilisearch": "^0.28.0",
+    "@meilisearch/instant-meilisearch": "^0.31.1",
     "@quasar/cli": "^2.5.0",
     "@quasar/extras": "^1.17.0",
     "instantsearch.css": "^8.6.0",
     "jose": "^6.1.0",
-    "meilisearch": "0.53.0",
+    "meilisearch": "^0.57.0",
     "papaparse": "^5.5.3",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.7.1",

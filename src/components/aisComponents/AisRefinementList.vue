@@ -17,16 +17,20 @@
         <q-scroll-area
           :thumb-style="{ width: '4px', opacity: 0.5 }"
           :style="{
-            height: items.length > 10 ? '400px' : `${items.length * 40}px`,
+            height: items.length > 10 ? '360px' : `${Math.max(items.length * 40, 80)}px`,
             maxHeight: '256px',
           }"
         >
-          <q-list dense class="pt-2">
+          <q-list :dense="density === 'compact'" class="pt-1">
             <q-item
               v-for="item in items"
               :key="item.value"
-              dense
-              class="px-1 py-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+              :dense="density === 'compact'"
+              :class="
+                density === 'compact'
+                  ? 'px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors'
+                  : 'px-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors'
+              "
             >
               <q-item-section side top class="pr-2">
                 <q-checkbox
@@ -38,15 +42,16 @@
                 />
               </q-item-section>
               <q-item-section>
-                <q-item-label class="text-xs dark:text-gray-200">
+                <q-item-label class="text-xs font-medium dark:text-gray-200">
                   {{ item.label }}
                 </q-item-label>
               </q-item-section>
               <q-item-section side>
                 <q-badge
                   :label="item.count"
-                  :color="item.isRefined ? 'primary' : 'grey-6'"
-                  class="text-xs"
+                  :color="item.isRefined ? 'primary' : 'grey-5'"
+                  :outline="!item.isRefined"
+                  class="text-xs min-w-8 justify-center"
                 />
               </q-item-section>
             </q-item>
@@ -87,6 +92,10 @@ defineProps({
   showMoreLimit: {
     type: Number,
     default: 50,
+  },
+  density: {
+    type: String,
+    default: "comfortable",
   },
 });
 </script>

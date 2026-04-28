@@ -1,5 +1,5 @@
 import { defineStore, acceptHMRUpdate } from "pinia";
-import MeiliSearch from "meilisearch";
+import { Meilisearch } from "meilisearch";
 import * as jose from "jose";
 
 export const usePreviewStore = defineStore("preview", {
@@ -31,7 +31,7 @@ export const usePreviewStore = defineStore("preview", {
     },
     async getPreviewIndexClient(indexName) {
       try {
-        const meiliClient = new MeiliSearch({
+        const meiliClient = new Meilisearch({
           host: this.previewIndexUrl,
           apiKey: this.previewIndexKey,
         });

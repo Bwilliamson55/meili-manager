@@ -56,14 +56,30 @@ export const useTasksStore = defineStore("tasks", {
   },
 
   actions: {
+    getTaskUid(task) {
+      return task?.uid ?? task?.taskUid;
+    },
+
+    normalizeTask(task) {
+      return {
+        ...task,
+        uid: this.getTaskUid(task),
+      };
+    },
+
     // Fetch all tasks
     async fetchTasks(limit = 1000) {
       this.loading = true;
       try {
         const settingsStore = useSettingsStore();
-        // In SDK v0.53.0, tasks are accessed via client.tasks property
-        const response = await settingsStore.client.tasks.getTasks({ limit });
-        this.tasks = response.results || [];
+        const response =
+          settingsStore.client.tasks &&
+          typeof settingsStore.client.tasks.getTasks === "function"
+            ? await settingsStore.client.tasks.getTasks({ limit })
+            : await settingsStore.client.getTasks({ limit });
+        this.tasks = (response.results || []).map((task) =>
+          this.normalizeTask(task),
+        );
         this.lastFetch = new Date();
         return this.tasks;
       } catch (error) {
@@ -78,10 +94,13 @@ export const useTasksStore = defineStore("tasks", {
     async getTask(taskUid) {
       try {
         const settingsStore = useSettingsStore();
-        const task = await settingsStore.client.getTask(taskUid);
+        const task = this.normalizeTask(
+          await settingsStore.client.getTask(taskUid),
+        );
 
         // Update task in local state if it exists
-        const index = this.tasks.findIndex((t) => t.uid === taskUid);
+        const normalizedUid = this.getTaskUid(task);
+        const index = this.tasks.findIndex((t) => t.uid === normalizedUid);
         if (index !== -1) {
           this.tasks[index] = task;
         }
@@ -132,10 +151,17 @@ export const useTasksStore = defineStore("tasks", {
     ) {
       try {
         const settingsStore = useSettingsStore();
-        const task = await settingsStore.client.waitForTask(taskUid, options);
+        const normalizedOptions = {
+          intervalMs: options.intervalMs ?? 1000,
+          timeoutMs: options.timeoutMs ?? options.timeOutMs ?? 60000,
+        };
+        const task = this.normalizeTask(
+          await settingsStore.client.waitForTask(taskUid, normalizedOptions),
+        );
 
         // Update task in local state
-        const index = this.tasks.findIndex((t) => t.uid === taskUid);
+        const normalizedUid = this.getTaskUid(task);
+        const index = this.tasks.findIndex((t) => t.uid === normalizedUid);
         if (index !== -1) {
           this.tasks[index] = task;
         }

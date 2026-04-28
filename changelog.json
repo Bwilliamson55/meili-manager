@@ -43,6 +43,15 @@
       {
         "subject": "Drop dist",
         "notes": []
+      },
+      {
+        "subject": "Add stable CE feature wave for modern Meilisearch",
+        "notes": [
+          "Added strict existing-document save behavior with skipCreation and optional task metadata",
+          "Added search toggles for ranking score threshold, matching strategy, query distinct, ranking/performance details, and optional metadata header",
+          "Added fields metadata table to index overview and similar-documents page/route",
+          "Expanded API key action options by merging discovered server actions"
+        ]
       }
     ]
   },

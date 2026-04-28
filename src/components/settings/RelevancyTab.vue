@@ -34,6 +34,26 @@
         :current-value="modelValue.rankingRules"
       />
     </div>
+    <q-banner class="bg-grey-2 text-grey-9">
+      <div class="flex items-end gap-2">
+        <q-input
+          v-model="pinRankField"
+          filled
+          dense
+          class="flex-1"
+          label="Pin Rank Field"
+          hint="Use numeric field (e.g. pin_rank). Higher value ranks earlier."
+        />
+        <q-btn
+          flat
+          dense
+          color="secondary"
+          icon="push_pin"
+          label="Enable Pinning Rule"
+          @click="applyPinningRule"
+        />
+      </div>
+    </q-banner>
 
     <!-- Distinct Attribute -->
     <div class="flex items-start gap-2">
@@ -85,21 +105,91 @@
       :has-field-changed="hasFieldChanged"
     />
 
+    <!-- Dictionary -->
+    <div class="flex items-start gap-2">
+      <q-select
+        filled
+        v-model="modelValue.dictionary"
+        label="Dictionary"
+        hint="Terms treated as single tokens during indexing"
+        use-input
+        use-chips
+        multiple
+        stack-label
+        hide-dropdown-icon
+        input-debounce="0"
+        new-value-mode="add-unique"
+        class="flex-1"
+        :class="{
+          'border-2 border-orange-500': hasFieldChanged('dictionary'),
+        }"
+      />
+      <SettingsHelp
+        :metadata="SETTINGS_METADATA.dictionary"
+        :current-value="modelValue.dictionary"
+      />
+    </div>
+
     <!-- Typo Tolerance Section -->
     <TypoToleranceSection
       v-model="modelValue.typoTolerance"
       :has-field-changed="hasFieldChanged"
     />
+
+    <q-expansion-item
+      dense
+      dense-toggle
+      expand-separator
+      icon="inventory_2"
+      label="Search Rules Pack (Portable)"
+      header-class="text-grey-7"
+    >
+      <q-card flat bordered>
+        <q-card-section class="q-gutter-sm">
+          <div class="text-caption text-grey-7">
+            Export/import ranking and related search rules between projects.
+          </div>
+          <div class="flex gap-2">
+            <q-btn
+              flat
+              dense
+              color="secondary"
+              icon="download"
+              label="Export Pack"
+              @click="exportRulesPack"
+            />
+            <q-btn
+              flat
+              dense
+              color="secondary"
+              icon="upload"
+              label="Apply Pack"
+              @click="applyRulesPack"
+            />
+          </div>
+          <q-input
+            v-model="rulesPackJson"
+            type="textarea"
+            autogrow
+            filled
+            label="Rules Pack JSON"
+            hint="Contains ranking rules, synonyms, typo tolerance, attributes, and optional embedders"
+          />
+        </q-card-section>
+      </q-card>
+    </q-expansion-item>
   </div>
 </template>
 
 <script setup>
+import { ref } from "vue";
 import SettingsHelp from "src/components/SettingsHelp.vue";
 import SynonymsSection from "./SynonymsSection.vue";
 import TypoToleranceSection from "./TypoToleranceSection.vue";
 import { SETTINGS_METADATA } from "src/utils/settings-config";
+import { showError, showSuccess } from "src/utils/notifications";
 
-defineProps({
+const props = defineProps({
   modelValue: {
     type: Object,
     required: true,
@@ -111,4 +201,86 @@ defineProps({
 });
 
 defineEmits(["show-ranking-reorder"]);
+
+const rulesPackJson = ref("");
+const pinRankField = ref("pin_rank");
+
+const exportRulesPack = () => {
+  const pack = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    rules: {
+      rankingRules: props.modelValue.rankingRules || [],
+      distinctAttribute: props.modelValue.distinctAttribute || null,
+      stopWords: props.modelValue.stopWords || [],
+      synonyms: props.modelValue.synonyms || {},
+      dictionary: props.modelValue.dictionary || [],
+      typoTolerance: props.modelValue.typoTolerance || {},
+      searchableAttributes: props.modelValue.searchableAttributes || ["*"],
+      filterableAttributes: props.modelValue.filterableAttributes || [],
+      sortableAttributes: props.modelValue.sortableAttributes || [],
+      embedders: props.modelValue.embedders || {},
+      localizedAttributes: props.modelValue.localizedAttributes || [],
+    },
+  };
+  rulesPackJson.value = JSON.stringify(pack, null, 2);
+  showSuccess("Search rules pack exported.");
+};
+
+const applyRulesPack = () => {
+  try {
+    const parsed = JSON.parse(rulesPackJson.value || "{}");
+    const incoming = parsed?.rules || {};
+    const allowedKeys = [
+      "rankingRules",
+      "distinctAttribute",
+      "stopWords",
+      "synonyms",
+      "dictionary",
+      "typoTolerance",
+      "searchableAttributes",
+      "filterableAttributes",
+      "sortableAttributes",
+      "embedders",
+      "localizedAttributes",
+    ];
+    for (const key of allowedKeys) {
+      if (incoming[key] !== undefined) {
+        props.modelValue[key] = incoming[key];
+      }
+    }
+    showSuccess("Search rules pack applied.");
+  } catch (error) {
+    showError(`Invalid rules pack JSON: ${error.message}`);
+  }
+};
+
+const applyPinningRule = () => {
+  const field = pinRankField.value?.trim();
+  if (!field) {
+    showError("Pin rank field cannot be empty.");
+    return;
+  }
+
+  const sortRule = `desc(${field})`;
+  const rules = [...(props.modelValue.rankingRules || [])];
+  const sortable = [...(props.modelValue.sortableAttributes || [])];
+
+  if (!sortable.includes(field)) {
+    sortable.push(field);
+  }
+  if (!rules.includes(sortRule)) {
+    const sortIdx = rules.indexOf("sort");
+    if (sortIdx >= 0) {
+      rules.splice(sortIdx + 1, 0, sortRule);
+    } else {
+      rules.push("sort");
+      rules.push(sortRule);
+    }
+  }
+
+  props.modelValue.sortableAttributes = sortable;
+  props.modelValue.rankingRules = rules;
+  showSuccess(`Pinning rule enabled with ${sortRule}.`);
+};
 </script>

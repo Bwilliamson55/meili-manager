@@ -383,30 +383,43 @@ const toggleExpand = (props) => {
 };
 
 // Build task details array
-const getTaskDetails = (task) => [
-  {
-    label: "UID:",
-    value: task.uid,
-    component: "span",
-    props: { class: "font-mono" },
-  },
-  {
-    label: "Status:",
-    component: "q-badge",
-    props: {
-      color: getStatusColor(task.status),
-      label: task.status,
+const getTaskDetails = (task) => {
+  const details = [
+    {
+      label: "UID:",
+      value: task.uid,
+      component: "span",
+      props: { class: "font-mono" },
     },
-  },
-  { label: "Type:", value: task.type },
-  {
-    label: "Index:",
-    value: task.indexUid || "N/A",
-    component: "span",
-    props: { class: "font-mono" },
-  },
-  { label: "Duration:", value: formatDuration(task.duration) },
-];
+    {
+      label: "Status:",
+      component: "q-badge",
+      props: {
+        color: getStatusColor(task.status),
+        label: task.status,
+      },
+    },
+    { label: "Type:", value: task.type },
+    {
+      label: "Index:",
+      value: task.indexUid || "N/A",
+      component: "span",
+      props: { class: "font-mono" },
+    },
+    { label: "Duration:", value: formatDuration(task.duration) },
+  ];
+
+  if (task.details?.customMetadata) {
+    details.push({
+      label: "Custom Metadata:",
+      value: task.details.customMetadata,
+      component: "span",
+      props: { class: "font-mono text-primary" },
+    });
+  }
+
+  return details;
+};
 
 // Build timeline array
 const getTimeline = (task) => {
@@ -525,6 +538,7 @@ const getTypeIcon = (type) => {
     case "indexSwap":
       return "swap_horiz";
     case "taskCancelation":
+    case "taskCancellation":
       return "cancel";
     case "taskDeletion":
       return "delete_sweep";

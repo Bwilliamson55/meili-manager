@@ -72,6 +72,15 @@
             :has-field-changed="hasFieldChanged"
           />
         </q-tab-panel>
+        <q-tab-panel name="advanced">
+          <AdvancedTab
+            v-model="iSettings"
+            :has-field-changed="hasFieldChanged"
+          />
+        </q-tab-panel>
+        <q-tab-panel name="ai">
+          <AiTab v-model="iSettings" :has-field-changed="hasFieldChanged" />
+        </q-tab-panel>
       </q-tab-panels>
 
       <!-- Submit Section -->
@@ -132,6 +141,8 @@ import SettingsBanners from "./settings/SettingsBanners.vue";
 import SearchTab from "./settings/SearchTab.vue";
 import RelevancyTab from "./settings/RelevancyTab.vue";
 import PerformanceTab from "./settings/PerformanceTab.vue";
+import AdvancedTab from "./settings/AdvancedTab.vue";
+import AiTab from "./settings/AiTab.vue";
 import ReorderDialogs from "./settings/ReorderDialogs.vue";
 import {
   SETTINGS_CATEGORIES,
@@ -153,6 +164,7 @@ const iSettings = ref({
   rankingRules: [],
   stopWords: [],
   synonyms: {},
+  dictionary: [],
   typoTolerance: {
     enabled: true,
     minWordSizeForTypos: {
@@ -168,6 +180,14 @@ const iSettings = ref({
   pagination: {
     maxTotalHits: 1000,
   },
+  proximityPrecision: "byWord",
+  searchCutoffMs: 1500,
+  separatorTokens: [],
+  nonSeparatorTokens: [],
+  prefixSearch: "indexingTime",
+  facetSearch: true,
+  embedders: {},
+  localizedAttributes: [],
 });
 
 const originalSettings = ref({});
@@ -283,9 +303,11 @@ const onSubmit = async () => {
     const updateRes = await mclient.updateSettings(iSettings.value);
     iSettingsProcessing.value.taskId = updateRes.taskUid ?? 0;
 
-    await theSettings.client.tasks.waitForTask(updateRes.taskUid, {
-      intervalMs: 5000,
-    });
+    if (updateRes?.taskUid) {
+      await theSettings.client.waitForTask(updateRes.taskUid, {
+        intervalMs: 5000,
+      });
+    }
 
     iSettingsProcessing.value.processing = false;
 

@@ -5,6 +5,13 @@ A Quasar application for managing multiple Meilisearch instances across developm
 **Version**: 2.0.0
 **Demo**: [https://meili-manager.vercel.app](https://meili-manager.vercel.app)
 
+## Docs
+
+- Reuse/fork/embed playbook: `docs/reuse-and-embedding.md`
+- Release readiness summary: `docs/release-readiness-1.42.md`
+- Dual-version QA checklist: `docs/qa-checklist-1.11-1.42.md`
+- GitHub release draft: `RELEASE_DRAFT_1.42.md`
+
 ## Quick Start
 
 ## Install the dependencies
@@ -46,6 +53,13 @@ npm run format
 ```
 
 ## Core Features
+
+### Broad Version Compatibility
+
+The UI is tuned for backward-compatible operation across legacy and modern Meilisearch servers. Current target support is:
+
+- `1.11.x` (legacy-safe behavior with feature gating)
+- `1.42.x` (full modern CE capabilities exposed in UI)
 
 ### Multi-Instance Management
 
@@ -100,7 +114,7 @@ Save and switch between multiple Meilisearch instances (development, staging, pr
 All Meilisearch client creation goes through `settings-store.js`, providing:
 
 - Automatic connection validation
-- Client caching for performance
+- Consistent on-demand client creation via store getter
 - Consistent error handling across all components
 - Safe instance switching with validation
 

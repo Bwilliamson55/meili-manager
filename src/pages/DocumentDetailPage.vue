@@ -27,6 +27,21 @@
           <q-banner class="bg-primary text-white text-center mt-4">
             Saving a document with the same UID as another will overwrite it!
           </q-banner>
+          <q-input
+            v-model="taskMetadata"
+            outlined
+            dense
+            clearable
+            class="mt-4"
+            label="Task metadata (optional)"
+            hint="Saved as customMetadata on document write tasks"
+          />
+          <q-toggle
+            v-if="route.params.documentUid !== 'new'"
+            v-model="allowCreateWhenMissing"
+            class="mt-2"
+            label="Allow create if ID does not exist"
+          />
         </q-card-section>
       </q-card>
       <vue-jsoneditor
@@ -59,6 +74,8 @@ const theDocument = ref({});
 const theDocumentText = ref("");
 const theDocumentUid = ref("");
 const iPk = ref("");
+const taskMetadata = ref("");
+const allowCreateWhenMissing = ref(false);
 
 onMounted(async () => {
   try {
@@ -114,12 +131,27 @@ const updateDocument = async () => {
     }
 
     const isNewDocument = route.params.documentUid === "new";
-    const updateResult = await mclient.addDocuments([theDocument.value]);
+    const params = new URLSearchParams();
+    if (!isNewDocument && !allowCreateWhenMissing.value) {
+      params.set("skipCreation", "true");
+    }
+    if (taskMetadata.value?.trim()) {
+      params.set("customMetadata", taskMetadata.value.trim());
+    }
 
-    // waitForTask is on the client.tasks object in SDK 0.53.0
-    await theSettings.client.tasks.waitForTask(updateResult.taskUid, {
-      timeOutMs: 15000,
+    const endpoint = `/indexes/${encodeURIComponent(currentIndex.value)}/documents${
+      params.toString() ? `?${params.toString()}` : ""
+    }`;
+    const updateResult = await theSettings.rawRequest(endpoint, {
+      method: "POST",
+      body: [theDocument.value],
     });
+
+    if (updateResult?.taskUid) {
+      await theSettings.client.waitForTask(updateResult.taskUid, {
+        timeoutMs: 15000,
+      });
+    }
 
     // Reload the document with the actual UID
     theDocument.value = await mclient.getDocument(theDocumentUid.value);

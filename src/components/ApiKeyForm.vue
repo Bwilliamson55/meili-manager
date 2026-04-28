@@ -137,13 +137,14 @@ const keyActions = [
   "indexes.update",
   "indexes.delete",
   "indexes.swap",
-  "tasks.get",
   "tasks.cancel",
   "tasks.delete",
+  "tasks.get",
   "settings.get",
   "settings.update",
   "stats.get",
   "dumps.create",
+  "snapshots.create",
   "version",
   "keys.get",
   "keys.create",
@@ -152,14 +153,31 @@ const keyActions = [
   "*",
 ];
 const keyActionsFilter = ref(keyActions);
+const allAvailableActions = ref([...keyActions]);
 const availableIndexes = ref([]);
+const allAvailableIndexes = ref([]);
+
+const listIndexes = async (client) => {
+  if (typeof client.getRawIndexes === "function") {
+    return client.getRawIndexes();
+  }
+  return client.getIndexes();
+};
 
 onMounted(async () => {
   try {
     const client = theSettings.client;
-    const indexes = await client.getRawIndexes();
-    availableIndexes.value = indexes.results.map((i) => i.uid);
+    const indexes = await listIndexes(client);
+    allAvailableIndexes.value = (indexes.results || []).map((i) => i.uid);
+    availableIndexes.value = [...allAvailableIndexes.value];
     iKeys.value = await client.getKeys();
+    const discoveredActions = (iKeys.value.results || []).flatMap(
+      (key) => key.actions || [],
+    );
+    allAvailableActions.value = Array.from(
+      new Set([...keyActions, ...discoveredActions]),
+    ).sort();
+    keyActionsFilter.value = [...allAvailableActions.value];
   } catch (error) {
     console.error("Failed to load API key form data:", error);
     showError(`Failed to load: ${error.message}`);
@@ -170,10 +188,10 @@ const filterFnActions = (val, update) => {
     update(
       () => {
         if (val === "") {
-          keyActionsFilter.value = keyActions;
+          keyActionsFilter.value = [...allAvailableActions.value];
         } else {
           const needle = val.toLowerCase();
-          keyActionsFilter.value = keyActions.filter(
+          keyActionsFilter.value = allAvailableActions.value.filter(
             (v) => v.toLowerCase().indexOf(needle) > -1,
           );
         }
@@ -198,14 +216,15 @@ const filterFnIndexes = (val, update) => {
         if (val === "") {
           try {
             const client = theSettings.client;
-            const indexes = await client.getRawIndexes();
-            availableIndexes.value = indexes.results.map((i) => i.uid);
+            const indexes = await listIndexes(client);
+            allAvailableIndexes.value = (indexes.results || []).map((i) => i.uid);
+            availableIndexes.value = [...allAvailableIndexes.value];
           } catch (error) {
             console.error("Failed to load indexes:", error);
           }
         } else {
           const needle = val.toLowerCase();
-          availableIndexes.value = availableIndexes.value.filter(
+          availableIndexes.value = allAvailableIndexes.value.filter(
             (v) => v.toLowerCase().indexOf(needle) > -1,
           );
         }

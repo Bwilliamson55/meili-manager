@@ -1,5 +1,34 @@
 import { defineStore, acceptHMRUpdate } from "pinia";
-import { MeiliSearch } from "meilisearch";
+import { Meilisearch } from "meilisearch";
+import { getDefaultIndexSearchState } from "src/utils/search-utils";
+
+const normalizeMeiliHost = (rawUrl) => {
+  if (!rawUrl || typeof rawUrl !== "string") {
+    throw new Error("Meilisearch URL is required");
+  }
+
+  let candidate = rawUrl.trim();
+  if (!candidate) {
+    throw new Error("Meilisearch URL is required");
+  }
+
+  if (!/^https?:\/\//i.test(candidate)) {
+    candidate = `http://${candidate}`;
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(candidate);
+  } catch {
+    throw new Error("Invalid Meilisearch URL");
+  }
+
+  if (!parsed.hostname) {
+    throw new Error("Invalid Meilisearch URL");
+  }
+
+  return parsed.origin;
+};
 
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
@@ -12,7 +41,7 @@ export const useSettingsStore = defineStore("settings", {
     // Per-index display preferences
     indexDisplaySettings: {}, // { indexName: { imageField: 'image_url', viewMode: 'compact' } }
     // Per-index search state persistence
-    indexSearchState: {}, // { indexName: { query: '', filters: {}, sort: '', page: 1, filtersVisible: true } }
+    indexSearchState: {}, // { indexName: { query: '', filters: {}, sort: '', page: 0, filtersVisible: true, ...search options } }
     darkMode: true,
     // Unsaved settings tracking
     hasUnsavedSettings: false,
@@ -28,8 +57,8 @@ export const useSettingsStore = defineStore("settings", {
       ) {
         throw new Error("Meilisearch credentials not configured");
       }
-      return new MeiliSearch({
-        host: state.indexUrl,
+      return new Meilisearch({
+        host: normalizeMeiliHost(state.indexUrl),
         apiKey: state.indexKey,
       });
     },
@@ -50,6 +79,45 @@ export const useSettingsStore = defineStore("settings", {
     // Get index client
     getIndexClient(indexName) {
       return this.client.index(indexName);
+    },
+    async rawRequest(path, options = {}) {
+      const headers = new Headers(options.headers || {});
+      headers.set("Content-Type", "application/json");
+      if (this.indexKey) {
+        headers.set("Authorization", `Bearer ${this.indexKey}`);
+      }
+
+      const requestOptions = {
+        method: options.method || "GET",
+        headers,
+      };
+
+      if (options.body !== undefined) {
+        requestOptions.body =
+          typeof options.body === "string"
+            ? options.body
+            : JSON.stringify(options.body);
+      }
+
+      const baseUrl = normalizeMeiliHost(this.indexUrl);
+      const requestUrl = new URL(path, `${baseUrl}/`).toString();
+      const response = await fetch(requestUrl, requestOptions);
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage = errorText || `Request failed with ${response.status}`;
+        try {
+          const parsed = JSON.parse(errorText);
+          errorMessage = parsed?.message || errorMessage;
+        } catch {
+          // Keep raw text when body is not JSON.
+        }
+        throw new Error(errorMessage);
+      }
+
+      if (response.status === 204) {
+        return null;
+      }
+      return response.json();
     },
     async getIndexSettings(indexName) {
       try {
@@ -87,7 +155,7 @@ export const useSettingsStore = defineStore("settings", {
       }
 
       // Update credentials (client getter will automatically use new values)
-      this.indexUrl = instance.indexUrl;
+      this.indexUrl = normalizeMeiliHost(instance.indexUrl);
       this.indexKey = instance.indexKey;
       this.currentInstance = instanceIndex;
 
@@ -97,12 +165,17 @@ export const useSettingsStore = defineStore("settings", {
 
     // Add instance with validation
     async addInstance(label, url, key) {
-      const newInstance = { label, indexUrl: url, indexKey: key };
+      const normalizedUrl = normalizeMeiliHost(url);
+      const newInstance = {
+        label,
+        indexUrl: normalizedUrl,
+        indexKey: key,
+      };
 
       // Validate before adding
       try {
-        const testClient = new MeiliSearch({
-          host: url,
+        const testClient = new Meilisearch({
+          host: normalizedUrl,
           apiKey: key,
         });
         await testClient.getVersion();
@@ -153,15 +226,7 @@ export const useSettingsStore = defineStore("settings", {
     // Get search state for an index
     // Note: page is 0-based to match InstantSearch's internal format (0 = first page)
     getIndexSearchState(indexName) {
-      return (
-        this.indexSearchState[indexName] || {
-          query: "",
-          filters: {},
-          sort: "",
-          page: 0,
-          filtersVisible: true,
-        }
-      );
+      return this.indexSearchState[indexName] || getDefaultIndexSearchState();
     },
 
     // Set search state for an index

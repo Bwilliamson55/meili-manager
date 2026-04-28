@@ -200,7 +200,7 @@ const onSubmit = async () => {
 
     // Get version info
     try {
-      const client = await theSettings.getMeiliClient();
+      const client = theSettings.client;
       version.value = (await client.getVersion()).pkgVersion ?? 0;
     } catch (e) {
       // Version is optional
