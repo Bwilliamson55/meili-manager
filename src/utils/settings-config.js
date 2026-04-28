@@ -180,6 +180,25 @@ export const SETTINGS_METADATA = {
     type: "boolean",
     performanceImpact: "medium",
   },
+  embedders: {
+    category: "ai",
+    label: "Embedders",
+    helpText:
+      "Defines embedder providers and options for semantic/hybrid search workflows.",
+    docs: "https://www.meilisearch.com/docs/reference/api/settings#embedders",
+    reindexes: false,
+    type: "object",
+  },
+  localizedAttributes: {
+    category: "ai",
+    label: "Localized Attributes",
+    helpText:
+      "Sets per-language attribute localization strategies for multilingual relevance.",
+    docs:
+      "https://www.meilisearch.com/docs/reference/api/settings#localized-attributes",
+    reindexes: true,
+    type: "array",
+  },
 };
 
 export const SETTINGS_CATEGORIES = [
@@ -201,6 +220,12 @@ export const SETTINGS_CATEGORIES = [
     label: "Advanced",
     icon: "tune",
     color: "accent",
+  },
+  {
+    value: "ai",
+    label: "AI / LLM",
+    icon: "auto_awesome",
+    color: "deep-purple",
   },
 ];
 

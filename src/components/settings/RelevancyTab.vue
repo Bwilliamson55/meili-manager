@@ -115,16 +115,61 @@
       v-model="modelValue.typoTolerance"
       :has-field-changed="hasFieldChanged"
     />
+
+    <q-expansion-item
+      dense
+      dense-toggle
+      expand-separator
+      icon="inventory_2"
+      label="Search Rules Pack (Portable)"
+      header-class="text-grey-7"
+    >
+      <q-card flat bordered>
+        <q-card-section class="q-gutter-sm">
+          <div class="text-caption text-grey-7">
+            Export/import ranking and related search rules between projects.
+          </div>
+          <div class="flex gap-2">
+            <q-btn
+              flat
+              dense
+              color="secondary"
+              icon="download"
+              label="Export Pack"
+              @click="exportRulesPack"
+            />
+            <q-btn
+              flat
+              dense
+              color="secondary"
+              icon="upload"
+              label="Apply Pack"
+              @click="applyRulesPack"
+            />
+          </div>
+          <q-input
+            v-model="rulesPackJson"
+            type="textarea"
+            autogrow
+            filled
+            label="Rules Pack JSON"
+            hint="Contains ranking rules, synonyms, typo tolerance, attributes, and optional embedders"
+          />
+        </q-card-section>
+      </q-card>
+    </q-expansion-item>
   </div>
 </template>
 
 <script setup>
+import { ref } from "vue";
 import SettingsHelp from "src/components/SettingsHelp.vue";
 import SynonymsSection from "./SynonymsSection.vue";
 import TypoToleranceSection from "./TypoToleranceSection.vue";
 import { SETTINGS_METADATA } from "src/utils/settings-config";
+import { showError, showSuccess } from "src/utils/notifications";
 
-defineProps({
+const props = defineProps({
   modelValue: {
     type: Object,
     required: true,
@@ -136,4 +181,56 @@ defineProps({
 });
 
 defineEmits(["show-ranking-reorder"]);
+
+const rulesPackJson = ref("");
+
+const exportRulesPack = () => {
+  const pack = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    rules: {
+      rankingRules: props.modelValue.rankingRules || [],
+      distinctAttribute: props.modelValue.distinctAttribute || null,
+      stopWords: props.modelValue.stopWords || [],
+      synonyms: props.modelValue.synonyms || {},
+      dictionary: props.modelValue.dictionary || [],
+      typoTolerance: props.modelValue.typoTolerance || {},
+      searchableAttributes: props.modelValue.searchableAttributes || ["*"],
+      filterableAttributes: props.modelValue.filterableAttributes || [],
+      sortableAttributes: props.modelValue.sortableAttributes || [],
+      embedders: props.modelValue.embedders || {},
+      localizedAttributes: props.modelValue.localizedAttributes || [],
+    },
+  };
+  rulesPackJson.value = JSON.stringify(pack, null, 2);
+  showSuccess("Search rules pack exported.");
+};
+
+const applyRulesPack = () => {
+  try {
+    const parsed = JSON.parse(rulesPackJson.value || "{}");
+    const incoming = parsed?.rules || {};
+    const allowedKeys = [
+      "rankingRules",
+      "distinctAttribute",
+      "stopWords",
+      "synonyms",
+      "dictionary",
+      "typoTolerance",
+      "searchableAttributes",
+      "filterableAttributes",
+      "sortableAttributes",
+      "embedders",
+      "localizedAttributes",
+    ];
+    for (const key of allowedKeys) {
+      if (incoming[key] !== undefined) {
+        props.modelValue[key] = incoming[key];
+      }
+    }
+    showSuccess("Search rules pack applied.");
+  } catch (error) {
+    showError(`Invalid rules pack JSON: ${error.message}`);
+  }
+};
 </script>
