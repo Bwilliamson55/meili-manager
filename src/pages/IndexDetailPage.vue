@@ -42,6 +42,20 @@
                       bordered
                     />
                   </div>
+                  <div class="w-full text-center mt-6">
+                    <p class="text-h6">Fields Metadata</p>
+                  </div>
+                  <div class="px-4 mx-auto w-full">
+                    <q-table
+                      dense
+                      :rows="fieldsRows"
+                      :columns="fieldsColumns"
+                      row-key="field"
+                      :rows-per-page-options="[5, 10, 15, 25]"
+                      flat
+                      bordered
+                    />
+                  </div>
                 </div>
               </q-card-section>
             </q-card-section>
@@ -80,18 +94,69 @@
       >
     </div>
     <ais-instant-search
-      v-if="iPk"
+      v-if="iPk && searchClient"
       :search-client="searchClient"
       :index-name="currentIndex"
     >
       <q-card flat bordered class="mb-4">
         <q-card-section class="p-4">
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-4 mb-4">
             <AisStatsDisplay />
             <div class="flex gap-3 flex-1">
               <AisSearchInput placeholder="Search documents..." />
               <AisSortBySelect :items="sortByItems" />
             </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            <q-input
+              v-model.number="savedSearchState.rankingScoreThreshold"
+              type="number"
+              outlined
+              dense
+              clearable
+              label="Ranking Score Threshold"
+              hint="0-1; filters low scoring hits"
+            />
+            <q-select
+              v-model="savedSearchState.matchingStrategy"
+              :options="matchingStrategyOptions"
+              outlined
+              dense
+              emit-value
+              map-options
+              label="Matching Strategy"
+            />
+            <q-input
+              v-model="savedSearchState.distinct"
+              outlined
+              dense
+              clearable
+              label="Distinct (query-time)"
+            />
+            <q-toggle
+              v-model="savedSearchState.showRankingScore"
+              label="Show Ranking Score"
+            />
+            <q-toggle
+              v-model="savedSearchState.showRankingScoreDetails"
+              label="Show Ranking Details"
+            />
+            <q-toggle
+              v-model="savedSearchState.showPerformanceDetails"
+              label="Show Performance Details"
+            />
+            <q-toggle
+              v-model="savedSearchState.includeSearchMetadataHeader"
+              label="Include Search Metadata Header"
+            />
+            <q-input
+              v-model="savedSearchState.searchMetadataHeaderValue"
+              outlined
+              dense
+              clearable
+              label="Metadata Header Value"
+              :disable="!savedSearchState.includeSearchMetadataHeader"
+            />
           </div>
         </q-card-section>
       </q-card>
@@ -250,6 +315,14 @@
                             color="primary"
                             :to="`/documents/${currentIndex}/${getDocumentId(item)}`"
                           />
+                          <q-btn
+                            flat
+                            dense
+                            size="sm"
+                            icon="hub"
+                            color="secondary"
+                            :to="`/similar/${currentIndex}/${getDocumentId(item)}`"
+                          />
                         </div>
 
                         <!-- Compact field display - 2 columns -->
@@ -291,12 +364,7 @@
           </ais-hits>
         </div>
       </div>
-      <ais-configure
-        :hits-per-page="50"
-        :query="savedSearchState.query || undefined"
-        :sort-by="savedSearchState.sort || undefined"
-        :page="savedSearchState.page !== undefined && savedSearchState.page >= 0 ? savedSearchState.page : undefined"
-      />
+      <ais-configure v-bind="searchParams" />
       <SearchStatePersistence
         :index-name="currentIndex"
         @state-changed="handleSearchStateChange"
@@ -330,16 +398,14 @@ const router = useRouter();
 
 const theSettings = useSettingsStore();
 const indexesStore = useIndexesStore();
-const { indexUrl, indexKey, currentIndex } = storeToRefs(theSettings);
+const { currentIndex } = storeToRefs(theSettings);
 const iStats = ref({});
 const iSettings = ref({});
 const sortByItems = ref([]);
 const iPk = ref("");
-const searchClient = instantMeiliSearch(
-  indexUrl.value,
-  indexKey.value,
-).searchClient;
+const searchClient = ref(null);
 const fdRows = ref([]);
+const fieldsRows = ref([]);
 const fdColumns = [
   {
     name: "Field Name",
@@ -353,6 +419,36 @@ const fdColumns = [
     label: "Count",
     field: "Count",
     align: "right",
+    sortable: true,
+  },
+];
+const fieldsColumns = [
+  {
+    name: "field",
+    label: "Field",
+    field: "field",
+    align: "left",
+    sortable: true,
+  },
+  {
+    name: "searchable",
+    label: "Searchable",
+    field: "searchable",
+    align: "left",
+    sortable: true,
+  },
+  {
+    name: "filterable",
+    label: "Filterable",
+    field: "filterable",
+    align: "left",
+    sortable: true,
+  },
+  {
+    name: "sortable",
+    label: "Sortable",
+    field: "sortable",
+    align: "left",
     sortable: true,
   },
 ];
@@ -371,7 +467,82 @@ const savedSearchState = ref({
   sort: "",
   page: 0,
   filtersVisible: true,
+  rankingScoreThreshold: null,
+  matchingStrategy: "last",
+  distinct: "",
+  showRankingScore: false,
+  showRankingScoreDetails: false,
+  showPerformanceDetails: false,
+  includeSearchMetadataHeader: false,
+  searchMetadataHeaderValue: "",
 });
+
+const matchingStrategyOptions = [
+  { label: "Last", value: "last" },
+  { label: "All", value: "all" },
+  { label: "Frequency", value: "frequency" },
+];
+
+const searchParams = computed(() => {
+  const params = {
+    hitsPerPage: 50,
+    query: savedSearchState.value.query || undefined,
+    sortBy: savedSearchState.value.sort || undefined,
+    page:
+      savedSearchState.value.page !== undefined && savedSearchState.value.page >= 0
+        ? savedSearchState.value.page
+        : undefined,
+    matchingStrategy: savedSearchState.value.matchingStrategy || undefined,
+    distinct: savedSearchState.value.distinct || undefined,
+    showRankingScore: savedSearchState.value.showRankingScore || undefined,
+    showRankingScoreDetails:
+      savedSearchState.value.showRankingScoreDetails || undefined,
+    showPerformanceDetails:
+      savedSearchState.value.showPerformanceDetails || undefined,
+  };
+
+  const threshold = savedSearchState.value.rankingScoreThreshold;
+  if (threshold !== null && threshold !== undefined && threshold !== "") {
+    params.rankingScoreThreshold = Number(threshold);
+  }
+  return params;
+});
+
+const rebuildSearchClient = () => {
+  const options = {
+    meiliSearchParams: {
+      matchingStrategy: savedSearchState.value.matchingStrategy || undefined,
+      distinct: savedSearchState.value.distinct || undefined,
+      showRankingScore: savedSearchState.value.showRankingScore || undefined,
+      showRankingScoreDetails:
+        savedSearchState.value.showRankingScoreDetails || undefined,
+      showPerformanceDetails:
+        savedSearchState.value.showPerformanceDetails || undefined,
+      rankingScoreThreshold:
+        savedSearchState.value.rankingScoreThreshold !== null &&
+        savedSearchState.value.rankingScoreThreshold !== undefined &&
+        savedSearchState.value.rankingScoreThreshold !== ""
+          ? Number(savedSearchState.value.rankingScoreThreshold)
+          : undefined,
+    },
+    requestInit:
+      savedSearchState.value.includeSearchMetadataHeader &&
+      savedSearchState.value.searchMetadataHeaderValue
+        ? {
+            headers: {
+              "Meili-Include-Metadata":
+                savedSearchState.value.searchMetadataHeaderValue,
+            },
+          }
+        : undefined,
+  };
+
+  searchClient.value = instantMeiliSearch(
+    theSettings.indexUrl,
+    theSettings.indexKey,
+    options,
+  ).searchClient;
+};
 
 const saveDisplaySettings = () => {
   theSettings.setIndexDisplaySettings(
@@ -408,6 +579,19 @@ const loadInstance = async () => {
   });
   // Get primary key from indexes store (which has the correct primaryKey from getRawIndexes)
   iPk.value = await indexesStore.getPrimaryKey(currentIndex.value);
+  const fieldsResponse = await theSettings.rawRequest(
+    `/indexes/${encodeURIComponent(currentIndex.value)}/fields`,
+    {
+      method: "POST",
+      body: { offset: 0, limit: 100 },
+    },
+  );
+  fieldsRows.value = (fieldsResponse?.results || []).map((field) => ({
+    field: field.name || field.field || field.id || "unknown",
+    searchable: field.searchable ? "Yes" : "No",
+    filterable: field.filterable ? "Yes" : "No",
+    sortable: field.sortable ? "Yes" : "No",
+  }));
 
   // Load display settings for this index
   displaySettings.value = theSettings.getIndexDisplaySettings(
@@ -417,6 +601,7 @@ const loadInstance = async () => {
   // Load saved search state for this index
   const savedState = theSettings.getIndexSearchState(currentIndex.value);
   savedSearchState.value = { ...savedState };
+  rebuildSearchClient();
   filtersVisible.value = savedState.filtersVisible ?? true;
   // Initialize previous query to detect query changes
   previousQuery.value = savedState.query || "";
@@ -455,7 +640,11 @@ const handleSearchStateChange = (state) => {
   }
 
   // Update local state
-  savedSearchState.value = { ...state };
+  savedSearchState.value = {
+    ...savedSearchState.value,
+    ...state,
+  };
+  rebuildSearchClient();
   // Also save filtersVisible
   theSettings.setIndexSearchState(currentIndex.value, {
     ...state,
@@ -471,6 +660,7 @@ watch(filtersVisible, () => {
       ...currentState,
       filtersVisible: filtersVisible.value,
     });
+    rebuildSearchClient();
   }
 });
 
@@ -501,8 +691,34 @@ onMounted(async () => {
   currentIndex.value = route.params.uid;
   previousIndex.value = currentIndex.value;
   await loadInstance();
+  if (!searchClient.value) {
+    rebuildSearchClient();
+  }
 
   // Set up watchers for search state after component is mounted
   await nextTick();
 });
+
+watch(
+  () => ({
+    rankingScoreThreshold: savedSearchState.value.rankingScoreThreshold,
+    matchingStrategy: savedSearchState.value.matchingStrategy,
+    distinct: savedSearchState.value.distinct,
+    showRankingScore: savedSearchState.value.showRankingScore,
+    showRankingScoreDetails: savedSearchState.value.showRankingScoreDetails,
+    showPerformanceDetails: savedSearchState.value.showPerformanceDetails,
+    includeSearchMetadataHeader:
+      savedSearchState.value.includeSearchMetadataHeader,
+    searchMetadataHeaderValue: savedSearchState.value.searchMetadataHeaderValue,
+  }),
+  () => {
+    if (!currentIndex.value) return;
+    theSettings.setIndexSearchState(currentIndex.value, {
+      ...savedSearchState.value,
+      filtersVisible: filtersVisible.value,
+    });
+    rebuildSearchClient();
+  },
+  { deep: true },
+);
 </script>

@@ -12,7 +12,7 @@ export const useSettingsStore = defineStore("settings", {
     // Per-index display preferences
     indexDisplaySettings: {}, // { indexName: { imageField: 'image_url', viewMode: 'compact' } }
     // Per-index search state persistence
-    indexSearchState: {}, // { indexName: { query: '', filters: {}, sort: '', page: 1, filtersVisible: true } }
+    indexSearchState: {}, // { indexName: { query: '', filters: {}, sort: '', page: 0, filtersVisible: true, ...search options } }
     darkMode: true,
     // Unsaved settings tracking
     hasUnsavedSettings: false,
@@ -50,6 +50,36 @@ export const useSettingsStore = defineStore("settings", {
     // Get index client
     getIndexClient(indexName) {
       return this.client.index(indexName);
+    },
+    async rawRequest(path, options = {}) {
+      const headers = new Headers(options.headers || {});
+      headers.set("Content-Type", "application/json");
+      if (this.indexKey) {
+        headers.set("Authorization", `Bearer ${this.indexKey}`);
+      }
+
+      const requestOptions = {
+        method: options.method || "GET",
+        headers,
+      };
+
+      if (options.body !== undefined) {
+        requestOptions.body =
+          typeof options.body === "string"
+            ? options.body
+            : JSON.stringify(options.body);
+      }
+
+      const response = await fetch(`${this.indexUrl}${path}`, requestOptions);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `Request failed with ${response.status}`);
+      }
+
+      if (response.status === 204) {
+        return null;
+      }
+      return response.json();
     },
     async getIndexSettings(indexName) {
       try {
@@ -160,6 +190,14 @@ export const useSettingsStore = defineStore("settings", {
           sort: "",
           page: 0,
           filtersVisible: true,
+          rankingScoreThreshold: null,
+          matchingStrategy: "last",
+          distinct: "",
+          showRankingScore: false,
+          showRankingScoreDetails: false,
+          showPerformanceDetails: false,
+          includeSearchMetadataHeader: false,
+          searchMetadataHeaderValue: "",
         }
       );
     },

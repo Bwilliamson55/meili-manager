@@ -4,6 +4,7 @@ import TasksPageVue from "src/pages/TasksPage.vue";
 import IndexDetailPage from "src/pages/IndexDetailPage.vue";
 import KeysPageVue from "src/pages/KeysPage.vue";
 import DocumentDetailPage from "src/pages/DocumentDetailPage.vue";
+import SimilarDocumentsPage from "src/pages/SimilarDocumentsPage.vue";
 import PreviewPageVue from "src/pages/PreviewPage.vue";
 import PreviewSidebarVue from "src/pages/PreviewSidebar.vue";
 
@@ -45,6 +46,14 @@ const routes = [
         path: "/documents/:indexUid/:documentUid",
         components: {
           main: DocumentDetailPage,
+          side: SidebarSettingsVue,
+        },
+        props: ["indexUid", "documentUid"],
+      },
+      {
+        path: "/similar/:indexUid/:documentUid",
+        components: {
+          main: SimilarDocumentsPage,
           side: SidebarSettingsVue,
         },
         props: ["indexUid", "documentUid"],

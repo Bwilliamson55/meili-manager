@@ -153,6 +153,7 @@ const keyActions = [
   "*",
 ];
 const keyActionsFilter = ref(keyActions);
+const allAvailableActions = ref([...keyActions]);
 const availableIndexes = ref([]);
 const allAvailableIndexes = ref([]);
 
@@ -170,6 +171,13 @@ onMounted(async () => {
     allAvailableIndexes.value = (indexes.results || []).map((i) => i.uid);
     availableIndexes.value = [...allAvailableIndexes.value];
     iKeys.value = await client.getKeys();
+    const discoveredActions = (iKeys.value.results || []).flatMap(
+      (key) => key.actions || [],
+    );
+    allAvailableActions.value = Array.from(
+      new Set([...keyActions, ...discoveredActions]),
+    ).sort();
+    keyActionsFilter.value = [...allAvailableActions.value];
   } catch (error) {
     console.error("Failed to load API key form data:", error);
     showError(`Failed to load: ${error.message}`);
@@ -180,10 +188,10 @@ const filterFnActions = (val, update) => {
     update(
       () => {
         if (val === "") {
-          keyActionsFilter.value = keyActions;
+          keyActionsFilter.value = [...allAvailableActions.value];
         } else {
           const needle = val.toLowerCase();
-          keyActionsFilter.value = keyActions.filter(
+          keyActionsFilter.value = allAvailableActions.value.filter(
             (v) => v.toLowerCase().indexOf(needle) > -1,
           );
         }
