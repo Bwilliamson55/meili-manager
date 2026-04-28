@@ -45,6 +45,36 @@
                   <div class="w-full text-center mt-6">
                     <p class="text-h6">Fields Metadata</p>
                   </div>
+                  <div class="flex items-end justify-center gap-2 mb-2">
+                    <q-input
+                      v-model.number="fieldsOffset"
+                      type="number"
+                      dense
+                      outlined
+                      label="Offset"
+                      class="w-28"
+                      :min="0"
+                    />
+                    <q-input
+                      v-model.number="fieldsLimit"
+                      type="number"
+                      dense
+                      outlined
+                      label="Limit"
+                      class="w-28"
+                      :min="1"
+                      :max="1000"
+                    />
+                    <q-btn
+                      flat
+                      dense
+                      color="secondary"
+                      icon="refresh"
+                      label="Reload Fields"
+                      :loading="fieldsLoading"
+                      @click="loadFieldsMetadata"
+                    />
+                  </div>
                   <div
                     v-if="fieldsRows.length === 0"
                     class="text-caption text-grey-7 text-center"
@@ -524,6 +554,9 @@ const filtersVisible = ref(true);
 const activeFilters = ref({});
 const previousIndex = ref("");
 const previousQuery = ref("");
+const fieldsOffset = ref(0);
+const fieldsLimit = ref(100);
+const fieldsLoading = ref(false);
 const batchDocumentIdsInput = ref("");
 const batchFetchLoading = ref(false);
 const showBatchFetchDialog = ref(false);
@@ -651,22 +684,17 @@ const getDocumentId = (item) => {
   return id;
 };
 
-const loadInstance = async () => {
-  const mclient = theSettings.getIndexClient(currentIndex.value);
-  iStats.value = await mclient.getStats();
-  iSettings.value = await mclient.getSettings();
-  const fieldDistribution = iStats.value?.fieldDistribution || {};
-  fdRows.value = Object.keys(fieldDistribution).map((key) => {
-    return { "Field Name": key, Count: fieldDistribution[key] };
-  });
-  // Get primary key from indexes store (which has the correct primaryKey from getRawIndexes)
-  iPk.value = await indexesStore.getPrimaryKey(currentIndex.value);
+const loadFieldsMetadata = async () => {
+  fieldsLoading.value = true;
   try {
     const fieldsResponse = await theSettings.rawRequest(
       `/indexes/${encodeURIComponent(currentIndex.value)}/fields`,
       {
         method: "POST",
-        body: { offset: 0, limit: 100 },
+        body: {
+          offset: Math.max(Number(fieldsOffset.value) || 0, 0),
+          limit: Math.min(Math.max(Number(fieldsLimit.value) || 100, 1), 1000),
+        },
       },
     );
     fieldsRows.value = (fieldsResponse?.results || []).map((field) => ({
@@ -679,7 +707,23 @@ const loadInstance = async () => {
     // Keep index detail usable when /fields is unavailable or restricted.
     console.warn("Fields metadata unavailable:", error.message);
     fieldsRows.value = [];
+    showError(`Failed to load fields metadata: ${error.message}`);
+  } finally {
+    fieldsLoading.value = false;
   }
+};
+
+const loadInstance = async () => {
+  const mclient = theSettings.getIndexClient(currentIndex.value);
+  iStats.value = await mclient.getStats();
+  iSettings.value = await mclient.getSettings();
+  const fieldDistribution = iStats.value?.fieldDistribution || {};
+  fdRows.value = Object.keys(fieldDistribution).map((key) => {
+    return { "Field Name": key, Count: fieldDistribution[key] };
+  });
+  // Get primary key from indexes store (which has the correct primaryKey from getRawIndexes)
+  iPk.value = await indexesStore.getPrimaryKey(currentIndex.value);
+  await loadFieldsMetadata();
 
   // Load display settings for this index
   displaySettings.value = theSettings.getIndexDisplaySettings(
