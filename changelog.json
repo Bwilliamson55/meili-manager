@@ -1,5 +1,141 @@
 [
   {
+    "version": "1.18.19",
+    "week": "2026-W18",
+    "dateRange": "2026, Week 18",
+    "changes": [
+      {
+        "subject": "Merge pull request #10 from Bwilliamson55/dev",
+        "notes": [
+          "Upgrade to support 1.42 features"
+        ]
+      },
+      {
+        "subject": "Merge remote-tracking branch 'origin/master' into dev",
+        "notes": []
+      },
+      {
+        "subject": "Guard similar-document UX behind embedder availability",
+        "notes": [
+          "Hid similar-document actions unless the index supports similar search and has configured embedders",
+          "Added runtime checks on SimilarDocumentsPage to require/auto-select embedders and avoid missing-embedder request failures"
+        ]
+      },
+      {
+        "subject": "Hide unsupported similar actions and default advanced controls closed",
+        "notes": [
+          "Hid similar-document action buttons when endpoint support is unavailable for the current server version",
+          "Moved advanced search controls behind a collapsed panel and restored default relevance sort option to reduce noise and warnings"
+        ]
+      },
+      {
+        "subject": "Fix host URL normalization and request routing edge cases",
+        "notes": [
+          "Normalized stored Meilisearch host values and switched raw requests to URL-safe construction to avoid accidental app-origin routing",
+          "Fixed sidebar version lookup to use the active store client and improved version parsing tolerance for compatibility detection"
+        ]
+      },
+      {
+        "subject": "Add public release draft alongside README",
+        "notes": [
+          "Added a GitHub-ready release draft file at repository root for the 1.11 to 1.42 upgrade wave",
+          "Linked the draft from README docs so release notes are easy to find and copy when publishing"
+        ]
+      },
+      {
+        "subject": "Add release notes and dual-version QA checklist",
+        "notes": [
+          "Added release-readiness summary for the 1.11 to 1.42 compatibility and feature upgrade wave",
+          "Added explicit QA checklist for validating legacy and modern server behavior before release"
+        ]
+      },
+      {
+        "subject": "Harden cross-version compatibility and refine filter ergonomics",
+        "notes": [
+          "Added version-aware feature gating so legacy 1.11 servers avoid unsupported query features while modern 1.42 servers keep full controls",
+          "Added filter density controls and compatibility-aware UI disabling to improve polish without breaking backward behavior"
+        ]
+      },
+      {
+        "subject": "Extract search experience panel and refresh filter aesthetics",
+        "notes": [
+          "Extracted index search controls into a reusable SearchExperiencePanel component for easier embedding in other Quasar apps",
+          "Improved filter and index list visuals with clearer refinement rows, counts, and metadata chips for faster scanning"
+        ]
+      },
+      {
+        "subject": "Add LLM demo presets and reuse-focused DRY cleanup",
+        "notes": [
+          "Added one-click hybrid demo presets and reused shared helpers for hybrid request shaping and default search state",
+          "Added reuse and embedding documentation plus README updates to improve forkability across other Quasar apps"
+        ]
+      },
+      {
+        "subject": "Add LLM demo search controls for hybrid retrieval",
+        "notes": [
+          "Added per-index hybrid search controls (enable toggle, embedder, semantic ratio) in index search UI with persisted state",
+          "Extended diagnostics to surface active hybrid settings so demo sessions can quickly verify LLM-oriented behavior"
+        ]
+      },
+      {
+        "subject": "Add one-click pinning rule helper for ranking configuration",
+        "notes": [
+          "Added pin-rank helper UI that injects desc(field) ranking behavior for easier pinned-result setup",
+          "Ensured sortable attributes and ranking rules are updated together to keep pinning configuration portable and valid"
+        ]
+      },
+      {
+        "subject": "Add LLM settings tab and portable search rules packs",
+        "notes": [
+          "Added AI/LLM settings support for embedders and localized attributes with JSON apply controls",
+          "Added export/apply workflow for transportable search rules packs including ranking, synonyms, typo rules, and AI-related fields"
+        ]
+      },
+      {
+        "subject": "Improve fields metadata inspection controls",
+        "notes": [
+          "Added offset/limit controls and a manual refresh action for fields metadata queries on index detail pages",
+          "Refactored fields loading into a dedicated routine with loading state and clearer error reporting for restricted endpoints"
+        ]
+      },
+      {
+        "subject": "Add bulk document fetch and optional strict-update override",
+        "notes": [
+          "Added index-level fetch-by-IDs workflow using the stable documents/fetch endpoint with in-app result inspection",
+          "Added a document edit toggle to optionally disable skipCreation so users can allow missing-ID creates when needed"
+        ]
+      },
+      {
+        "subject": "Harden search state and diagnostics across CE feature wave",
+        "notes": [
+          "Fixed search state persistence/rebuild edge cases and added robust endpoint error handling for fields/similar APIs",
+          "Added diagnostics visibility for ranking/performance/metadata plus shared threshold normalization and task metadata display improvements"
+        ]
+      },
+      {
+        "subject": "Add stable CE search and document feature wave",
+        "notes": [
+          "Added strict document save controls with skipCreation and optional custom task metadata support",
+          "Added search feature toggles, fields metadata overview, similar-documents flow, and dynamic API action discovery"
+        ]
+      },
+      {
+        "subject": "Restore lint compatibility with ESLint 9 flat config",
+        "notes": [
+          "Added eslint.config.js with project ignores and Vue-compatible rule parity for existing code style",
+          "Removed deprecated .eslintignore so npm run lint works again under ESLint 9"
+        ]
+      },
+      {
+        "subject": "Upgrade CE 1.42 compatibility and hidden settings coverage",
+        "notes": [
+          "Updated Meilisearch SDK dependencies and compatibility handling for tasks, index listing, and client imports",
+          "Added advanced/settings UI coverage for existing metadata-backed options and hardened key/document/index flows"
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.17.3",
     "week": "2026-W03",
     "dateRange": "2026, Week 03",
