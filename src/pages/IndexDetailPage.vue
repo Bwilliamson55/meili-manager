@@ -319,12 +319,12 @@
                             :to="`/documents/${currentIndex}/${getDocumentId(item)}`"
                           />
                           <q-btn
+                            v-if="meiliCompat.supportsSimilarEndpoint"
                             flat
                             dense
                             size="sm"
                             icon="hub"
                             color="secondary"
-                            :disable="!meiliCompat.supportsSimilarEndpoint"
                             :to="`/similar/${currentIndex}/${getDocumentId(item)}`"
                           />
                         </div>
@@ -723,7 +723,12 @@ const loadInstance = async () => {
   ];
 
   // Build sort by items (no default relevance option - just sortable attributes)
-  sortByItems.value = [];
+  sortByItems.value = [
+    {
+      value: currentIndex.value,
+      label: "Relevance",
+    },
+  ];
   for (const atString of iSettings.value.sortableAttributes || []) {
     sortByItems.value.push({
       value: `${currentIndex.value}:${atString}:asc`,
