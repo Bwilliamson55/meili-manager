@@ -34,6 +34,26 @@
         :current-value="modelValue.rankingRules"
       />
     </div>
+    <q-banner class="bg-grey-2 text-grey-9">
+      <div class="flex items-end gap-2">
+        <q-input
+          v-model="pinRankField"
+          filled
+          dense
+          class="flex-1"
+          label="Pin Rank Field"
+          hint="Use numeric field (e.g. pin_rank). Higher value ranks earlier."
+        />
+        <q-btn
+          flat
+          dense
+          color="secondary"
+          icon="push_pin"
+          label="Enable Pinning Rule"
+          @click="applyPinningRule"
+        />
+      </div>
+    </q-banner>
 
     <!-- Distinct Attribute -->
     <div class="flex items-start gap-2">
@@ -183,6 +203,7 @@ const props = defineProps({
 defineEmits(["show-ranking-reorder"]);
 
 const rulesPackJson = ref("");
+const pinRankField = ref("pin_rank");
 
 const exportRulesPack = () => {
   const pack = {
@@ -232,5 +253,34 @@ const applyRulesPack = () => {
   } catch (error) {
     showError(`Invalid rules pack JSON: ${error.message}`);
   }
+};
+
+const applyPinningRule = () => {
+  const field = pinRankField.value?.trim();
+  if (!field) {
+    showError("Pin rank field cannot be empty.");
+    return;
+  }
+
+  const sortRule = `desc(${field})`;
+  const rules = [...(props.modelValue.rankingRules || [])];
+  const sortable = [...(props.modelValue.sortableAttributes || [])];
+
+  if (!sortable.includes(field)) {
+    sortable.push(field);
+  }
+  if (!rules.includes(sortRule)) {
+    const sortIdx = rules.indexOf("sort");
+    if (sortIdx >= 0) {
+      rules.splice(sortIdx + 1, 0, sortRule);
+    } else {
+      rules.push("sort");
+      rules.push(sortRule);
+    }
+  }
+
+  props.modelValue.sortableAttributes = sortable;
+  props.modelValue.rankingRules = rules;
+  showSuccess(`Pinning rule enabled with ${sortRule}.`);
 };
 </script>
