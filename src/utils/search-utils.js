@@ -20,6 +20,7 @@ export const DEFAULT_INDEX_SEARCH_STATE = Object.freeze({
   enableHybrid: false,
   hybridEmbedder: "",
   hybridSemanticRatio: null,
+  filterDensity: "comfortable",
 });
 
 export const getDefaultIndexSearchState = () => ({

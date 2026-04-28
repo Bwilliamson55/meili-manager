@@ -48,6 +48,7 @@
           :min="0"
           :max="1"
           :step="0.01"
+          :disable="!compat.supportsRankingScoreThreshold"
         />
         <q-select
           v-model="state.matchingStrategy"
@@ -57,6 +58,7 @@
           emit-value
           map-options
           label="Matching Strategy"
+          :disable="!compat.supportsFrequencyMatching"
         />
         <q-input
           v-model="state.distinct"
@@ -64,19 +66,27 @@
           dense
           clearable
           label="Distinct (query-time)"
+          :disable="!compat.supportsDistinctQuery"
         />
-        <q-toggle v-model="state.showRankingScore" label="Show Ranking Score" />
+        <q-toggle
+          v-model="state.showRankingScore"
+          label="Show Ranking Score"
+          :disable="!compat.supportsSearchDiagnosticsFlags"
+        />
         <q-toggle
           v-model="state.showRankingScoreDetails"
           label="Show Ranking Details"
+          :disable="!compat.supportsSearchDiagnosticsFlags"
         />
         <q-toggle
           v-model="state.showPerformanceDetails"
           label="Show Performance Details"
+          :disable="!compat.supportsSearchDiagnosticsFlags"
         />
         <q-toggle
           v-model="state.includeSearchMetadataHeader"
           label="Include Search Metadata Header"
+          :disable="!compat.supportsSearchMetadataHeader"
         />
         <q-input
           v-model="state.searchMetadataHeaderValue"
@@ -84,16 +94,23 @@
           dense
           clearable
           label="Metadata Header Value"
-          :disable="!state.includeSearchMetadataHeader"
+          :disable="
+            !state.includeSearchMetadataHeader ||
+            !compat.supportsSearchMetadataHeader
+          "
         />
-        <q-toggle v-model="state.enableHybrid" label="Enable Hybrid Search" />
+        <q-toggle
+          v-model="state.enableHybrid"
+          label="Enable Hybrid Search"
+          :disable="!compat.supportsHybrid"
+        />
         <q-input
           v-model="state.hybridEmbedder"
           outlined
           dense
           clearable
           label="Hybrid Embedder (optional)"
-          :disable="!state.enableHybrid"
+          :disable="!state.enableHybrid || !compat.supportsHybrid"
         />
         <q-input
           v-model.number="state.hybridSemanticRatio"
@@ -106,8 +123,24 @@
           :min="0"
           :max="1"
           :step="0.01"
-          :disable="!state.enableHybrid"
+          :disable="!state.enableHybrid || !compat.supportsHybrid"
         />
+        <q-select
+          v-model="state.filterDensity"
+          :options="filterDensityOptions"
+          outlined
+          dense
+          emit-value
+          map-options
+          label="Filter Density"
+        />
+      </div>
+      <div
+        v-if="compat.versionString"
+        class="text-caption text-grey-7 mt-2 flex items-center gap-1"
+      >
+        <q-icon name="info" size="xs" />
+        Version-aware mode: {{ compat.versionString }}
       </div>
     </q-card-section>
   </q-card>
@@ -131,7 +164,16 @@ defineProps({
     type: Array,
     required: true,
   },
+  compat: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 
 defineEmits(["apply-preset"]);
+
+const filterDensityOptions = [
+  { label: "Comfortable", value: "comfortable" },
+  { label: "Compact", value: "compact" },
+];
 </script>

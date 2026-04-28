@@ -141,6 +141,7 @@
             icon="list_alt"
             label="Fetch IDs"
             :loading="batchFetchLoading"
+            :disable="!meiliCompat.supportsDocumentsFetchByIds"
             @click="fetchDocumentsByIds"
           />
         </div>
@@ -158,6 +159,7 @@
         :state="savedSearchState"
         :sort-by-items="sortByItems"
         :matching-strategy-options="matchingStrategyOptions"
+        :compat="meiliCompat"
         @apply-preset="applyHybridPreset"
       />
       <div class="flex gap-3">
@@ -232,6 +234,7 @@
                           :attribute="att"
                           :show-more="true"
                           :show-more-limit="50"
+                          :density="savedSearchState.filterDensity"
                         />
                       </q-expansion-item>
                     </q-list>
@@ -321,6 +324,7 @@
                             size="sm"
                             icon="hub"
                             color="secondary"
+                            :disable="!meiliCompat.supportsSimilarEndpoint"
                             :to="`/similar/${currentIndex}/${getDocumentId(item)}`"
                           />
                         </div>
@@ -421,9 +425,12 @@ import { useSettingsStore } from "src/stores/settings-store";
 import { useIndexesStore } from "src/stores/indexes-store";
 import {
   normalizeThreshold,
-  buildHybridConfig,
   getDefaultIndexSearchState,
 } from "src/utils/search-utils";
+import {
+  getCompatFeatures,
+  buildCompatibleSearchParams,
+} from "src/utils/meili-compat";
 import { storeToRefs } from "pinia";
 import { onMounted, ref, watch, nextTick, computed } from "vue";
 import { useRoute } from "vue-router";
@@ -505,6 +512,7 @@ const previousQuery = ref("");
 const fieldsOffset = ref(0);
 const fieldsLimit = ref(100);
 const fieldsLoading = ref(false);
+const meiliCompat = ref(getCompatFeatures("unknown"));
 const batchDocumentIdsInput = ref("");
 const batchFetchLoading = ref(false);
 const showBatchFetchDialog = ref(false);
@@ -525,6 +533,10 @@ const matchingStrategyOptions = [
 ];
 
 const searchParams = computed(() => {
+  const compatParams = buildCompatibleSearchParams(
+    savedSearchState.value,
+    meiliCompat.value,
+  );
   const params = {
     hitsPerPage: 50,
     query: savedSearchState.value.query || undefined,
@@ -533,37 +545,22 @@ const searchParams = computed(() => {
       savedSearchState.value.page !== undefined && savedSearchState.value.page >= 0
         ? savedSearchState.value.page
         : undefined,
-    matchingStrategy: savedSearchState.value.matchingStrategy || undefined,
-    distinct: savedSearchState.value.distinct || undefined,
-    showRankingScore: savedSearchState.value.showRankingScore || undefined,
-    showRankingScoreDetails:
-      savedSearchState.value.showRankingScoreDetails || undefined,
-    showPerformanceDetails:
-      savedSearchState.value.showPerformanceDetails || undefined,
+    ...compatParams,
   };
-
-  const threshold = savedSearchState.value.rankingScoreThreshold;
-  params.rankingScoreThreshold = normalizeThreshold(threshold);
-  params.hybrid = buildHybridConfig(savedSearchState.value);
   return params;
 });
 
 const rebuildSearchClient = () => {
+  const compatParams = buildCompatibleSearchParams(
+    savedSearchState.value,
+    meiliCompat.value,
+  );
   const options = {
     meiliSearchParams: {
-      matchingStrategy: savedSearchState.value.matchingStrategy || undefined,
-      distinct: savedSearchState.value.distinct || undefined,
-      showRankingScore: savedSearchState.value.showRankingScore || undefined,
-      showRankingScoreDetails:
-        savedSearchState.value.showRankingScoreDetails || undefined,
-      showPerformanceDetails:
-        savedSearchState.value.showPerformanceDetails || undefined,
-      rankingScoreThreshold: normalizeThreshold(
-        savedSearchState.value.rankingScoreThreshold,
-      ),
-      hybrid: buildHybridConfig(savedSearchState.value),
+      ...compatParams,
     },
     requestInit:
+      meiliCompat.value.supportsSearchMetadataHeader &&
       savedSearchState.value.includeSearchMetadataHeader &&
       savedSearchState.value.searchMetadataHeaderValue
         ? {
@@ -580,6 +577,34 @@ const rebuildSearchClient = () => {
     theSettings.indexKey,
     options,
   ).searchClient;
+};
+
+const sanitizeSearchStateForCompat = () => {
+  if (!meiliCompat.value.supportsFrequencyMatching) {
+    if (savedSearchState.value.matchingStrategy === "frequency") {
+      savedSearchState.value.matchingStrategy = "last";
+    }
+  }
+  if (!meiliCompat.value.supportsDistinctQuery) {
+    savedSearchState.value.distinct = "";
+  }
+  if (!meiliCompat.value.supportsRankingScoreThreshold) {
+    savedSearchState.value.rankingScoreThreshold = null;
+  }
+  if (!meiliCompat.value.supportsSearchDiagnosticsFlags) {
+    savedSearchState.value.showRankingScore = false;
+    savedSearchState.value.showRankingScoreDetails = false;
+    savedSearchState.value.showPerformanceDetails = false;
+  }
+  if (!meiliCompat.value.supportsSearchMetadataHeader) {
+    savedSearchState.value.includeSearchMetadataHeader = false;
+    savedSearchState.value.searchMetadataHeaderValue = "";
+  }
+  if (!meiliCompat.value.supportsHybrid) {
+    savedSearchState.value.enableHybrid = false;
+    savedSearchState.value.hybridEmbedder = "";
+    savedSearchState.value.hybridSemanticRatio = null;
+  }
 };
 
 const persistSearchState = () => {
@@ -621,6 +646,10 @@ const getDocumentId = (item) => {
 };
 
 const loadFieldsMetadata = async () => {
+  if (!meiliCompat.value.supportsFieldsMetadataEndpoint) {
+    fieldsRows.value = [];
+    return;
+  }
   fieldsLoading.value = true;
   try {
     const fieldsResponse = await theSettings.rawRequest(
@@ -651,6 +680,13 @@ const loadFieldsMetadata = async () => {
 
 const loadInstance = async () => {
   const mclient = theSettings.getIndexClient(currentIndex.value);
+  try {
+    const version = await theSettings.client.getVersion();
+    meiliCompat.value = getCompatFeatures(version?.pkgVersion || "");
+  } catch {
+    // Conservative fallback for older/unknown servers.
+    meiliCompat.value = getCompatFeatures("1.11.0");
+  }
   iStats.value = await mclient.getStats();
   iSettings.value = await mclient.getSettings();
   const fieldDistribution = iStats.value?.fieldDistribution || {};
@@ -669,6 +705,7 @@ const loadInstance = async () => {
   // Load saved search state for this index
   const savedState = theSettings.getIndexSearchState(currentIndex.value);
   savedSearchState.value = { ...savedState };
+  sanitizeSearchStateForCompat();
   rebuildSearchClient();
   filtersVisible.value = savedState.filtersVisible ?? true;
   // Initialize previous query to detect query changes
@@ -737,6 +774,12 @@ const fetchDocumentsByIds = async () => {
 };
 
 const applyHybridPreset = (preset) => {
+  if (!meiliCompat.value.supportsHybrid) {
+    showError(
+      `Hybrid presets require a newer server version (current: ${meiliCompat.value.versionString}).`,
+    );
+    return;
+  }
   const presets = {
     keyword: { enableHybrid: true, hybridSemanticRatio: 0.2 },
     balanced: { enableHybrid: true, hybridSemanticRatio: 0.5 },
@@ -783,6 +826,13 @@ watch(filtersVisible, () => {
     persistSearchState();
   }
 });
+
+watch(
+  () => savedSearchState.value.filterDensity,
+  () => {
+    persistSearchState();
+  },
+);
 
 // Watch route params to handle navigation between indices
 watch(
@@ -833,6 +883,7 @@ watch(
     enableHybrid: savedSearchState.value.enableHybrid,
     hybridEmbedder: savedSearchState.value.hybridEmbedder,
     hybridSemanticRatio: savedSearchState.value.hybridSemanticRatio,
+    filterDensity: savedSearchState.value.filterDensity,
   }),
   () => {
     persistSearchStateAndRebuild();

@@ -51,6 +51,13 @@ npm run format
 
 ## Core Features
 
+### Broad Version Compatibility
+
+The UI is tuned for backward-compatible operation across legacy and modern Meilisearch servers. Current target support is:
+
+- `1.11.x` (legacy-safe behavior with feature gating)
+- `1.42.x` (full modern CE capabilities exposed in UI)
+
 ### Multi-Instance Management
 
 Save and switch between multiple Meilisearch instances (development, staging, production). Credentials are persisted locally with automatic connection validation.

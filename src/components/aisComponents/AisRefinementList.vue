@@ -21,12 +21,16 @@
             maxHeight: '256px',
           }"
         >
-          <q-list dense class="pt-1">
+          <q-list :dense="density === 'compact'" class="pt-1">
             <q-item
               v-for="item in items"
               :key="item.value"
-              dense
-              class="px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+              :dense="density === 'compact'"
+              :class="
+                density === 'compact'
+                  ? 'px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors'
+                  : 'px-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors'
+              "
             >
               <q-item-section side top class="pr-2">
                 <q-checkbox
@@ -88,6 +92,10 @@ defineProps({
   showMoreLimit: {
     type: Number,
     default: 50,
+  },
+  density: {
+    type: String,
+    default: "comfortable",
   },
 });
 </script>
