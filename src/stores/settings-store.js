@@ -1,5 +1,5 @@
 import { defineStore, acceptHMRUpdate } from "pinia";
-import { MeiliSearch } from "meilisearch";
+import { Meilisearch } from "meilisearch";
 
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
@@ -28,7 +28,7 @@ export const useSettingsStore = defineStore("settings", {
       ) {
         throw new Error("Meilisearch credentials not configured");
       }
-      return new MeiliSearch({
+      return new Meilisearch({
         host: state.indexUrl,
         apiKey: state.indexKey,
       });
@@ -101,7 +101,7 @@ export const useSettingsStore = defineStore("settings", {
 
       // Validate before adding
       try {
-        const testClient = new MeiliSearch({
+        const testClient = new Meilisearch({
           host: url,
           apiKey: key,
         });

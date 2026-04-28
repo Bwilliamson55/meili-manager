@@ -36,12 +36,19 @@ export const useIndexesStore = defineStore("indexes", {
   },
 
   actions: {
+    async listIndexes(client) {
+      if (typeof client.getRawIndexes === "function") {
+        return client.getRawIndexes();
+      }
+      return client.getIndexes();
+    },
+
     async fetchIndexes() {
       this.loading = true;
       try {
         const settingsStore = useSettingsStore();
         const client = settingsStore.client;
-        const result = await client.getRawIndexes();
+        const result = await this.listIndexes(client);
 
         this.indexes = result.results || [];
         this.lastFetch = Date.now();
@@ -69,7 +76,12 @@ export const useIndexesStore = defineStore("indexes", {
       try {
         const settingsStore = useSettingsStore();
         const client = settingsStore.client;
-        await client.createIndex(uid, options);
+        const response = await client.createIndex(uid, options);
+        if (response?.taskUid) {
+          await client.waitForTask(response.taskUid, {
+            timeoutMs: 30000,
+          });
+        }
 
         // Refresh indexes list
         await this.fetchIndexes();
@@ -86,7 +98,12 @@ export const useIndexesStore = defineStore("indexes", {
       try {
         const settingsStore = useSettingsStore();
         const client = settingsStore.client;
-        await client.deleteIndex(uid);
+        const response = await client.deleteIndex(uid);
+        if (response?.taskUid) {
+          await client.waitForTask(response.taskUid, {
+            timeoutMs: 30000,
+          });
+        }
 
         // Refresh indexes list
         await this.fetchIndexes();

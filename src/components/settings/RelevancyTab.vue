@@ -85,6 +85,31 @@
       :has-field-changed="hasFieldChanged"
     />
 
+    <!-- Dictionary -->
+    <div class="flex items-start gap-2">
+      <q-select
+        filled
+        v-model="modelValue.dictionary"
+        label="Dictionary"
+        hint="Terms treated as single tokens during indexing"
+        use-input
+        use-chips
+        multiple
+        stack-label
+        hide-dropdown-icon
+        input-debounce="0"
+        new-value-mode="add-unique"
+        class="flex-1"
+        :class="{
+          'border-2 border-orange-500': hasFieldChanged('dictionary'),
+        }"
+      />
+      <SettingsHelp
+        :metadata="SETTINGS_METADATA.dictionary"
+        :current-value="modelValue.dictionary"
+      />
+    </div>
+
     <!-- Typo Tolerance Section -->
     <TypoToleranceSection
       v-model="modelValue.typoTolerance"

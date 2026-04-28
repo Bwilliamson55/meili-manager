@@ -525,6 +525,7 @@ const getTypeIcon = (type) => {
     case "indexSwap":
       return "swap_horiz";
     case "taskCancelation":
+    case "taskCancellation":
       return "cancel";
     case "taskDeletion":
       return "delete_sweep";

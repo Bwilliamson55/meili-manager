@@ -116,10 +116,11 @@ const updateDocument = async () => {
     const isNewDocument = route.params.documentUid === "new";
     const updateResult = await mclient.addDocuments([theDocument.value]);
 
-    // waitForTask is on the client.tasks object in SDK 0.53.0
-    await theSettings.client.tasks.waitForTask(updateResult.taskUid, {
-      timeOutMs: 15000,
-    });
+    if (updateResult?.taskUid) {
+      await theSettings.client.waitForTask(updateResult.taskUid, {
+        timeoutMs: 15000,
+      });
+    }
 
     // Reload the document with the actual UID
     theDocument.value = await mclient.getDocument(theDocumentUid.value);

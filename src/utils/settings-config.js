@@ -196,6 +196,12 @@ export const SETTINGS_CATEGORIES = [
     icon: "speed",
     color: "warning",
   },
+  {
+    value: "advanced",
+    label: "Advanced",
+    icon: "tune",
+    color: "accent",
+  },
 ];
 
 export const SETTINGS_PRESETS = {
@@ -338,7 +344,7 @@ export function getSettingsByCategory(category) {
 }
 
 export function getReindexingSettings(changedSettings) {
-  return Object.keys(changedSettings)
+  return changedSettings
     .filter((key) => SETTINGS_METADATA[key]?.reindexes)
     .map((key) => SETTINGS_METADATA[key]?.label || key);
 }

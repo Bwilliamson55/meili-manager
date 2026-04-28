@@ -402,8 +402,9 @@ const loadInstance = async () => {
   const mclient = theSettings.getIndexClient(currentIndex.value);
   iStats.value = await mclient.getStats();
   iSettings.value = await mclient.getSettings();
-  fdRows.value = Object.keys(iStats.value.fieldDistribution).map((key) => {
-    return { "Field Name": key, Count: iStats.value.fieldDistribution[key] };
+  const fieldDistribution = iStats.value?.fieldDistribution || {};
+  fdRows.value = Object.keys(fieldDistribution).map((key) => {
+    return { "Field Name": key, Count: fieldDistribution[key] };
   });
   // Get primary key from indexes store (which has the correct primaryKey from getRawIndexes)
   iPk.value = await indexesStore.getPrimaryKey(currentIndex.value);
@@ -433,7 +434,7 @@ const loadInstance = async () => {
 
   // Build sort by items (no default relevance option - just sortable attributes)
   sortByItems.value = [];
-  for (const atString of iSettings.value.sortableAttributes) {
+  for (const atString of iSettings.value.sortableAttributes || []) {
     sortByItems.value.push({
       value: `${currentIndex.value}:${atString}:asc`,
       label: `${atString} asc`,
