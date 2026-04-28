@@ -319,7 +319,10 @@
                             :to="`/documents/${currentIndex}/${getDocumentId(item)}`"
                           />
                           <q-btn
-                            v-if="meiliCompat.supportsSimilarEndpoint"
+                            v-if="
+                              meiliCompat.supportsSimilarEndpoint &&
+                              hasConfiguredEmbedders
+                            "
                             flat
                             dense
                             size="sm"
@@ -644,6 +647,15 @@ const getDocumentId = (item) => {
   }
   return id;
 };
+
+const hasConfiguredEmbedders = computed(() => {
+  const embedders = iSettings.value?.embedders;
+  return !!(
+    embedders &&
+    typeof embedders === "object" &&
+    Object.keys(embedders).length > 0
+  );
+});
 
 const loadFieldsMetadata = async () => {
   if (!meiliCompat.value.supportsFieldsMetadataEndpoint) {

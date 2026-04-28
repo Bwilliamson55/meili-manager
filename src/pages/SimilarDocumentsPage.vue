@@ -98,6 +98,7 @@ const primaryKey = ref("id");
 const embedder = ref("");
 const limit = ref(50);
 const rankingScoreThreshold = ref(null);
+const availableEmbedders = ref([]);
 
 const columns = [
   { name: "id", label: "Document", field: "id", align: "left", sortable: true },
@@ -116,6 +117,27 @@ const formatScore = (value) =>
 const loadSimilar = async () => {
   loading.value = true;
   try {
+    const mclient = settingsStore.getIndexClient(route.params.indexUid);
+    const settings = await mclient.getSettings();
+    availableEmbedders.value = Object.keys(settings?.embedders || {});
+    if (!availableEmbedders.value.length) {
+      showError(
+        "Similar documents requires embedders on this index. No embedders are configured.",
+      );
+      rows.value = [];
+      return;
+    }
+    if (!embedder.value && availableEmbedders.value.length === 1) {
+      embedder.value = availableEmbedders.value[0];
+    }
+    if (!embedder.value?.trim() && availableEmbedders.value.length > 1) {
+      showError(
+        "Select an embedder before loading similar documents for this index.",
+      );
+      rows.value = [];
+      return;
+    }
+
     primaryKey.value = await indexesStore.getPrimaryKey(route.params.indexUid);
     const payload = {
       id: route.params.documentUid,
@@ -123,9 +145,7 @@ const loadSimilar = async () => {
       offset: 0,
       showRankingScore: true,
     };
-    if (embedder.value?.trim()) {
-      payload.embedder = embedder.value.trim();
-    }
+    payload.embedder = embedder.value.trim();
     const threshold = normalizeThreshold(rankingScoreThreshold.value);
     if (threshold !== undefined) {
       payload.rankingScoreThreshold = threshold;
