@@ -2,6 +2,34 @@ import { defineStore, acceptHMRUpdate } from "pinia";
 import { Meilisearch } from "meilisearch";
 import { getDefaultIndexSearchState } from "src/utils/search-utils";
 
+const normalizeMeiliHost = (rawUrl) => {
+  if (!rawUrl || typeof rawUrl !== "string") {
+    throw new Error("Meilisearch URL is required");
+  }
+
+  let candidate = rawUrl.trim();
+  if (!candidate) {
+    throw new Error("Meilisearch URL is required");
+  }
+
+  if (!/^https?:\/\//i.test(candidate)) {
+    candidate = `http://${candidate}`;
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(candidate);
+  } catch {
+    throw new Error("Invalid Meilisearch URL");
+  }
+
+  if (!parsed.hostname) {
+    throw new Error("Invalid Meilisearch URL");
+  }
+
+  return parsed.origin;
+};
+
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
     indexUrl: "https://#",
@@ -30,7 +58,7 @@ export const useSettingsStore = defineStore("settings", {
         throw new Error("Meilisearch credentials not configured");
       }
       return new Meilisearch({
-        host: state.indexUrl,
+        host: normalizeMeiliHost(state.indexUrl),
         apiKey: state.indexKey,
       });
     },
@@ -71,7 +99,9 @@ export const useSettingsStore = defineStore("settings", {
             : JSON.stringify(options.body);
       }
 
-      const response = await fetch(`${this.indexUrl}${path}`, requestOptions);
+      const baseUrl = normalizeMeiliHost(this.indexUrl);
+      const requestUrl = new URL(path, `${baseUrl}/`).toString();
+      const response = await fetch(requestUrl, requestOptions);
       if (!response.ok) {
         const errorText = await response.text();
         let errorMessage = errorText || `Request failed with ${response.status}`;
@@ -125,7 +155,7 @@ export const useSettingsStore = defineStore("settings", {
       }
 
       // Update credentials (client getter will automatically use new values)
-      this.indexUrl = instance.indexUrl;
+      this.indexUrl = normalizeMeiliHost(instance.indexUrl);
       this.indexKey = instance.indexKey;
       this.currentInstance = instanceIndex;
 
@@ -135,12 +165,17 @@ export const useSettingsStore = defineStore("settings", {
 
     // Add instance with validation
     async addInstance(label, url, key) {
-      const newInstance = { label, indexUrl: url, indexKey: key };
+      const normalizedUrl = normalizeMeiliHost(url);
+      const newInstance = {
+        label,
+        indexUrl: normalizedUrl,
+        indexKey: key,
+      };
 
       // Validate before adding
       try {
         const testClient = new Meilisearch({
-          host: url,
+          host: normalizedUrl,
           apiKey: key,
         });
         await testClient.getVersion();

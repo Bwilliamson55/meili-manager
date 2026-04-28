@@ -2,7 +2,8 @@ import { normalizeThreshold, buildHybridConfig } from "src/utils/search-utils";
 
 const parseVersion = (value) => {
   if (!value || typeof value !== "string") return null;
-  const match = value.match(/^(\d+)\.(\d+)\.(\d+)/);
+  const normalized = value.trim().replace(/^v/i, "");
+  const match = normalized.match(/^(\d+)\.(\d+)\.(\d+)/);
   if (!match) return null;
   return {
     major: Number(match[1]),
