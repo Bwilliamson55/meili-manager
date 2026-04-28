@@ -73,17 +73,23 @@
       <!-- Search filter -->
       <q-card flat bordered class="mb-6">
         <q-card-section class="py-3">
-          <q-input
-            v-model="searchFilter"
-            dense
-            outlined
-            placeholder="Search indexes by UID..."
-            clearable
-          >
-            <template v-slot:prepend>
-              <q-icon name="search" />
-            </template>
-          </q-input>
+          <div class="flex items-center gap-3">
+            <q-input
+              v-model="searchFilter"
+              dense
+              outlined
+              placeholder="Search indexes by UID..."
+              clearable
+              class="flex-1"
+            >
+              <template v-slot:prepend>
+                <q-icon name="search" />
+              </template>
+            </q-input>
+            <q-chip square color="grey-2" text-color="dark">
+              {{ filteredIndexes.length }} shown
+            </q-chip>
+          </div>
         </q-card-section>
       </q-card>
 
@@ -114,6 +120,18 @@
                     {{ index.numberOfDocuments.toLocaleString() }} documents
                   </span>
                 </q-item-label>
+                <div class="mt-2">
+                  <q-chip
+                    v-if="index.primaryKey"
+                    dense
+                    square
+                    color="blue-1"
+                    text-color="blue-9"
+                    icon="vpn_key"
+                  >
+                    PK: {{ index.primaryKey }}
+                  </q-chip>
+                </div>
               </q-item-section>
 
               <q-item-section side class="flex-row gap-2">

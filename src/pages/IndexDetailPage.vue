@@ -154,124 +154,12 @@
       :search-client="searchClient"
       :index-name="currentIndex"
     >
-      <q-card flat bordered class="mb-4">
-        <q-card-section class="p-4">
-          <div class="flex items-center gap-4 mb-4">
-            <AisStatsDisplay />
-            <div class="flex gap-3 flex-1">
-              <AisSearchInput placeholder="Search documents..." />
-              <AisSortBySelect :items="sortByItems" />
-            </div>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            <div class="md:col-span-3 lg:col-span-4">
-              <q-banner class="bg-indigo-50 text-indigo-9">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <span class="text-caption">LLM Demo Presets:</span>
-                  <q-btn
-                    flat
-                    dense
-                    color="indigo-8"
-                    label="Keyword-heavy"
-                    @click="applyHybridPreset('keyword')"
-                  />
-                  <q-btn
-                    flat
-                    dense
-                    color="indigo-8"
-                    label="Balanced"
-                    @click="applyHybridPreset('balanced')"
-                  />
-                  <q-btn
-                    flat
-                    dense
-                    color="indigo-8"
-                    label="Semantic-heavy"
-                    @click="applyHybridPreset('semantic')"
-                  />
-                </div>
-              </q-banner>
-            </div>
-            <q-input
-              v-model.number="savedSearchState.rankingScoreThreshold"
-              type="number"
-              outlined
-              dense
-              clearable
-              label="Ranking Score Threshold"
-              hint="0-1; filters low scoring hits"
-              :min="0"
-              :max="1"
-              :step="0.01"
-            />
-            <q-select
-              v-model="savedSearchState.matchingStrategy"
-              :options="matchingStrategyOptions"
-              outlined
-              dense
-              emit-value
-              map-options
-              label="Matching Strategy"
-            />
-            <q-input
-              v-model="savedSearchState.distinct"
-              outlined
-              dense
-              clearable
-              label="Distinct (query-time)"
-            />
-            <q-toggle
-              v-model="savedSearchState.showRankingScore"
-              label="Show Ranking Score"
-            />
-            <q-toggle
-              v-model="savedSearchState.showRankingScoreDetails"
-              label="Show Ranking Details"
-            />
-            <q-toggle
-              v-model="savedSearchState.showPerformanceDetails"
-              label="Show Performance Details"
-            />
-            <q-toggle
-              v-model="savedSearchState.includeSearchMetadataHeader"
-              label="Include Search Metadata Header"
-            />
-            <q-input
-              v-model="savedSearchState.searchMetadataHeaderValue"
-              outlined
-              dense
-              clearable
-              label="Metadata Header Value"
-              :disable="!savedSearchState.includeSearchMetadataHeader"
-            />
-            <q-toggle
-              v-model="savedSearchState.enableHybrid"
-              label="Enable Hybrid Search"
-            />
-            <q-input
-              v-model="savedSearchState.hybridEmbedder"
-              outlined
-              dense
-              clearable
-              label="Hybrid Embedder (optional)"
-              :disable="!savedSearchState.enableHybrid"
-            />
-            <q-input
-              v-model.number="savedSearchState.hybridSemanticRatio"
-              type="number"
-              outlined
-              dense
-              clearable
-              label="Hybrid Semantic Ratio"
-              hint="0-1 (0 keyword only, 1 semantic only)"
-              :min="0"
-              :max="1"
-              :step="0.01"
-              :disable="!savedSearchState.enableHybrid"
-            />
-          </div>
-        </q-card-section>
-      </q-card>
+      <SearchExperiencePanel
+        :state="savedSearchState"
+        :sort-by-items="sortByItems"
+        :matching-strategy-options="matchingStrategyOptions"
+        @apply-preset="applyHybridPreset"
+      />
       <div class="flex gap-3">
         <!-- Filters Column with toggle -->
         <div v-if="filtersVisible" class="w-64 flex-shrink-0">
@@ -295,7 +183,7 @@
                   </div>
                 </div>
 
-                <AisCurrentRefinements />
+                <AisCurrentRefinements container-class="mb-3" chip-size="sm" />
 
                 <div
                   v-if="
@@ -320,7 +208,7 @@
                         :label="att"
                         dense
                         header-class="text-body2 dark:text-gray-200"
-                        class="mb-1"
+                        class="mb-2 rounded-md border border-gray-200 dark:border-gray-700"
                         :default-opened="false"
                       >
                         <template #header>
@@ -541,15 +429,13 @@ import { onMounted, ref, watch, nextTick, computed } from "vue";
 import { useRoute } from "vue-router";
 import IndexDetailTabs from "components/IndexDetailTabs.vue";
 import SettingsForm from "components/SettingsForm.vue";
-import AisSearchInput from "components/aisComponents/AisSearchInput.vue";
-import AisStatsDisplay from "components/aisComponents/AisStatsDisplay.vue";
-import AisSortBySelect from "components/aisComponents/AisSortBySelect.vue";
 import AisClearButton from "components/aisComponents/AisClearButton.vue";
 import AisCurrentRefinements from "components/aisComponents/AisCurrentRefinements.vue";
 import AisRefinementList from "components/aisComponents/AisRefinementList.vue";
 import AisPaginationNav from "components/aisComponents/AisPaginationNav.vue";
 import AisSearchDiagnostics from "components/aisComponents/AisSearchDiagnostics.vue";
 import SearchStatePersistence from "components/SearchStatePersistence.vue";
+import SearchExperiencePanel from "components/SearchExperiencePanel.vue";
 import { showError, showSuccess } from "src/utils/notifications";
 
 const route = useRoute();
