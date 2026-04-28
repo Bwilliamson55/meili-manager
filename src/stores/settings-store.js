@@ -1,5 +1,6 @@
 import { defineStore, acceptHMRUpdate } from "pinia";
 import { Meilisearch } from "meilisearch";
+import { getDefaultIndexSearchState } from "src/utils/search-utils";
 
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
@@ -190,26 +191,7 @@ export const useSettingsStore = defineStore("settings", {
     // Get search state for an index
     // Note: page is 0-based to match InstantSearch's internal format (0 = first page)
     getIndexSearchState(indexName) {
-      return (
-        this.indexSearchState[indexName] || {
-          query: "",
-          filters: {},
-          sort: "",
-          page: 0,
-          filtersVisible: true,
-          rankingScoreThreshold: null,
-          matchingStrategy: "last",
-          distinct: "",
-          showRankingScore: false,
-          showRankingScoreDetails: false,
-          showPerformanceDetails: false,
-          includeSearchMetadataHeader: false,
-          searchMetadataHeaderValue: "",
-          enableHybrid: false,
-          hybridEmbedder: "",
-          hybridSemanticRatio: null,
-        }
-      );
+      return this.indexSearchState[indexName] || getDefaultIndexSearchState();
     },
 
     // Set search state for an index

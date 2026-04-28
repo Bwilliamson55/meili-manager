@@ -5,6 +5,10 @@ A Quasar application for managing multiple Meilisearch instances across developm
 **Version**: 2.0.0
 **Demo**: [https://meili-manager.vercel.app](https://meili-manager.vercel.app)
 
+## Docs
+
+- Reuse/fork/embed playbook: `docs/reuse-and-embedding.md`
+
 ## Quick Start
 
 ## Install the dependencies
@@ -100,7 +104,7 @@ Save and switch between multiple Meilisearch instances (development, staging, pr
 All Meilisearch client creation goes through `settings-store.js`, providing:
 
 - Automatic connection validation
-- Client caching for performance
+- Consistent on-demand client creation via store getter
 - Consistent error handling across all components
 - Safe instance switching with validation
 

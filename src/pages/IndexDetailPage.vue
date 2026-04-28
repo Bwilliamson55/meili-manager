@@ -164,6 +164,34 @@
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div class="md:col-span-3 lg:col-span-4">
+              <q-banner class="bg-indigo-50 text-indigo-9">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-caption">LLM Demo Presets:</span>
+                  <q-btn
+                    flat
+                    dense
+                    color="indigo-8"
+                    label="Keyword-heavy"
+                    @click="applyHybridPreset('keyword')"
+                  />
+                  <q-btn
+                    flat
+                    dense
+                    color="indigo-8"
+                    label="Balanced"
+                    @click="applyHybridPreset('balanced')"
+                  />
+                  <q-btn
+                    flat
+                    dense
+                    color="indigo-8"
+                    label="Semantic-heavy"
+                    @click="applyHybridPreset('semantic')"
+                  />
+                </div>
+              </q-banner>
+            </div>
             <q-input
               v-model.number="savedSearchState.rankingScoreThreshold"
               type="number"
@@ -503,7 +531,11 @@
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
 import { useSettingsStore } from "src/stores/settings-store";
 import { useIndexesStore } from "src/stores/indexes-store";
-import { normalizeThreshold } from "src/utils/search-utils";
+import {
+  normalizeThreshold,
+  buildHybridConfig,
+  getDefaultIndexSearchState,
+} from "src/utils/search-utils";
 import { storeToRefs } from "pinia";
 import { onMounted, ref, watch, nextTick, computed } from "vue";
 import { useRoute } from "vue-router";
@@ -598,24 +630,7 @@ const batchFetchedColumns = [
 
 // Search state persistence
 // Note: page is 0-based to match InstantSearch's internal format (0 = first page, 1 = second page)
-const savedSearchState = ref({
-  query: "",
-  filters: {},
-  sort: "",
-  page: 0,
-  filtersVisible: true,
-  rankingScoreThreshold: null,
-  matchingStrategy: "last",
-  distinct: "",
-  showRankingScore: false,
-  showRankingScoreDetails: false,
-  showPerformanceDetails: false,
-  includeSearchMetadataHeader: false,
-  searchMetadataHeaderValue: "",
-  enableHybrid: false,
-  hybridEmbedder: "",
-  hybridSemanticRatio: null,
-});
+const savedSearchState = ref(getDefaultIndexSearchState());
 
 const matchingStrategyOptions = [
   { label: "Last", value: "last" },
@@ -643,14 +658,7 @@ const searchParams = computed(() => {
 
   const threshold = savedSearchState.value.rankingScoreThreshold;
   params.rankingScoreThreshold = normalizeThreshold(threshold);
-  if (savedSearchState.value.enableHybrid) {
-    params.hybrid = {
-      semanticRatio: normalizeThreshold(savedSearchState.value.hybridSemanticRatio),
-    };
-    if (savedSearchState.value.hybridEmbedder?.trim()) {
-      params.hybrid.embedder = savedSearchState.value.hybridEmbedder.trim();
-    }
-  }
+  params.hybrid = buildHybridConfig(savedSearchState.value);
   return params;
 });
 
@@ -667,14 +675,7 @@ const rebuildSearchClient = () => {
       rankingScoreThreshold: normalizeThreshold(
         savedSearchState.value.rankingScoreThreshold,
       ),
-      hybrid: savedSearchState.value.enableHybrid
-        ? {
-            semanticRatio: normalizeThreshold(
-              savedSearchState.value.hybridSemanticRatio,
-            ),
-            embedder: savedSearchState.value.hybridEmbedder?.trim() || undefined,
-          }
-        : undefined,
+      hybrid: buildHybridConfig(savedSearchState.value),
     },
     requestInit:
       savedSearchState.value.includeSearchMetadataHeader &&
@@ -847,6 +848,25 @@ const fetchDocumentsByIds = async () => {
   } finally {
     batchFetchLoading.value = false;
   }
+};
+
+const applyHybridPreset = (preset) => {
+  const presets = {
+    keyword: { enableHybrid: true, hybridSemanticRatio: 0.2 },
+    balanced: { enableHybrid: true, hybridSemanticRatio: 0.5 },
+    semantic: { enableHybrid: true, hybridSemanticRatio: 0.8 },
+  };
+  const next = presets[preset];
+  if (!next) return;
+  savedSearchState.value = {
+    ...savedSearchState.value,
+    ...next,
+    showRankingScore: true,
+    showRankingScoreDetails: true,
+    showPerformanceDetails: true,
+  };
+  persistSearchStateAndRebuild();
+  showSuccess(`Applied ${preset} LLM demo preset.`);
 };
 
 // Handle search state changes from persistence component
