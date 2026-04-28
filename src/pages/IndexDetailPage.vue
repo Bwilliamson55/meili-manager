@@ -216,6 +216,31 @@
               label="Metadata Header Value"
               :disable="!savedSearchState.includeSearchMetadataHeader"
             />
+            <q-toggle
+              v-model="savedSearchState.enableHybrid"
+              label="Enable Hybrid Search"
+            />
+            <q-input
+              v-model="savedSearchState.hybridEmbedder"
+              outlined
+              dense
+              clearable
+              label="Hybrid Embedder (optional)"
+              :disable="!savedSearchState.enableHybrid"
+            />
+            <q-input
+              v-model.number="savedSearchState.hybridSemanticRatio"
+              type="number"
+              outlined
+              dense
+              clearable
+              label="Hybrid Semantic Ratio"
+              hint="0-1 (0 keyword only, 1 semantic only)"
+              :min="0"
+              :max="1"
+              :step="0.01"
+              :disable="!savedSearchState.enableHybrid"
+            />
           </div>
         </q-card-section>
       </q-card>
@@ -426,6 +451,11 @@
       <AisSearchDiagnostics
         :header-enabled="savedSearchState.includeSearchMetadataHeader"
         :header-value="savedSearchState.searchMetadataHeaderValue"
+        :hybrid-enabled="savedSearchState.enableHybrid"
+        :hybrid-embedder="savedSearchState.hybridEmbedder"
+        :hybrid-semantic-ratio="
+          normalizeThreshold(savedSearchState.hybridSemanticRatio)
+        "
       />
       <ais-configure v-bind="searchParams" />
       <SearchStatePersistence
@@ -582,6 +612,9 @@ const savedSearchState = ref({
   showPerformanceDetails: false,
   includeSearchMetadataHeader: false,
   searchMetadataHeaderValue: "",
+  enableHybrid: false,
+  hybridEmbedder: "",
+  hybridSemanticRatio: null,
 });
 
 const matchingStrategyOptions = [
@@ -610,6 +643,14 @@ const searchParams = computed(() => {
 
   const threshold = savedSearchState.value.rankingScoreThreshold;
   params.rankingScoreThreshold = normalizeThreshold(threshold);
+  if (savedSearchState.value.enableHybrid) {
+    params.hybrid = {
+      semanticRatio: normalizeThreshold(savedSearchState.value.hybridSemanticRatio),
+    };
+    if (savedSearchState.value.hybridEmbedder?.trim()) {
+      params.hybrid.embedder = savedSearchState.value.hybridEmbedder.trim();
+    }
+  }
   return params;
 });
 
@@ -626,6 +667,14 @@ const rebuildSearchClient = () => {
       rankingScoreThreshold: normalizeThreshold(
         savedSearchState.value.rankingScoreThreshold,
       ),
+      hybrid: savedSearchState.value.enableHybrid
+        ? {
+            semanticRatio: normalizeThreshold(
+              savedSearchState.value.hybridSemanticRatio,
+            ),
+            embedder: savedSearchState.value.hybridEmbedder?.trim() || undefined,
+          }
+        : undefined,
     },
     requestInit:
       savedSearchState.value.includeSearchMetadataHeader &&
@@ -875,6 +924,9 @@ watch(
     includeSearchMetadataHeader:
       savedSearchState.value.includeSearchMetadataHeader,
     searchMetadataHeaderValue: savedSearchState.value.searchMetadataHeaderValue,
+    enableHybrid: savedSearchState.value.enableHybrid,
+    hybridEmbedder: savedSearchState.value.hybridEmbedder,
+    hybridSemanticRatio: savedSearchState.value.hybridSemanticRatio,
   }),
   () => {
     persistSearchStateAndRebuild();

@@ -43,6 +43,18 @@
               <strong>Metadata Payload:</strong>
               {{ formatValue(results?._metadata || results?.metadata) }}
             </div>
+            <div class="mb-2">
+              <strong>Hybrid Enabled:</strong>
+              {{ hybridEnabled ? "yes" : "no" }}
+            </div>
+            <div class="mb-2">
+              <strong>Hybrid Embedder:</strong>
+              {{ hybridEmbedder || "n/a" }}
+            </div>
+            <div class="mb-2">
+              <strong>Hybrid Semantic Ratio:</strong>
+              {{ hybridSemanticRatio ?? "n/a" }}
+            </div>
           </q-card-section>
         </q-card>
       </q-expansion-item>
@@ -59,6 +71,18 @@ defineProps({
   headerValue: {
     type: String,
     default: "",
+  },
+  hybridEnabled: {
+    type: Boolean,
+    default: false,
+  },
+  hybridEmbedder: {
+    type: String,
+    default: "",
+  },
+  hybridSemanticRatio: {
+    type: Number,
+    default: null,
   },
 });
 

@@ -205,6 +205,9 @@ export const useSettingsStore = defineStore("settings", {
           showPerformanceDetails: false,
           includeSearchMetadataHeader: false,
           searchMetadataHeaderValue: "",
+          enableHybrid: false,
+          hybridEmbedder: "",
+          hybridSemanticRatio: null,
         }
       );
     },
