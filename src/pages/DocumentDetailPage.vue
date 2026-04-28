@@ -36,6 +36,12 @@
             label="Task metadata (optional)"
             hint="Saved as customMetadata on document write tasks"
           />
+          <q-toggle
+            v-if="route.params.documentUid !== 'new'"
+            v-model="allowCreateWhenMissing"
+            class="mt-2"
+            label="Allow create if ID does not exist"
+          />
         </q-card-section>
       </q-card>
       <vue-jsoneditor
@@ -69,6 +75,7 @@ const theDocumentText = ref("");
 const theDocumentUid = ref("");
 const iPk = ref("");
 const taskMetadata = ref("");
+const allowCreateWhenMissing = ref(false);
 
 onMounted(async () => {
   try {
@@ -125,7 +132,7 @@ const updateDocument = async () => {
 
     const isNewDocument = route.params.documentUid === "new";
     const params = new URLSearchParams();
-    if (!isNewDocument) {
+    if (!isNewDocument && !allowCreateWhenMissing.value) {
       params.set("skipCreation", "true");
     }
     if (taskMetadata.value?.trim()) {

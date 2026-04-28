@@ -73,7 +73,7 @@
       </IndexDetailTabs>
     </div>
     <div class="flex items-center justify-between mt-4 mb-3">
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-4 flex-wrap">
         <span class="text-h6 w-full dark:text-white">Documents</span>
         <div class="flex items-center gap-2">
           <span class="text-caption text-gray-600 dark:text-gray-400 mr-1"
@@ -93,6 +93,26 @@
               <q-icon name="image" size="xs" />
             </template>
           </q-select>
+        </div>
+        <div class="flex items-center gap-2">
+          <q-input
+            v-model="batchDocumentIdsInput"
+            dense
+            outlined
+            clearable
+            class="w-80"
+            label="Fetch documents by IDs"
+            hint="Comma-separated IDs"
+          />
+          <q-btn
+            flat
+            dense
+            color="secondary"
+            icon="list_alt"
+            label="Fetch IDs"
+            :loading="batchFetchLoading"
+            @click="fetchDocumentsByIds"
+          />
         </div>
       </div>
       <q-btn flat dense icon="add_circle" :to="`/documents/${currentIndex}/new`"
@@ -383,6 +403,39 @@
         @state-changed="handleSearchStateChange"
       />
     </ais-instant-search>
+
+    <q-dialog v-model="showBatchFetchDialog" maximized>
+      <q-card>
+        <q-card-section class="flex items-center justify-between">
+          <div class="text-h6">Fetched Documents by ID</div>
+          <q-btn flat dense icon="close" v-close-popup />
+        </q-card-section>
+        <q-separator />
+        <q-card-section>
+          <q-table
+            :rows="batchFetchedRows"
+            :columns="batchFetchedColumns"
+            row-key="id"
+            flat
+            bordered
+            :rows-per-page-options="[10, 25, 50]"
+          >
+            <template #body-cell-id="props">
+              <q-td :props="props" class="font-mono">
+                {{ props.value }}
+              </q-td>
+            </template>
+            <template #body-cell-document="props">
+              <q-td :props="props">
+                <pre class="text-caption whitespace-pre-wrap break-all">{{
+                  JSON.stringify(props.value, null, 2)
+                }}</pre>
+              </q-td>
+            </template>
+          </q-table>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -405,6 +458,7 @@ import AisRefinementList from "components/aisComponents/AisRefinementList.vue";
 import AisPaginationNav from "components/aisComponents/AisPaginationNav.vue";
 import AisSearchDiagnostics from "components/aisComponents/AisSearchDiagnostics.vue";
 import SearchStatePersistence from "components/SearchStatePersistence.vue";
+import { showError, showSuccess } from "src/utils/notifications";
 
 const route = useRoute();
 
@@ -470,6 +524,14 @@ const filtersVisible = ref(true);
 const activeFilters = ref({});
 const previousIndex = ref("");
 const previousQuery = ref("");
+const batchDocumentIdsInput = ref("");
+const batchFetchLoading = ref(false);
+const showBatchFetchDialog = ref(false);
+const batchFetchedRows = ref([]);
+const batchFetchedColumns = [
+  { name: "id", label: "ID", field: "id", align: "left", sortable: true },
+  { name: "document", label: "Document", field: "document", align: "left" },
+];
 
 // Search state persistence
 // Note: page is 0-based to match InstantSearch's internal format (0 = first page, 1 = second page)
@@ -654,6 +716,43 @@ const loadInstance = async () => {
       value: `${currentIndex.value}:${atString}:desc`,
       label: `${atString} desc`,
     });
+  }
+};
+
+const fetchDocumentsByIds = async () => {
+  const ids = batchDocumentIdsInput.value
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
+  if (!ids.length) {
+    showError("Enter at least one document ID.");
+    return;
+  }
+
+  batchFetchLoading.value = true;
+  try {
+    const response = await theSettings.rawRequest(
+      `/indexes/${encodeURIComponent(currentIndex.value)}/documents/fetch`,
+      {
+        method: "POST",
+        body: { ids },
+      },
+    );
+    const results = response?.results || [];
+    batchFetchedRows.value = results.map((document) => ({
+      id: document?.[iPk.value] ?? document?.id ?? "(missing-id)",
+      document,
+    }));
+    if (!batchFetchedRows.value.length) {
+      showError("No documents were returned for the provided IDs.");
+      return;
+    }
+    showBatchFetchDialog.value = true;
+    showSuccess(`Fetched ${batchFetchedRows.value.length} documents.`);
+  } catch (error) {
+    showError(`Failed to fetch documents by IDs: ${error.message}`);
+  } finally {
+    batchFetchLoading.value = false;
   }
 };
 
