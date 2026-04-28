@@ -8,6 +8,8 @@ A Quasar application for managing multiple Meilisearch instances across developm
 ## Docs
 
 - Reuse/fork/embed playbook: `docs/reuse-and-embedding.md`
+- Release readiness summary: `docs/release-readiness-1.42.md`
+- Dual-version QA checklist: `docs/qa-checklist-1.11-1.42.md`
 
 ## Quick Start
 
