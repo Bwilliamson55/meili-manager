@@ -62,7 +62,11 @@ watch(
     // This prevents overwriting saved state with empty state on initial mount
     if (hasSeenNonEmptyState.value || hasState) {
       // Save to store
-      theSettings.setIndexSearchState(props.indexName, searchState);
+      const existingState = theSettings.getIndexSearchState(props.indexName);
+      theSettings.setIndexSearchState(props.indexName, {
+        ...existingState,
+        ...searchState,
+      });
 
       // Emit event for parent component
       emit("state-changed", searchState);

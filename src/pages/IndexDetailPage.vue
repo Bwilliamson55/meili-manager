@@ -45,6 +45,12 @@
                   <div class="w-full text-center mt-6">
                     <p class="text-h6">Fields Metadata</p>
                   </div>
+                  <div
+                    v-if="fieldsRows.length === 0"
+                    class="text-caption text-grey-7 text-center"
+                  >
+                    Fields metadata unavailable or empty for this index/key.
+                  </div>
                   <div class="px-4 mx-auto w-full">
                     <q-table
                       dense
@@ -116,6 +122,9 @@
               clearable
               label="Ranking Score Threshold"
               hint="0-1; filters low scoring hits"
+              :min="0"
+              :max="1"
+              :step="0.01"
             />
             <q-select
               v-model="savedSearchState.matchingStrategy"
@@ -364,6 +373,10 @@
           </ais-hits>
         </div>
       </div>
+      <AisSearchDiagnostics
+        :header-enabled="savedSearchState.includeSearchMetadataHeader"
+        :header-value="savedSearchState.searchMetadataHeaderValue"
+      />
       <ais-configure v-bind="searchParams" />
       <SearchStatePersistence
         :index-name="currentIndex"
@@ -377,10 +390,10 @@
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
 import { useSettingsStore } from "src/stores/settings-store";
 import { useIndexesStore } from "src/stores/indexes-store";
+import { normalizeThreshold } from "src/utils/search-utils";
 import { storeToRefs } from "pinia";
 import { onMounted, ref, watch, nextTick, computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { useQuasar } from "quasar";
+import { useRoute } from "vue-router";
 import IndexDetailTabs from "components/IndexDetailTabs.vue";
 import SettingsForm from "components/SettingsForm.vue";
 import AisSearchInput from "components/aisComponents/AisSearchInput.vue";
@@ -390,11 +403,10 @@ import AisClearButton from "components/aisComponents/AisClearButton.vue";
 import AisCurrentRefinements from "components/aisComponents/AisCurrentRefinements.vue";
 import AisRefinementList from "components/aisComponents/AisRefinementList.vue";
 import AisPaginationNav from "components/aisComponents/AisPaginationNav.vue";
+import AisSearchDiagnostics from "components/aisComponents/AisSearchDiagnostics.vue";
 import SearchStatePersistence from "components/SearchStatePersistence.vue";
 
-const $q = useQuasar();
 const route = useRoute();
-const router = useRouter();
 
 const theSettings = useSettingsStore();
 const indexesStore = useIndexesStore();
@@ -502,9 +514,7 @@ const searchParams = computed(() => {
   };
 
   const threshold = savedSearchState.value.rankingScoreThreshold;
-  if (threshold !== null && threshold !== undefined && threshold !== "") {
-    params.rankingScoreThreshold = Number(threshold);
-  }
+  params.rankingScoreThreshold = normalizeThreshold(threshold);
   return params;
 });
 
@@ -518,12 +528,9 @@ const rebuildSearchClient = () => {
         savedSearchState.value.showRankingScoreDetails || undefined,
       showPerformanceDetails:
         savedSearchState.value.showPerformanceDetails || undefined,
-      rankingScoreThreshold:
-        savedSearchState.value.rankingScoreThreshold !== null &&
-        savedSearchState.value.rankingScoreThreshold !== undefined &&
-        savedSearchState.value.rankingScoreThreshold !== ""
-          ? Number(savedSearchState.value.rankingScoreThreshold)
-          : undefined,
+      rankingScoreThreshold: normalizeThreshold(
+        savedSearchState.value.rankingScoreThreshold,
+      ),
     },
     requestInit:
       savedSearchState.value.includeSearchMetadataHeader &&
@@ -542,6 +549,19 @@ const rebuildSearchClient = () => {
     theSettings.indexKey,
     options,
   ).searchClient;
+};
+
+const persistSearchState = () => {
+  if (!currentIndex.value) return;
+  theSettings.setIndexSearchState(currentIndex.value, {
+    ...savedSearchState.value,
+    filtersVisible: filtersVisible.value,
+  });
+};
+
+const persistSearchStateAndRebuild = () => {
+  persistSearchState();
+  rebuildSearchClient();
 };
 
 const saveDisplaySettings = () => {
@@ -579,19 +599,25 @@ const loadInstance = async () => {
   });
   // Get primary key from indexes store (which has the correct primaryKey from getRawIndexes)
   iPk.value = await indexesStore.getPrimaryKey(currentIndex.value);
-  const fieldsResponse = await theSettings.rawRequest(
-    `/indexes/${encodeURIComponent(currentIndex.value)}/fields`,
-    {
-      method: "POST",
-      body: { offset: 0, limit: 100 },
-    },
-  );
-  fieldsRows.value = (fieldsResponse?.results || []).map((field) => ({
-    field: field.name || field.field || field.id || "unknown",
-    searchable: field.searchable ? "Yes" : "No",
-    filterable: field.filterable ? "Yes" : "No",
-    sortable: field.sortable ? "Yes" : "No",
-  }));
+  try {
+    const fieldsResponse = await theSettings.rawRequest(
+      `/indexes/${encodeURIComponent(currentIndex.value)}/fields`,
+      {
+        method: "POST",
+        body: { offset: 0, limit: 100 },
+      },
+    );
+    fieldsRows.value = (fieldsResponse?.results || []).map((field) => ({
+      field: field.name || field.field || field.id || "unknown",
+      searchable: field.searchable ? "Yes" : "No",
+      filterable: field.filterable ? "Yes" : "No",
+      sortable: field.sortable ? "Yes" : "No",
+    }));
+  } catch (error) {
+    // Keep index detail usable when /fields is unavailable or restricted.
+    console.warn("Fields metadata unavailable:", error.message);
+    fieldsRows.value = [];
+  }
 
   // Load display settings for this index
   displaySettings.value = theSettings.getIndexDisplaySettings(
@@ -644,23 +670,19 @@ const handleSearchStateChange = (state) => {
     ...savedSearchState.value,
     ...state,
   };
-  rebuildSearchClient();
-  // Also save filtersVisible
-  theSettings.setIndexSearchState(currentIndex.value, {
-    ...state,
-    filtersVisible: filtersVisible.value,
-  });
+  persistSearchState();
 };
 
 // Watch filtersVisible to save it for the current index
 watch(filtersVisible, () => {
   if (currentIndex.value) {
     const currentState = theSettings.getIndexSearchState(currentIndex.value);
-    theSettings.setIndexSearchState(currentIndex.value, {
+    savedSearchState.value = {
+      ...savedSearchState.value,
       ...currentState,
       filtersVisible: filtersVisible.value,
-    });
-    rebuildSearchClient();
+    };
+    persistSearchState();
   }
 });
 
@@ -712,12 +734,7 @@ watch(
     searchMetadataHeaderValue: savedSearchState.value.searchMetadataHeaderValue,
   }),
   () => {
-    if (!currentIndex.value) return;
-    theSettings.setIndexSearchState(currentIndex.value, {
-      ...savedSearchState.value,
-      filtersVisible: filtersVisible.value,
-    });
-    rebuildSearchClient();
+    persistSearchStateAndRebuild();
   },
   { deep: true },
 );

@@ -23,6 +23,35 @@
           :loading="loading"
         />
       </q-card-section>
+      <q-separator />
+      <q-card-section class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <q-input
+          v-model="embedder"
+          outlined
+          dense
+          clearable
+          label="Embedder (optional)"
+          hint="Use when your index has multiple embedders"
+        />
+        <q-input
+          v-model.number="limit"
+          type="number"
+          outlined
+          dense
+          label="Limit"
+        />
+        <q-input
+          v-model.number="rankingScoreThreshold"
+          type="number"
+          outlined
+          dense
+          clearable
+          label="Ranking Score Threshold"
+          :min="0"
+          :max="1"
+          :step="0.01"
+        />
+      </q-card-section>
     </q-card>
 
     <q-table
@@ -57,6 +86,7 @@ import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useSettingsStore } from "src/stores/settings-store";
 import { useIndexesStore } from "src/stores/indexes-store";
+import { normalizeThreshold } from "src/utils/search-utils";
 import { showError } from "src/utils/notifications";
 
 const route = useRoute();
@@ -65,6 +95,9 @@ const indexesStore = useIndexesStore();
 const loading = ref(false);
 const rows = ref([]);
 const primaryKey = ref("id");
+const embedder = ref("");
+const limit = ref(50);
+const rankingScoreThreshold = ref(null);
 
 const columns = [
   { name: "id", label: "Document", field: "id", align: "left", sortable: true },
@@ -86,10 +119,17 @@ const loadSimilar = async () => {
     primaryKey.value = await indexesStore.getPrimaryKey(route.params.indexUid);
     const payload = {
       id: route.params.documentUid,
-      limit: 50,
+      limit: limit.value || 50,
       offset: 0,
       showRankingScore: true,
     };
+    if (embedder.value?.trim()) {
+      payload.embedder = embedder.value.trim();
+    }
+    const threshold = normalizeThreshold(rankingScoreThreshold.value);
+    if (threshold !== undefined) {
+      payload.rankingScoreThreshold = threshold;
+    }
     const result = await settingsStore.rawRequest(
       `/indexes/${encodeURIComponent(route.params.indexUid)}/similar`,
       {
@@ -103,7 +143,17 @@ const loadSimilar = async () => {
       score: hit._rankingScore,
     }));
   } catch (error) {
-    showError(`Failed to load similar documents: ${error.message}`);
+    if (
+      error.message?.includes("unknown route") ||
+      error.message?.includes("invalid_similar") ||
+      error.message?.includes("not found")
+    ) {
+      showError(
+        "Similar endpoint unavailable for this index/version or current API key.",
+      );
+    } else {
+      showError(`Failed to load similar documents: ${error.message}`);
+    }
   } finally {
     loading.value = false;
   }

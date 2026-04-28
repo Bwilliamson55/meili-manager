@@ -73,7 +73,14 @@ export const useSettingsStore = defineStore("settings", {
       const response = await fetch(`${this.indexUrl}${path}`, requestOptions);
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || `Request failed with ${response.status}`);
+        let errorMessage = errorText || `Request failed with ${response.status}`;
+        try {
+          const parsed = JSON.parse(errorText);
+          errorMessage = parsed?.message || errorMessage;
+        } catch {
+          // Keep raw text when body is not JSON.
+        }
+        throw new Error(errorMessage);
       }
 
       if (response.status === 204) {
