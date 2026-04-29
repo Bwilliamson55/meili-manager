@@ -1,9 +1,32 @@
 [
   {
-    "version": "1.18.19",
+    "version": "1.18.22",
     "week": "2026-W18",
     "dateRange": "2026, Week 18",
     "changes": [
+      {
+        "subject": "Merge pull request #11 from Bwilliamson55/dev",
+        "notes": [
+          "Dev deploy for more details on list view and fix delete on list view"
+        ]
+      },
+      {
+        "subject": "MEILI - Prefer GET /stats bulk indexes map for index list enrichment",
+        "notes": [
+          "Merged normalizeMeiliIndexStats from bulk clusterStats.indexes when present to avoid per-index getStats storms",
+          "Exposed usedDatabaseSize, allocated databaseSize caption, cluster lastUpdate, raw/avg doc bytes, embedded doc chip",
+          "Kept per-index getSettings for F/S/S counts; fallback getStats when bulk entry missing"
+        ]
+      },
+      {
+        "subject": "Improve Indexes page stats and modal confirmations",
+        "notes": [
+          "Enriched fetchIndexes with GET /stats, getVersion(), and per-index stats plus settings summaries",
+          "Show cluster DB size card, pkg version subtitle, docs, fields, F/S/Sort counts, indexing chip per row",
+          "Added confirmDialog and used it for create-dump and index delete instead of Notify",
+          "Added formatBytes helper and prevented delete button click bubbling"
+        ]
+      },
       {
         "subject": "Merge pull request #10 from Bwilliamson55/dev",
         "notes": [
