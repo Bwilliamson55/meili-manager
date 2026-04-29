@@ -8,6 +8,12 @@
           <p class="text-sm text-gray-600 dark:text-gray-400">
             {{ indexUrl }}
           </p>
+          <p
+            v-if="indexesStore.stats.pkgVersion"
+            class="text-xs text-gray-500 dark:text-gray-500 mt-1"
+          >
+            Meilisearch {{ indexesStore.stats.pkgVersion }}
+          </p>
         </div>
         <div class="flex gap-2">
           <q-btn
@@ -35,7 +41,7 @@
       </div>
 
       <!-- Stats cards -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <q-card flat bordered>
           <q-card-section class="text-center">
             <div class="text-3xl font-bold text-primary">
@@ -54,6 +60,17 @@
             </div>
             <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Total Documents
+            </div>
+          </q-card-section>
+        </q-card>
+
+        <q-card flat bordered>
+          <q-card-section class="text-center">
+            <div class="text-3xl font-bold text-amber-700">
+              {{ formatBytes(indexesStore.stats.databaseSize) }}
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Database size (cluster)
             </div>
           </q-card-section>
         </q-card>
@@ -115,12 +132,27 @@
                     <q-icon name="update" size="xs" class="mr-1" />
                     Updated: {{ formatDate(index.updatedAt) }}
                   </span>
-                  <span v-if="index.numberOfDocuments !== undefined">
+                  <span v-if="index.statsLoadError" class="text-negative">
+                    Stats: unavailable ({{ index.statsLoadError }})
+                  </span>
+                  <span v-else-if="typeof index.numberOfDocuments === 'number'" class="mr-4">
                     <q-icon name="description" size="xs" class="mr-1" />
-                    {{ index.numberOfDocuments.toLocaleString() }} documents
+                    {{ index.numberOfDocuments.toLocaleString() }} docs
+                  </span>
+                  <span v-if="typeof index.fieldCount === 'number'" class="mr-4">
+                    <q-icon name="view_column" size="xs" class="mr-1" />
+                    {{ index.fieldCount }} fields
+                  </span>
+                  <span
+                    v-if="index.attrCounts && !index.statsLoadError"
+                    class="block sm:inline mt-1 sm:mt-0 text-gray-500"
+                  >
+                    F {{ formatAttr(index.attrCounts.filterable) }} · S
+                    {{ formatAttr(index.attrCounts.searchable) }} · Sort
+                    {{ formatAttr(index.attrCounts.sortable) }}
                   </span>
                 </q-item-label>
-                <div class="mt-2">
+                <div class="mt-2 flex flex-wrap gap-2 items-center">
                   <q-chip
                     v-if="index.primaryKey"
                     dense
@@ -130,6 +162,16 @@
                     icon="vpn_key"
                   >
                     PK: {{ index.primaryKey }}
+                  </q-chip>
+                  <q-chip
+                    v-if="index.isIndexing"
+                    dense
+                    square
+                    color="orange-2"
+                    text-color="orange-10"
+                    icon="hourglass_empty"
+                  >
+                    Indexing…
                   </q-chip>
                 </div>
               </q-item-section>
@@ -148,7 +190,7 @@
                   round
                   color="negative"
                   icon="delete"
-                  @click="delIndex(index.uid)"
+                  @click.stop.prevent="delIndex(index.uid)"
                 >
                   <q-tooltip>Delete Index</q-tooltip>
                 </q-btn>
@@ -251,8 +293,9 @@ import { ref, onMounted, watch, computed } from "vue";
 import {
   showSuccess,
   showError,
-  showConfirmation,
+  confirmDialog,
 } from "src/utils/notifications";
+import { formatBytes } from "src/utils/format-bytes";
 
 const showCreateDialog = ref(false);
 const newIndexName = ref("");
@@ -266,6 +309,17 @@ const formatDate = (dateString) =>
   new Intl.DateTimeFormat("default", { dateStyle: "long" }).format(
     new Date(dateString),
   );
+
+/** @param {number|string|null|undefined} v */
+const formatAttr = (v) => {
+  if (v === "*") {
+    return "*";
+  }
+  if (typeof v === "number") {
+    return String(v);
+  }
+  return "—";
+};
 
 // Filtered indexes based on search
 const filteredIndexes = computed(() => {
@@ -322,29 +376,43 @@ const newIndex = async () => {
 };
 
 const createDump = async () => {
-  showConfirmation(`Create dump of ${indexUrl.value}?`, async () => {
-    try {
-      const response = await indexesStore.createDump();
-
-      showSuccess(
-        `Dump task created successfully:\nEnqueued: ${response.enqueuedAt}\nTask ID: ${response.taskUid}\nStatus: ${response.status}`,
-      );
-    } catch (error) {
-      console.log(error);
-      showError(`Failed to create dump: ${error.message}`);
-    }
+  const ok = await confirmDialog({
+    title: "Create dump",
+    message: `Create a dump snapshot of ${indexUrl.value}?`,
+    okLabel: "Create dump",
+    okColor: "secondary",
   });
+  if (!ok) {
+    return;
+  }
+  try {
+    const response = await indexesStore.createDump();
+
+    showSuccess(
+      `Dump task created successfully:\nEnqueued: ${response.enqueuedAt}\nTask ID: ${response.taskUid}\nStatus: ${response.status}`,
+    );
+  } catch (error) {
+    console.log(error);
+    showError(`Failed to create dump: ${error.message}`);
+  }
 };
 
 const delIndex = async (indexUidString) => {
-  showConfirmation(`Really delete "${indexUidString}"?`, async () => {
-    try {
-      await indexesStore.deleteIndex(indexUidString);
-      showSuccess(`Index "${indexUidString}" deleted`);
-    } catch (error) {
-      console.log(error);
-      showError(`Failed to delete index: ${error.message}`);
-    }
+  const ok = await confirmDialog({
+    title: "Delete index",
+    message: `Really delete index "${indexUidString}"? This cannot be undone.`,
+    okLabel: "Delete",
+    okColor: "negative",
   });
+  if (!ok) {
+    return;
+  }
+  try {
+    await indexesStore.deleteIndex(indexUidString);
+    showSuccess(`Index "${indexUidString}" deleted`);
+  } catch (error) {
+    console.log(error);
+    showError(`Failed to delete index: ${error.message}`);
+  }
 };
 </script>

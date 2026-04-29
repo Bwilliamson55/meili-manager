@@ -6,19 +6,30 @@ export const useIndexesStore = defineStore("indexes", {
     indexes: [],
     loading: false,
     lastFetch: null,
+    /** @type {{ pkgVersion?: string; commitSha?: string } | null} */
+    clusterVersion: null,
+    /** Raw payload from GET /stats (database size, indexes map, …) — shape varies slightly by Meilisearch version. */
+    clusterStats: null,
   }),
 
   getters: {
     // Index statistics
     stats: (state) => {
       const totalDocs = state.indexes.reduce(
-        (sum, idx) => sum + (idx.numberOfDocuments || 0),
+        (sum, idx) =>
+          sum + (typeof idx.numberOfDocuments === "number" ? idx.numberOfDocuments : 0),
         0,
       );
+
+      const databaseSizeRaw =
+        state.clusterStats?.databaseSize ?? state.clusterStats?.database_size ?? null;
 
       return {
         total: state.indexes.length,
         totalDocuments: totalDocs,
+        databaseSize: databaseSizeRaw,
+        pkgVersion:
+          state.clusterVersion?.pkgVersion || state.clusterVersion?.packageVersion || null,
         recentlyUpdated: state.indexes.filter((idx) => {
           if (!idx.updatedAt) return false;
           const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -48,9 +59,72 @@ export const useIndexesStore = defineStore("indexes", {
       try {
         const settingsStore = useSettingsStore();
         const client = settingsStore.client;
-        const result = await this.listIndexes(client);
 
-        this.indexes = result.results || [];
+        const [result, clusterStatsPayload, clusterVersionPayload] =
+          await Promise.all([
+            this.listIndexes(client),
+            settingsStore.rawRequest("/stats").catch(() => null),
+            client.getVersion().catch(() => null),
+          ]);
+
+        this.clusterStats = clusterStatsPayload;
+        this.clusterVersion = clusterVersionPayload;
+
+        let rows = result.results || [];
+
+        const settled = await Promise.allSettled(
+          rows.map(async (indexRow) => {
+            const idxClient = client.index(indexRow.uid);
+            const [st, settingsResult] = await Promise.all([
+              idxClient.getStats(),
+              idxClient.getSettings().catch(() => null),
+            ]);
+            const fieldDistribution = st.fieldDistribution || {};
+            const filterableAttrs = settingsResult?.filterableAttributes;
+            const searchableAttrs = settingsResult?.searchableAttributes;
+            const sortableAttrs = settingsResult?.sortableAttributes;
+            /** @param {unknown} a */
+            const attrCount = (a) => {
+              if (a === "*") {
+                return "*";
+              }
+              return Array.isArray(a) ? a.length : null;
+            };
+
+            return {
+              ...indexRow,
+              numberOfDocuments:
+                typeof st.numberOfDocuments === "number"
+                  ? st.numberOfDocuments
+                  : indexRow.numberOfDocuments,
+              isIndexing: Boolean(st.isIndexing),
+              fieldCount: Object.keys(fieldDistribution).length,
+              attrCounts: settingsResult
+                ? {
+                    filterable: attrCount(filterableAttrs),
+                    searchable: attrCount(searchableAttrs),
+                    sortable: attrCount(sortableAttrs),
+                  }
+                : null,
+            };
+          }),
+        );
+
+        rows = settled.map((s, i) => {
+          if (s.status === "fulfilled") {
+            return s.value;
+          }
+          console.error(
+            `Index stats/settings failed for ${rows[i]?.uid}:`,
+            s.reason?.message ?? s.reason,
+          );
+          return {
+            ...rows[i],
+            statsLoadError: String(s.reason?.message ?? s.reason ?? "failed"),
+          };
+        });
+
+        this.indexes = rows;
         this.lastFetch = Date.now();
       } catch (error) {
         console.error("Failed to fetch indexes:", error);

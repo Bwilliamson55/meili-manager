@@ -56,6 +56,34 @@ export function showConfirmation(message, onConfirm, onCancel = () => {}) {
   });
 }
 
+/**
+ * Modal confirmation (preferred for destructive or async workflows).
+ * @param {{ title?: string; message: string; okLabel?: string; okColor?: string; persistent?: boolean }} opts
+ * @returns {Promise<boolean>}
+ */
+export function confirmDialog({
+  title = "Confirm",
+  message,
+  okLabel = "OK",
+  okColor = "primary",
+  persistent = true,
+}) {
+  return new Promise((resolve) => {
+    Dialog.create({
+      title,
+      message,
+      cancel: true,
+      persistent,
+      ok: {
+        label: okLabel,
+        color: okColor,
+      },
+    })
+      .onOk(() => resolve(true))
+      .onCancel(() => resolve(false));
+  });
+}
+
 export function showPrompt(title, message, onConfirm, onCancel = () => {}) {
   Dialog.create({
     title,
