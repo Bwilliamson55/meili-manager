@@ -14,6 +14,15 @@
           >
             Meilisearch {{ indexesStore.stats.pkgVersion }}
           </p>
+          <p
+            v-if="indexesStore.stats.lastClusterUpdate"
+            class="text-xs text-gray-500 dark:text-gray-500 mt-0.5"
+          >
+            Stats at
+            {{
+              new Date(indexesStore.stats.lastClusterUpdate).toLocaleString()
+            }}
+          </p>
         </div>
         <div class="flex gap-2">
           <q-btn
@@ -67,10 +76,16 @@
         <q-card flat bordered>
           <q-card-section class="text-center">
             <div class="text-3xl font-bold text-amber-700">
-              {{ formatBytes(indexesStore.stats.databaseSize) }}
+              {{ formatBytes(clusterUsedOrTotalBytes) }}
             </div>
             <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Database size (cluster)
+              {{ clusterDiskLabel }}
+            </div>
+            <div
+              v-if="clusterAllocatedCaption"
+              class="text-xs text-gray-500 mt-1"
+            >
+              {{ clusterAllocatedCaption }}
             </div>
           </q-card-section>
         </q-card>
@@ -151,6 +166,18 @@
                     {{ formatAttr(index.attrCounts.searchable) }} · Sort
                     {{ formatAttr(index.attrCounts.sortable) }}
                   </span>
+                  <span
+                    v-if="typeof index.rawDocumentDbSize === 'number'"
+                    class="block sm:inline mt-1 sm:mt-0 text-gray-500"
+                  >
+                    Raw {{ formatBytes(index.rawDocumentDbSize) }}
+                  </span>
+                  <span
+                    v-if="typeof index.avgDocumentSize === 'number'"
+                    class="block sm:inline mt-1 sm:mt-0 text-gray-500"
+                  >
+                    · Avg doc {{ formatBytes(index.avgDocumentSize) }}
+                  </span>
                 </q-item-label>
                 <div class="mt-2 flex flex-wrap gap-2 items-center">
                   <q-chip
@@ -172,6 +199,16 @@
                     icon="hourglass_empty"
                   >
                     Indexing…
+                  </q-chip>
+                  <q-chip
+                    v-if="(index.numberOfEmbeddedDocuments ?? 0) > 0"
+                    dense
+                    square
+                    color="purple-2"
+                    text-color="purple-10"
+                    icon="scatter_plot"
+                  >
+                    {{ index.numberOfEmbeddedDocuments }} embedded
                   </q-chip>
                 </div>
               </q-item-section>
@@ -320,6 +357,37 @@ const formatAttr = (v) => {
   }
   return "—";
 };
+
+/** Prefer used size from GET /stats when the server reports it. */
+const clusterUsedOrTotalBytes = computed(() => {
+  const s = indexesStore.stats;
+  const used = s.usedDatabaseSize;
+  if (typeof used === "number") {
+    return used;
+  }
+  return s.databaseSize ?? null;
+});
+
+const clusterDiskLabel = computed(() => {
+  const s = indexesStore.stats;
+  if (typeof s.usedDatabaseSize === "number") {
+    return "Used database size (cluster)";
+  }
+  return "Database size (cluster)";
+});
+
+const clusterAllocatedCaption = computed(() => {
+  const s = indexesStore.stats;
+  const alloc = s.databaseSize;
+  const used = s.usedDatabaseSize;
+  if (typeof alloc !== "number" || typeof used !== "number") {
+    return null;
+  }
+  if (alloc === used) {
+    return null;
+  }
+  return `Allocated ${formatBytes(alloc)}`;
+});
 
 // Filtered indexes based on search
 const filteredIndexes = computed(() => {

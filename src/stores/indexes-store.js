@@ -1,5 +1,6 @@
 import { defineStore, acceptHMRUpdate } from "pinia";
 import { useSettingsStore } from "./settings-store";
+import { normalizeMeiliIndexStats } from "src/utils/meili-stats-merge";
 
 export const useIndexesStore = defineStore("indexes", {
   state: () => ({
@@ -24,10 +25,20 @@ export const useIndexesStore = defineStore("indexes", {
       const databaseSizeRaw =
         state.clusterStats?.databaseSize ?? state.clusterStats?.database_size ?? null;
 
+      const usedDbRaw =
+        state.clusterStats?.usedDatabaseSize ??
+        state.clusterStats?.used_database_size ??
+        null;
+
+      const lastClusterUpdate =
+        state.clusterStats?.lastUpdate ?? state.clusterStats?.last_update ?? null;
+
       return {
         total: state.indexes.length,
         totalDocuments: totalDocs,
         databaseSize: databaseSizeRaw,
+        usedDatabaseSize: usedDbRaw,
+        lastClusterUpdate,
         pkgVersion:
           state.clusterVersion?.pkgVersion || state.clusterVersion?.packageVersion || null,
         recentlyUpdated: state.indexes.filter((idx) => {
@@ -72,14 +83,33 @@ export const useIndexesStore = defineStore("indexes", {
 
         let rows = result.results || [];
 
+        const bulkMapRaw = clusterStatsPayload?.indexes;
+        const bulkMap =
+          bulkMapRaw && typeof bulkMapRaw === "object"
+            ? /** @type {Record<string, Record<string, unknown>>} */ (bulkMapRaw)
+            : null;
+
         const settled = await Promise.allSettled(
           rows.map(async (indexRow) => {
             const idxClient = client.index(indexRow.uid);
-            const [st, settingsResult] = await Promise.all([
-              idxClient.getStats(),
-              idxClient.getSettings().catch(() => null),
-            ]);
-            const fieldDistribution = st.fieldDistribution || {};
+
+            let statsPart = bulkMap?.[indexRow.uid]
+              ? normalizeMeiliIndexStats(bulkMap[indexRow.uid])
+              : null;
+
+            if (!statsPart) {
+              try {
+                const st = await idxClient.getStats();
+                statsPart = normalizeMeiliIndexStats(st);
+              } catch {
+                statsPart = null;
+              }
+            }
+
+            const settingsResult = await idxClient
+              .getSettings()
+              .catch(() => null);
+
             const filterableAttrs = settingsResult?.filterableAttributes;
             const searchableAttrs = settingsResult?.searchableAttributes;
             const sortableAttrs = settingsResult?.sortableAttributes;
@@ -91,21 +121,35 @@ export const useIndexesStore = defineStore("indexes", {
               return Array.isArray(a) ? a.length : null;
             };
 
+            const attrCounts = settingsResult
+              ? {
+                  filterable: attrCount(filterableAttrs),
+                  searchable: attrCount(searchableAttrs),
+                  sortable: attrCount(sortableAttrs),
+                }
+              : null;
+
+            if (!statsPart) {
+              return {
+                ...indexRow,
+                statsLoadError: "Stats unavailable",
+                attrCounts,
+              };
+            }
+
             return {
               ...indexRow,
               numberOfDocuments:
-                typeof st.numberOfDocuments === "number"
-                  ? st.numberOfDocuments
+                typeof statsPart.numberOfDocuments === "number"
+                  ? statsPart.numberOfDocuments
                   : indexRow.numberOfDocuments,
-              isIndexing: Boolean(st.isIndexing),
-              fieldCount: Object.keys(fieldDistribution).length,
-              attrCounts: settingsResult
-                ? {
-                    filterable: attrCount(filterableAttrs),
-                    searchable: attrCount(searchableAttrs),
-                    sortable: attrCount(sortableAttrs),
-                  }
-                : null,
+              isIndexing: Boolean(statsPart.isIndexing),
+              fieldCount: statsPart.fieldCount,
+              rawDocumentDbSize: statsPart.rawDocumentDbSize,
+              avgDocumentSize: statsPart.avgDocumentSize,
+              numberOfEmbeddings: statsPart.numberOfEmbeddings,
+              numberOfEmbeddedDocuments: statsPart.numberOfEmbeddedDocuments,
+              attrCounts,
             };
           }),
         );
