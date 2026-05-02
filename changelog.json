@@ -1,9 +1,21 @@
 [
   {
-    "version": "1.18.22",
+    "version": "1.18.24",
     "week": "2026-W18",
     "dateRange": "2026, Week 18",
     "changes": [
+      {
+        "subject": "Merge pull request #12 from Bwilliamson55/dev",
+        "notes": [
+          "Harden Meilisearch task API compatibility across SDK versions."
+        ]
+      },
+      {
+        "subject": "Harden Meilisearch task API compatibility across SDK versions.",
+        "notes": [
+          "Route index, settings, document, and task flows through settings-store wrappers that support both root client methods and client.tasks methods to avoid runtime method-missing errors."
+        ]
+      },
       {
         "subject": "Merge pull request #11 from Bwilliamson55/dev",
         "notes": [
