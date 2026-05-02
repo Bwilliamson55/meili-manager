@@ -72,11 +72,7 @@ export const useTasksStore = defineStore("tasks", {
       this.loading = true;
       try {
         const settingsStore = useSettingsStore();
-        const response =
-          settingsStore.client.tasks &&
-          typeof settingsStore.client.tasks.getTasks === "function"
-            ? await settingsStore.client.tasks.getTasks({ limit })
-            : await settingsStore.client.getTasks({ limit });
+        const response = await settingsStore.getTasks({ limit });
         this.tasks = (response.results || []).map((task) =>
           this.normalizeTask(task),
         );
@@ -94,9 +90,7 @@ export const useTasksStore = defineStore("tasks", {
     async getTask(taskUid) {
       try {
         const settingsStore = useSettingsStore();
-        const task = this.normalizeTask(
-          await settingsStore.client.getTask(taskUid),
-        );
+        const task = this.normalizeTask(await settingsStore.getTask(taskUid));
 
         // Update task in local state if it exists
         const normalizedUid = this.getTaskUid(task);
@@ -116,7 +110,7 @@ export const useTasksStore = defineStore("tasks", {
     async cancelTasks(uids) {
       try {
         const settingsStore = useSettingsStore();
-        const response = await settingsStore.client.cancelTasks({ uids });
+        const response = await settingsStore.cancelTasks({ uids });
 
         // Refresh tasks after cancellation
         await this.fetchTasks();
@@ -132,7 +126,7 @@ export const useTasksStore = defineStore("tasks", {
     async deleteTasks(uids) {
       try {
         const settingsStore = useSettingsStore();
-        const response = await settingsStore.client.deleteTasks({ uids });
+        const response = await settingsStore.deleteTasks({ uids });
 
         // Remove deleted tasks from local state
         this.tasks = this.tasks.filter((t) => !uids.includes(t.uid));
@@ -156,7 +150,7 @@ export const useTasksStore = defineStore("tasks", {
           timeoutMs: options.timeoutMs ?? options.timeOutMs ?? 60000,
         };
         const task = this.normalizeTask(
-          await settingsStore.client.waitForTask(taskUid, normalizedOptions),
+          await settingsStore.waitForTask(taskUid, normalizedOptions),
         );
 
         // Update task in local state

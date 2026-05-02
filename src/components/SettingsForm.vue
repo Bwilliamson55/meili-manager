@@ -304,7 +304,7 @@ const onSubmit = async () => {
     iSettingsProcessing.value.taskId = updateRes.taskUid ?? 0;
 
     if (updateRes?.taskUid) {
-      await theSettings.client.waitForTask(updateRes.taskUid, {
+      await theSettings.waitForTask(updateRes.taskUid, {
         intervalMs: 5000,
       });
     }
