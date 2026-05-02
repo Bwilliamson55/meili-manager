@@ -148,7 +148,7 @@ const updateDocument = async () => {
     });
 
     if (updateResult?.taskUid) {
-      await theSettings.client.waitForTask(updateResult.taskUid, {
+      await theSettings.waitForTask(updateResult.taskUid, {
         timeoutMs: 15000,
       });
     }

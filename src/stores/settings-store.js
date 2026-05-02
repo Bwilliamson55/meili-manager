@@ -80,6 +80,71 @@ export const useSettingsStore = defineStore("settings", {
     getIndexClient(indexName) {
       return this.client.index(indexName);
     },
+    async waitForTask(taskUid, options = {}) {
+      const client = this.client;
+
+      if (typeof client.waitForTask === "function") {
+        return client.waitForTask(taskUid, options);
+      }
+
+      if (typeof client.tasks?.waitForTask === "function") {
+        return client.tasks.waitForTask(taskUid, options);
+      }
+
+      throw new Error("waitForTask is not available on this Meilisearch client");
+    },
+    async getTasks(options = {}) {
+      const client = this.client;
+
+      if (typeof client.getTasks === "function") {
+        return client.getTasks(options);
+      }
+
+      if (typeof client.tasks?.getTasks === "function") {
+        return client.tasks.getTasks(options);
+      }
+
+      throw new Error("getTasks is not available on this Meilisearch client");
+    },
+    async getTask(taskUid) {
+      const client = this.client;
+
+      if (typeof client.getTask === "function") {
+        return client.getTask(taskUid);
+      }
+
+      if (typeof client.tasks?.getTask === "function") {
+        return client.tasks.getTask(taskUid);
+      }
+
+      throw new Error("getTask is not available on this Meilisearch client");
+    },
+    async cancelTasks(options = {}) {
+      const client = this.client;
+
+      if (typeof client.cancelTasks === "function") {
+        return client.cancelTasks(options);
+      }
+
+      if (typeof client.tasks?.cancelTasks === "function") {
+        return client.tasks.cancelTasks(options);
+      }
+
+      throw new Error("cancelTasks is not available on this Meilisearch client");
+    },
+    async deleteTasks(options = {}) {
+      const client = this.client;
+
+      if (typeof client.deleteTasks === "function") {
+        return client.deleteTasks(options);
+      }
+
+      if (typeof client.tasks?.deleteTasks === "function") {
+        return client.tasks.deleteTasks(options);
+      }
+
+      throw new Error("deleteTasks is not available on this Meilisearch client");
+    },
     async rawRequest(path, options = {}) {
       const headers = new Headers(options.headers || {});
       headers.set("Content-Type", "application/json");

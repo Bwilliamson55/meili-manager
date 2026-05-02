@@ -196,7 +196,7 @@ export const useIndexesStore = defineStore("indexes", {
         const client = settingsStore.client;
         const response = await client.createIndex(uid, options);
         if (response?.taskUid) {
-          await client.waitForTask(response.taskUid, {
+          await settingsStore.waitForTask(response.taskUid, {
             timeoutMs: 30000,
           });
         }
@@ -218,7 +218,7 @@ export const useIndexesStore = defineStore("indexes", {
         const client = settingsStore.client;
         const response = await client.deleteIndex(uid);
         if (response?.taskUid) {
-          await client.waitForTask(response.taskUid, {
+          await settingsStore.waitForTask(response.taskUid, {
             timeoutMs: 30000,
           });
         }
