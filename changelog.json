@@ -1,5 +1,35 @@
 [
   {
+    "version": "1.19.3",
+    "week": "2026-W19",
+    "dateRange": "2026, Week 19",
+    "changes": [
+      {
+        "subject": "Merge pull request #13 from Bwilliamson55/dev",
+        "notes": [
+          "Dev"
+        ]
+      },
+      {
+        "subject": "Resolve npm audit via overrides and pin app-vite 2.4.1",
+        "notes": [
+          "Pinned @quasar/app-vite to 2.4.1 so caret range cannot pull Node 22-only 2.6.x",
+          "Added overrides for patched transitive deps; npm audit reports 0 issues",
+          "Avoided global ajv override (breaks ESLint); scoped ajv to vanilla-jsoneditor only",
+          "Bumped postcss and aligned Quasar build.browser targets with modern ES for Vite 6"
+        ]
+      },
+      {
+        "subject": "Add Dynamic Search Rules management UI",
+        "notes": [
+          "Added experimental features and DSR API services plus dynamic-rules store",
+          "Added Dynamic rules page with list, filters, full rule editor, and test search",
+          "Wired header route and documented operator behavior in docs"
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.18.24",
     "week": "2026-W18",
     "dateRange": "2026, Week 18",
