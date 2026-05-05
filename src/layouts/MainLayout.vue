@@ -28,6 +28,12 @@
             class="bg-grey-7 text-white"
           /> -->
           <q-route-tab to="/keys" exact name="keys" label="Keys" />
+          <q-route-tab
+            to="/dynamic-rules"
+            exact
+            name="dynamic-rules"
+            label="Dynamic rules"
+          />
           <q-route-tab to="/tasks" exact name="tasks" label="Tasks" />
         </q-tabs>
       </q-toolbar>
