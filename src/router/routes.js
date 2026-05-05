@@ -5,6 +5,7 @@ import IndexDetailPage from "src/pages/IndexDetailPage.vue";
 import KeysPageVue from "src/pages/KeysPage.vue";
 import DocumentDetailPage from "src/pages/DocumentDetailPage.vue";
 import SimilarDocumentsPage from "src/pages/SimilarDocumentsPage.vue";
+import DynamicRulesPage from "src/pages/DynamicRulesPage.vue";
 import PreviewPageVue from "src/pages/PreviewPage.vue";
 import PreviewSidebarVue from "src/pages/PreviewSidebar.vue";
 
@@ -31,6 +32,13 @@ const routes = [
         path: "/keys",
         components: {
           main: KeysPageVue,
+          side: SidebarSettingsVue,
+        },
+      },
+      {
+        path: "/dynamic-rules",
+        components: {
+          main: DynamicRulesPage,
           side: SidebarSettingsVue,
         },
       },
