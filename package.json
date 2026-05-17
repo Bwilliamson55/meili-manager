@@ -9,7 +9,7 @@
   "scripts": {
     "build": "quasar build",
     "build-changelog": "node ./generateChangelog.cjs",
-    "deploy": "vercel",
+    "deploy": "echo \"Build dist/spa and deploy to your static host\"",
     "lint": "eslint --ext .js,.vue ./",
     "format": "prettier --write \"**/*.{js,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"No test specified\" && exit 0"

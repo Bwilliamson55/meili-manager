@@ -3,7 +3,7 @@
 A Quasar application for managing multiple Meilisearch instances across development, staging, and production environments.
 
 **Version**: 2.0.0
-**Demo**: [https://meili-manager.vercel.app](https://meili-manager.vercel.app)
+**Demo**: [https://meili-manager.weeumson.com/#/](https://meili-manager.weeumson.com/#/)
 
 ## Docs
 
@@ -136,14 +136,12 @@ This allows pages to control both the main view and sidebar independently.
 
 ## Deployment
 
-### Vercel (Recommended)
+### Static Hosting
 
 - Build Command: `quasar build`
 - Output Directory: `dist/spa`
 
-### Other Platforms
-
-The application builds as a static SPA and can be hosted on any static file server.
+The application builds as a static SPA and can be hosted on any static file server (Nginx, Caddy, GitHub Pages, etc.).
 
 ### Native Applications
 
