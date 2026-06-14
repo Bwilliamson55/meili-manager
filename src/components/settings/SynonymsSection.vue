@@ -128,12 +128,12 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import { useSettingsStore } from "src/stores/settings-store";
+import { useSettingsStore } from "src/meili-core/stores/settings-store";
 import { storeToRefs } from "pinia";
 import Papa from "papaparse";
 import { showSuccess, showError, showPrompt } from "src/utils/notifications";
 import SettingsHelp from "src/components/SettingsHelp.vue";
-import { SETTINGS_METADATA } from "src/utils/settings-config";
+import { SETTINGS_METADATA } from "src/meili-core/utils/settings-config";
 
 const props = defineProps({
   modelValue: {

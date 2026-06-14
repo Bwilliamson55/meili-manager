@@ -1,6 +1,9 @@
 import { defineStore, acceptHMRUpdate } from "pinia";
-import { Meilisearch } from "meilisearch";
 import * as jose from "jose";
+import {
+  createMeiliClient,
+  getIndexSettingsWithStats,
+} from "../utils/meili-client";
 
 export const usePreviewStore = defineStore("preview", {
   state: () => ({
@@ -31,7 +34,7 @@ export const usePreviewStore = defineStore("preview", {
     },
     async getPreviewIndexClient(indexName) {
       try {
-        const meiliClient = new Meilisearch({
+        const meiliClient = createMeiliClient({
           host: this.previewIndexUrl,
           apiKey: this.previewIndexKey,
         });
@@ -44,15 +47,7 @@ export const usePreviewStore = defineStore("preview", {
     async getPreviewIndexSettings(indexName) {
       try {
         const mclient = await this.getPreviewIndexClient(indexName);
-        let settings = await mclient.getSettings();
-        try {
-          let stats = await mclient.getStats();
-          settings.stats = stats;
-          settings.attributeCodes = Object.keys(stats.fieldDistribution);
-        } catch (error) {
-          console.error(error);
-        }
-        return settings;
+        return await getIndexSettingsWithStats(mclient);
       } catch (error) {
         console.error(error);
         return false;

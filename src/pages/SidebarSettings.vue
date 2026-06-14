@@ -161,7 +161,7 @@
 
 <script setup>
 import { copyToClipboard } from "quasar";
-import { useSettingsStore } from "src/stores/settings-store";
+import { useSettingsStore } from "src/meili-core/stores/settings-store";
 import { ref } from "vue";
 import { storeToRefs } from "pinia";
 import {

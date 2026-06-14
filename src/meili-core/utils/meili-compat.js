@@ -1,4 +1,4 @@
-import { normalizeThreshold, buildHybridConfig } from "src/utils/search-utils";
+import { normalizeThreshold, buildHybridConfig } from "./search-utils";
 
 const parseVersion = (value) => {
   if (!value || typeof value !== "string") return null;

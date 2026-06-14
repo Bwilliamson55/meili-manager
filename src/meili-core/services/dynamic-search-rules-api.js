@@ -7,7 +7,7 @@
  * @typedef {object} ListDynamicRulesBody
  * @property {number} [offset]
  * @property {number} [limit]
- * @property {{ active?: boolean|null; attribute_patterns?: string[]|null }} [filter]
+ * @property {{ active?: boolean|null; attributePatterns?: string[]|null }} [filter]
  */
 
 /**

@@ -215,17 +215,16 @@
 
 <script setup>
 import { ref, computed, watch } from "vue";
-import { useIndexesStore } from "src/stores/indexes-store";
-import { useDynamicRulesStore } from "src/stores/dynamic-rules-store";
+import { useIndexesStore } from "src/meili-core/stores/indexes-store";
+import { useDynamicRulesStore } from "src/meili-core/stores/dynamic-rules-store";
 import {
   emptyConditionRow,
   emptyPinActionRow,
-  conditionsToApiPayload,
   conditionsFromApi,
   pinActionsFromApi,
-  pinActionsToApiPayload,
   validateRuleDraft,
-} from "src/utils/dynamic-search-rules";
+  buildRulePayload,
+} from "src/meili-core/utils/dynamic-search-rules";
 import { showError } from "src/utils/notifications";
 
 const props = defineProps({
@@ -361,43 +360,14 @@ const pinPositionDuplicateHint = computed(() => {
   return `Duplicate pin positions in this rule: ${dups.join(", ")}. Ensure intentional; tie-breaking uses rule priority.`;
 });
 
-/** datetime-local → ISO string for API */
-function localInputToIso(local) {
-  if (!local || typeof local !== "string") return null;
-  const d = new Date(local);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toISOString();
-}
-
 function buildPayload() {
-  const conds = conditionRows.value.map((row) => {
-    if (row.scope === "time") {
-      return {
-        scope: "time",
-        start: localInputToIso(row.start),
-        end: localInputToIso(row.end),
-      };
-    }
-    return row;
-  });
-
-  const apiConditions = conditionsToApiPayload(conds);
-  const apiPins = pinActionsToApiPayload(pinRows.value);
-
-  const payload = {
-    description: description.value?.trim() || null,
+  return buildRulePayload({
+    description: description.value,
     active: active.value,
-    conditions: apiConditions,
-    actions: apiPins,
-  };
-
-  if (priorityInput.value !== null && priorityInput.value !== "" && !Number.isNaN(Number(priorityInput.value))) {
-    payload.priority = Math.max(0, Number(priorityInput.value));
-  } else {
-    payload.priority = null;
-  }
-
-  return payload;
+    priority: priorityInput.value,
+    conditions: conditionRows.value,
+    pins: pinRows.value,
+  });
 }
 
 async function submit() {

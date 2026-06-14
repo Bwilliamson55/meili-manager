@@ -4,7 +4,7 @@
 
 <script setup>
 import { watch, ref, onMounted } from "vue";
-import { useSettingsStore } from "src/stores/settings-store";
+import { useSettingsStore } from "src/meili-core/stores/settings-store";
 
 const props = defineProps({
   state: {

@@ -424,16 +424,16 @@
 
 <script setup>
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
-import { useSettingsStore } from "src/stores/settings-store";
-import { useIndexesStore } from "src/stores/indexes-store";
+import { useSettingsStore } from "src/meili-core/stores/settings-store";
+import { useIndexesStore } from "src/meili-core/stores/indexes-store";
 import {
   normalizeThreshold,
   getDefaultIndexSearchState,
-} from "src/utils/search-utils";
+} from "src/meili-core/utils/search-utils";
 import {
   getCompatFeatures,
   buildCompatibleSearchParams,
-} from "src/utils/meili-compat";
+} from "src/meili-core/utils/meili-compat";
 import { storeToRefs } from "pinia";
 import { onMounted, ref, watch, nextTick, computed } from "vue";
 import { useRoute } from "vue-router";

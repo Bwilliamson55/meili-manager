@@ -1,6 +1,6 @@
 import { defineStore, acceptHMRUpdate } from "pinia";
 import { useSettingsStore } from "./settings-store";
-import { normalizeMeiliIndexStats } from "src/utils/meili-stats-merge";
+import { normalizeMeiliIndexStats } from "../utils/meili-stats-merge";
 
 export const useIndexesStore = defineStore("indexes", {
   state: () => ({

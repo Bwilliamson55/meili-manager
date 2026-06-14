@@ -8,6 +8,7 @@ A Quasar application for managing multiple Meilisearch instances across developm
 ## Docs
 
 - Reuse/fork/embed playbook: `docs/reuse-and-embedding.md`
+- Headless core (copy-paste): `src/meili-core/README.md`
 - Release readiness summary: `docs/release-readiness-1.42.md`
 - Dual-version QA checklist: `docs/qa-checklist-1.11-1.42.md`
 - GitHub release draft: `RELEASE_DRAFT_1.42.md`
@@ -158,7 +159,7 @@ Fork this repository and adapt to your needs. The codebase uses Vue 3 Compositio
 
 Key customization points:
 
-- `src/stores/settings-store.js` - Modify client management logic
+- `src/meili-core/stores/settings-store.js` - Modify client management logic
 - `src/pages/` - Add new pages or modify existing ones
 - `src/components/` - Reusable components
 - `src/utils/notifications.js` - Centralized notification patterns

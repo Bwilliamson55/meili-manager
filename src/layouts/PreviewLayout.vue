@@ -55,7 +55,7 @@
 <script setup>
 import { ref } from "vue";
 import { storeToRefs } from "pinia";
-import { usePreviewStore } from "src/stores/preview-store";
+import { usePreviewStore } from "src/meili-core/stores/preview-store";
 
 const theSettings = usePreviewStore();
 const { previewCurrentIndex } = storeToRefs(theSettings);

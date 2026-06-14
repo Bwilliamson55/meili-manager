@@ -167,7 +167,7 @@
 </template>
 
 <script setup>
-import { usePreviewStore } from "src/stores/preview-store";
+import { usePreviewStore } from "src/meili-core/stores/preview-store";
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
 import { storeToRefs } from "pinia";
 import { ref, watchEffect, computed } from "vue";

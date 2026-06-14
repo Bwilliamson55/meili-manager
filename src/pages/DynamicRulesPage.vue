@@ -234,9 +234,9 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import { storeToRefs } from "pinia";
-import { useSettingsStore } from "src/stores/settings-store";
-import { useDynamicRulesStore } from "src/stores/dynamic-rules-store";
-import { useIndexesStore } from "src/stores/indexes-store";
+import { useSettingsStore } from "src/meili-core/stores/settings-store";
+import { useDynamicRulesStore } from "src/meili-core/stores/dynamic-rules-store";
+import { useIndexesStore } from "src/meili-core/stores/indexes-store";
 import DynamicRuleEditorDialog from "src/components/dynamicRules/DynamicRuleEditorDialog.vue";
 import DynamicRuleTestDialog from "src/components/dynamicRules/DynamicRuleTestDialog.vue";
 import {

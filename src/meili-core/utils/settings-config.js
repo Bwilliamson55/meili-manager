@@ -45,7 +45,7 @@ export const SETTINGS_METADATA = {
     category: "relevancy",
     label: "Ranking Rules",
     helpText:
-      "Rules determining result order. Applied in sequence from first to last. Default: words, typo, proximity, attribute, sort, exactness.",
+      "Rules determining result order. Applied in sequence from first to last. Default: words, typo, proximity, attribute, sort, exactness. Meilisearch v1.42+ adds two optional rules: attributeRank (favor matches in higher-priority searchable attributes) and wordPosition (favor words appearing earlier in an attribute). Only add these on 1.42+ servers.",
     docs: "https://www.meilisearch.com/docs/learn/relevancy/ranking_rules",
     reindexes: false,
     type: "array",

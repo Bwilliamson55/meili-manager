@@ -323,8 +323,8 @@
 </template>
 
 <script setup>
-import { useSettingsStore } from "src/stores/settings-store";
-import { useIndexesStore } from "src/stores/indexes-store";
+import { useSettingsStore } from "src/meili-core/stores/settings-store";
+import { useIndexesStore } from "src/meili-core/stores/indexes-store";
 import { storeToRefs } from "pinia";
 import { ref, onMounted, watch, computed } from "vue";
 import {
@@ -332,7 +332,7 @@ import {
   showError,
   confirmDialog,
 } from "src/utils/notifications";
-import { formatBytes } from "src/utils/format-bytes";
+import { formatBytes } from "src/meili-core/utils/format-bytes";
 
 const showCreateDialog = ref(false);
 const newIndexName = ref("");

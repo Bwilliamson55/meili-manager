@@ -12,7 +12,7 @@ This app exposes Meilisearch **Dynamic Search Rules** when the server supports t
 | Area | Behavior |
 |------|----------|
 | Feature flag | Reads `GET /experimental-features`. Shows when `dynamicSearchRules` is off; **Enable** sends `PATCH` with `{ "dynamicSearchRules": true }` (requires a key with permission to update experimental features). |
-| List rules | `POST /dynamic-search-rules` with `offset`, `limit`, optional `filter.active`, optional `filter.attribute_patterns` (comma-separated UID patterns in the UI). |
+| List rules | `POST /dynamic-search-rules` with `offset`, `limit`, optional `filter.active`, optional `filter.attributePatterns` (comma-separated rule UID patterns in the UI). |
 | Get / upsert | `GET` / `PATCH /dynamic-search-rules/{uid}` — full editor for conditions and pin actions. |
 | Delete | `DELETE /dynamic-search-rules/{uid}` with confirmation. |
 | Test search | **Test search** opens a dialog that runs `POST /indexes/{indexUid}/search` and compares hit order to pinned document IDs (first results page only). |

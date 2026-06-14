@@ -315,7 +315,7 @@
 </template>
 
 <script setup>
-import { useTasksStore } from "src/stores/tasks-store";
+import { useTasksStore } from "src/meili-core/stores/tasks-store";
 import { onMounted, onUnmounted, ref, computed } from "vue";
 import {
   showSuccess,

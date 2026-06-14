@@ -8,7 +8,7 @@ This guide focuses on making `meili-manager` easy to fork, partially embed, or p
 
 - Fork the repo and keep app structure intact.
 - Rebrand app shell and sidebar labels first.
-- Keep `src/stores/settings-store.js` unchanged initially to avoid auth/session regressions.
+- Keep `src/meili-core/stores/settings-store.js` unchanged initially to avoid auth/session regressions.
 
 Best when you want a standalone admin app quickly.
 
@@ -16,7 +16,7 @@ Best when you want a standalone admin app quickly.
 
 Embed these parts incrementally:
 
-- Store: `src/stores/settings-store.js`
+- Store: `src/meili-core/stores/settings-store.js`
 - Pages:
   - `src/pages/IndexPage.vue`
   - `src/pages/IndexDetailPage.vue`
@@ -28,12 +28,14 @@ Embed these parts incrementally:
   - `src/components/settings/*`
 - Utilities:
   - `src/utils/notifications.js`
-  - `src/utils/settings-config.js`
-  - `src/utils/search-utils.js`
+  - `src/meili-core/utils/settings-config.js`
+  - `src/meili-core/utils/search-utils.js`
 
 Then mount routes under a prefix such as `/search-admin/*`.
 
 ## 3) Headless Logic Reuse (minimal UI carry-over)
+
+Copy `src/meili-core/` into your project and follow `src/meili-core/README.md`. The folder is UI-free (relative imports, no Quasar dependency).
 
 If you only want the operational logic:
 
@@ -53,8 +55,8 @@ If you want low-friction reuse across multiple apps, keep this contract stable:
   - `rawRequest(path, options)`
   - `getIndexSearchState(indexName)`
   - `setIndexSearchState(indexName, state)`
-- Search state defaults from `src/utils/search-utils.js`
-- Settings metadata map in `src/utils/settings-config.js`
+- Search state defaults from `src/meili-core/utils/search-utils.js`
+- Settings metadata map in `src/meili-core/utils/settings-config.js`
 
 Treat these as "API-like" surfaces. Refactor internals, but keep signatures stable.
 
