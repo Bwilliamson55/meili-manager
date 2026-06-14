@@ -117,7 +117,7 @@
 
 <script setup>
 import { ref } from "vue";
-import { SETTINGS_PRESETS } from "src/utils/settings-config";
+import { SETTINGS_PRESETS } from "src/meili-core/utils/settings-config";
 
 defineEmits(["apply-preset"]);
 

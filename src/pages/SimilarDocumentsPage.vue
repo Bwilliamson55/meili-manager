@@ -84,9 +84,9 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { useSettingsStore } from "src/stores/settings-store";
-import { useIndexesStore } from "src/stores/indexes-store";
-import { normalizeThreshold } from "src/utils/search-utils";
+import { useSettingsStore } from "src/meili-core/stores/settings-store";
+import { useIndexesStore } from "src/meili-core/stores/indexes-store";
+import { normalizeThreshold } from "src/meili-core/utils/search-utils";
 import { showError } from "src/utils/notifications";
 
 const route = useRoute();

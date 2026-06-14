@@ -98,7 +98,7 @@ import SettingsHelp from "src/components/SettingsHelp.vue";
 import {
   SETTINGS_METADATA,
   getPerformanceImpact,
-} from "src/utils/settings-config";
+} from "src/meili-core/utils/settings-config";
 
 const props = defineProps({
   modelValue: {

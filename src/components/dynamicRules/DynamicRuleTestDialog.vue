@@ -108,8 +108,8 @@
 
 <script setup>
 import { ref, computed, watch } from "vue";
-import { useSettingsStore } from "src/stores/settings-store";
-import { useIndexesStore } from "src/stores/indexes-store";
+import { useSettingsStore } from "src/meili-core/stores/settings-store";
+import { useIndexesStore } from "src/meili-core/stores/indexes-store";
 import { showError } from "src/utils/notifications";
 
 const props = defineProps({

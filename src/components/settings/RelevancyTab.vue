@@ -186,7 +186,7 @@ import { ref } from "vue";
 import SettingsHelp from "src/components/SettingsHelp.vue";
 import SynonymsSection from "./SynonymsSection.vue";
 import TypoToleranceSection from "./TypoToleranceSection.vue";
-import { SETTINGS_METADATA } from "src/utils/settings-config";
+import { SETTINGS_METADATA } from "src/meili-core/utils/settings-config";
 import { showError, showSuccess } from "src/utils/notifications";
 
 const props = defineProps({

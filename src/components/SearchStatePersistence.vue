@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import { useSettingsStore } from "src/stores/settings-store";
+import { useSettingsStore } from "src/meili-core/stores/settings-store";
 import SearchStateWatcher from "./SearchStateWatcher.vue";
 
 defineProps({

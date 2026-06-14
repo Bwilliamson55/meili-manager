@@ -300,7 +300,7 @@
 </template>
 
 <script setup>
-import { useKeysStore } from "src/stores/keys-store";
+import { useKeysStore } from "src/meili-core/stores/keys-store";
 import { onMounted, ref, computed } from "vue";
 import ApiKeyForm from "src/components/ApiKeyForm.vue";
 import {

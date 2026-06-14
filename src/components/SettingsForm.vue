@@ -129,7 +129,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from "vue";
-import { useSettingsStore } from "src/stores/settings-store";
+import { useSettingsStore } from "src/meili-core/stores/settings-store";
 import { storeToRefs } from "pinia";
 import {
   showSuccess,
@@ -148,7 +148,7 @@ import {
   SETTINGS_CATEGORIES,
   SETTINGS_PRESETS,
   getReindexingSettings,
-} from "src/utils/settings-config";
+} from "src/meili-core/utils/settings-config";
 
 const fetching = ref(true);
 const activeTab = ref("search");

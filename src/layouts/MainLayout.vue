@@ -71,7 +71,7 @@
 
 <script setup>
 import { ref, watch } from "vue";
-import { useSettingsStore } from "src/stores/settings-store";
+import { useSettingsStore } from "src/meili-core/stores/settings-store";
 import { storeToRefs } from "pinia";
 import { useQuasar } from "quasar";
 

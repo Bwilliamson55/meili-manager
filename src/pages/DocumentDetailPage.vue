@@ -58,8 +58,8 @@
 </template>
 
 <script setup>
-import { useSettingsStore } from "src/stores/settings-store";
-import { useIndexesStore } from "src/stores/indexes-store";
+import { useSettingsStore } from "src/meili-core/stores/settings-store";
+import { useIndexesStore } from "src/meili-core/stores/indexes-store";
 import { storeToRefs } from "pinia";
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";

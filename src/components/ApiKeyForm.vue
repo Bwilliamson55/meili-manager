@@ -117,7 +117,7 @@
 </template>
 
 <script setup>
-import { useSettingsStore } from "src/stores/settings-store";
+import { useSettingsStore } from "src/meili-core/stores/settings-store";
 import { onMounted, ref } from "vue";
 import { showSuccess, showError } from "src/utils/notifications";
 

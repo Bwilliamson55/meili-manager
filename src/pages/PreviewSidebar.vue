@@ -281,8 +281,8 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
-import { useSettingsStore } from "src/stores/settings-store";
-import { usePreviewStore } from "src/stores/preview-store";
+import { useSettingsStore } from "src/meili-core/stores/settings-store";
+import { usePreviewStore } from "src/meili-core/stores/preview-store";
 import { storeToRefs } from "pinia";
 
 const theSettings = useSettingsStore();
