@@ -1,5 +1,42 @@
 [
   {
+    "version": "1.21.4",
+    "week": "2026-W24",
+    "dateRange": "2026, Week 24",
+    "changes": [
+      {
+        "subject": "Merge pull request #15 from Bwilliamson55/dev",
+        "notes": [
+          "New portable Meili-Core folder"
+        ]
+      },
+      {
+        "subject": "Update docs for src/meili-core and DSR filter field",
+        "notes": [
+          "Document filter.attributePatterns on dynamic rules list API",
+          "Point reuse guide and README customization at src/meili-core"
+        ]
+      },
+      {
+        "subject": "Repoint UI imports to src/meili-core",
+        "notes": [
+          "Updated pages, layouts, and components to import stores and utils from src/meili-core"
+        ]
+      },
+      {
+        "subject": "Add canonical src/meili-core headless module",
+        "notes": [
+          "Moved Pinia stores, services, and utils into src/meili-core/ with relative imports",
+          "Added package.json peer dependency contract and README for copy-paste reuse",
+          "Extracted shared meili-client helpers and task compat shim in settings-store",
+          "Fixed DSR list filter key to attributePatterns and centralized rule payload building",
+          "Documented v1.42 ranking rules in settings-config help text",
+          "Removed stale SettingsForm.old.vue"
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.20.2",
     "week": "2026-W20",
     "dateRange": "2026, Week 20",
