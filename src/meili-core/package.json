@@ -1,0 +1,12 @@
+{
+  "name": "meili-core",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Headless Meilisearch management logic (Pinia stores + services + utils). Bring your own UI.",
+  "peerDependencies": {
+    "meilisearch": "^0.57.0",
+    "jose": "^6.1.0",
+    "pinia": "^3.0.3",
+    "pinia-plugin-persistedstate": "^4.7.1"
+  }
+}

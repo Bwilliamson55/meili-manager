@@ -1,34 +1,10 @@
 import { defineStore, acceptHMRUpdate } from "pinia";
-import { Meilisearch } from "meilisearch";
-import { getDefaultIndexSearchState } from "src/utils/search-utils";
-
-const normalizeMeiliHost = (rawUrl) => {
-  if (!rawUrl || typeof rawUrl !== "string") {
-    throw new Error("Meilisearch URL is required");
-  }
-
-  let candidate = rawUrl.trim();
-  if (!candidate) {
-    throw new Error("Meilisearch URL is required");
-  }
-
-  if (!/^https?:\/\//i.test(candidate)) {
-    candidate = `http://${candidate}`;
-  }
-
-  let parsed;
-  try {
-    parsed = new URL(candidate);
-  } catch {
-    throw new Error("Invalid Meilisearch URL");
-  }
-
-  if (!parsed.hostname) {
-    throw new Error("Invalid Meilisearch URL");
-  }
-
-  return parsed.origin;
-};
+import { getDefaultIndexSearchState } from "../utils/search-utils";
+import {
+  normalizeMeiliHost,
+  createMeiliClient,
+  getIndexSettingsWithStats,
+} from "../utils/meili-client";
 
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
@@ -57,8 +33,8 @@ export const useSettingsStore = defineStore("settings", {
       ) {
         throw new Error("Meilisearch credentials not configured");
       }
-      return new Meilisearch({
-        host: normalizeMeiliHost(state.indexUrl),
+      return createMeiliClient({
+        host: state.indexUrl,
         apiKey: state.indexKey,
       });
     },
@@ -80,70 +56,31 @@ export const useSettingsStore = defineStore("settings", {
     getIndexClient(indexName) {
       return this.client.index(indexName);
     },
-    async waitForTask(taskUid, options = {}) {
+    // Resolve a task method across SDK shapes (client.X vs client.tasks.X).
+    callClientTaskMethod(name, ...args) {
       const client = this.client;
-
-      if (typeof client.waitForTask === "function") {
-        return client.waitForTask(taskUid, options);
+      if (typeof client[name] === "function") {
+        return client[name](...args);
       }
-
-      if (typeof client.tasks?.waitForTask === "function") {
-        return client.tasks.waitForTask(taskUid, options);
+      if (typeof client.tasks?.[name] === "function") {
+        return client.tasks[name](...args);
       }
-
-      throw new Error("waitForTask is not available on this Meilisearch client");
+      throw new Error(`${name} is not available on this Meilisearch client`);
+    },
+    async waitForTask(taskUid, options = {}) {
+      return this.callClientTaskMethod("waitForTask", taskUid, options);
     },
     async getTasks(options = {}) {
-      const client = this.client;
-
-      if (typeof client.getTasks === "function") {
-        return client.getTasks(options);
-      }
-
-      if (typeof client.tasks?.getTasks === "function") {
-        return client.tasks.getTasks(options);
-      }
-
-      throw new Error("getTasks is not available on this Meilisearch client");
+      return this.callClientTaskMethod("getTasks", options);
     },
     async getTask(taskUid) {
-      const client = this.client;
-
-      if (typeof client.getTask === "function") {
-        return client.getTask(taskUid);
-      }
-
-      if (typeof client.tasks?.getTask === "function") {
-        return client.tasks.getTask(taskUid);
-      }
-
-      throw new Error("getTask is not available on this Meilisearch client");
+      return this.callClientTaskMethod("getTask", taskUid);
     },
     async cancelTasks(options = {}) {
-      const client = this.client;
-
-      if (typeof client.cancelTasks === "function") {
-        return client.cancelTasks(options);
-      }
-
-      if (typeof client.tasks?.cancelTasks === "function") {
-        return client.tasks.cancelTasks(options);
-      }
-
-      throw new Error("cancelTasks is not available on this Meilisearch client");
+      return this.callClientTaskMethod("cancelTasks", options);
     },
     async deleteTasks(options = {}) {
-      const client = this.client;
-
-      if (typeof client.deleteTasks === "function") {
-        return client.deleteTasks(options);
-      }
-
-      if (typeof client.tasks?.deleteTasks === "function") {
-        return client.tasks.deleteTasks(options);
-      }
-
-      throw new Error("deleteTasks is not available on this Meilisearch client");
+      return this.callClientTaskMethod("deleteTasks", options);
     },
     async rawRequest(path, options = {}) {
       const headers = new Headers(options.headers || {});
@@ -186,16 +123,7 @@ export const useSettingsStore = defineStore("settings", {
     },
     async getIndexSettings(indexName) {
       try {
-        const mclient = this.getIndexClient(indexName);
-        let settings = await mclient.getSettings();
-        try {
-          let stats = await mclient.getStats();
-          settings.stats = stats;
-          settings.attributeCodes = Object.keys(stats.fieldDistribution);
-        } catch (error) {
-          console.error(error);
-        }
-        return settings;
+        return await getIndexSettingsWithStats(this.getIndexClient(indexName));
       } catch (error) {
         console.error(error);
         return false;
@@ -239,10 +167,7 @@ export const useSettingsStore = defineStore("settings", {
 
       // Validate before adding
       try {
-        const testClient = new Meilisearch({
-          host: normalizedUrl,
-          apiKey: key,
-        });
+        const testClient = createMeiliClient({ host: normalizedUrl, apiKey: key });
         await testClient.getVersion();
 
         this.instances.push(newInstance);

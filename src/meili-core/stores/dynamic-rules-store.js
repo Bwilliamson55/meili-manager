@@ -5,11 +5,11 @@ import {
   getDynamicSearchRule,
   upsertDynamicSearchRule,
   deleteDynamicSearchRule,
-} from "src/services/dynamic-search-rules-api";
+} from "../services/dynamic-search-rules-api";
 import {
   getExperimentalFeatures,
   updateExperimentalFeatures,
-} from "src/services/experimental-features-api";
+} from "../services/experimental-features-api";
 
 export const useDynamicRulesStore = defineStore("dynamicRules", {
   state: () => ({
@@ -76,7 +76,7 @@ export const useDynamicRulesStore = defineStore("dynamicRules", {
           .map((s) => s.trim())
           .filter(Boolean);
         if (patterns.length) {
-          filter.attribute_patterns = patterns;
+          filter.attributePatterns = patterns;
         }
         const body = {
           offset: Math.max(0, Number(this.listOffset) || 0),

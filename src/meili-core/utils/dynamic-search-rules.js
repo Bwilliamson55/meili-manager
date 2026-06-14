@@ -143,3 +143,52 @@ export function validateRuleDraft(conditions, pins) {
   }
   return { ok: true };
 }
+
+/**
+ * Normalize a priority value for the API (smaller = higher precedence).
+ * @param {number|string|null|undefined} value
+ * @returns {number|null} null means "no priority" (server treats as lowest)
+ */
+export function normalizePriority(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const n = Number(value);
+  if (Number.isNaN(n)) return null;
+  return Math.max(0, n);
+}
+
+/**
+ * `<input type="datetime-local">` value → ISO 8601 string for the API.
+ * @param {string|null|undefined} local
+ * @returns {string|null}
+ */
+export function datetimeLocalToIso(local) {
+  if (!local || typeof local !== "string") return null;
+  const d = new Date(local);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toISOString();
+}
+
+/**
+ * Build a full Dynamic Search Rule API payload from editor form state.
+ * @param {{ description?: string|null; active?: boolean; priority?: number|string|null; conditions: ConditionFormRow[]; pins: Array<{ indexUid: string; documentId: string; position: number|string }> }} draft
+ */
+export function buildRulePayload({ description, active, priority, conditions, pins }) {
+  const conds = (conditions || []).map((row) => {
+    if (row.scope === "time") {
+      return {
+        scope: "time",
+        start: datetimeLocalToIso(row.start),
+        end: datetimeLocalToIso(row.end),
+      };
+    }
+    return row;
+  });
+
+  return {
+    description: description?.trim() || null,
+    active: active !== false,
+    priority: normalizePriority(priority),
+    conditions: conditionsToApiPayload(conds),
+    actions: pinActionsToApiPayload(pins),
+  };
+}
