@@ -5,7 +5,7 @@
 - Vue 3 `<script setup>` only. JS, not TS (unless the file is TS).
 - Quasar components: Use Q\* components (q-btn, q-input, q-table, q-dialog, etc.) for complex UI elements.
 - Tailwind CSS: Use Tailwind utility classes for all spacing, layout, and simple styling. Replace Quasar utility classes (q-pa-_, q-mt-_, etc.) with Tailwind equivalents.
-- Import alias: `src/` for all imports (e.g., `import { useSettingsStore } from 'src/stores/settings-store'`).
+- Import alias: `src/` for all imports (e.g., `import { useSettingsStore } from 'src/meili-core/stores/settings-store'`).
 - Keep code **simple, readable, minimal**. Early returns > nested logic. Small functions > big ones.
 - No test scaffolds, no placeholder mocks.
 
@@ -23,9 +23,11 @@
 
 ### Critical Files
 
-- `src/stores/settings-store.js`: Centralized client management. State: `activeClient`, `clientError`, `isConnecting`. Actions: `getMeiliClient()`, `getIndexClient(name)`, `switchInstance(index)`, `addInstance()`, `removeInstance()`, `invalidateClient()`.
-- `src/stores/preview-store.js`: Preview configs with `previewSettings` object (pagination, filters, sortable/image/heading attributes). Actions: `savePreviewSettings()`, `loadPreviewSettings()`, `tokenizePreviewSettings()`.
+- `src/meili-core/stores/settings-store.js`: Centralized client management. State: instances, `indexSearchState`, `indexDisplaySettings`, `indexSettingsCache`. Actions: `getMeiliClient()`, `getIndexClient(name)`, `switchInstance(index)`, `addInstance()`, `removeInstance()`, `getIndexDisplaySettings()`, `setIndexDisplaySettings()`, `getIndexSettingsCache()`, `setIndexSettingsCache()`.
+- `src/meili-core/utils/display-settings.js`: Headless list-field resolution, compact/detailed/table display defaults, document id/title formatting (used by `src/components/documents/*`).
+- `src/meili-core/stores/preview-store.js`: Preview configs with `previewSettings` object (pagination, filters, sortable/image/heading attributes). Actions: `savePreviewSettings()`, `loadPreviewSettings()`, `tokenizePreviewSettings()`.
 - `src/boot/instant-search.js`: Registers Vue InstantSearch globally (used in `IndexDetailPage.vue` and `PreviewPage.vue` for live search UI).
+- `src/pages/IndexDetailPage.vue`: Index detail with Documents / Overview / Settings tabs; Documents tab uses `DocumentsFiltersPanel`, `DocumentsHitsColumn`, `DocumentsDisplayMenu`, and `SearchExperiencePanel`.
 - `quasar.config.js`: Boot files order matters. Current: `['instant-search']`. Uses ES modules (`import`/`export`).
 
 ## Developer Workflows

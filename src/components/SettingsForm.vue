@@ -194,6 +194,7 @@ const originalSettings = ref({});
 const iSettingsProcessing = ref({ taskId: 0, processing: false });
 
 const theSettings = useSettingsStore();
+const emit = defineEmits(["settings-updated"]);
 const { currentIndex, confirmed } = storeToRefs(theSettings);
 
 onMounted(async () => {
@@ -215,6 +216,11 @@ onMounted(async () => {
       fetching.value = false;
 
       theSettings.markSettingsSaved();
+      theSettings.setIndexSettingsCache(
+        currentIndex.value,
+        JSON.parse(JSON.stringify(iSettings.value)),
+      );
+      emit("settings-updated", JSON.parse(JSON.stringify(iSettings.value)));
     } catch (error) {
       fetching.value = false;
       showError(`Failed to load settings: ${error.message}`);
@@ -324,6 +330,11 @@ const onSubmit = async () => {
 
     showSuccess("Settings Updated");
     theSettings.markSettingsSaved();
+    theSettings.setIndexSettingsCache(
+      currentIndex.value,
+      JSON.parse(JSON.stringify(iSettings.value)),
+    );
+    emit("settings-updated", JSON.parse(JSON.stringify(iSettings.value)));
   } catch (error) {
     iSettingsProcessing.value.processing = false;
     iSettingsProcessing.value.taskId = 0;

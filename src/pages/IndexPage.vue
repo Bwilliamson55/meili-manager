@@ -403,6 +403,12 @@ watch(currentInstance, async () => {
   await loadInstance();
 });
 
+watch(confirmed, async (ok) => {
+  if (ok) {
+    await loadInstance();
+  }
+});
+
 const loadInstance = async () => {
   try {
     await indexesStore.fetchIndexes();
@@ -419,8 +425,7 @@ const refresh = async () => {
 };
 
 onMounted(async () => {
-  // Load indexes if credentials are configured
-  if (indexUrl.value && indexUrl.value !== "https://#") {
+  if (confirmed.value) {
     await loadInstance();
   }
 });

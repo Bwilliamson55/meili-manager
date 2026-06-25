@@ -1,5 +1,6 @@
 import { defineStore, acceptHMRUpdate } from "pinia";
 import { getDefaultIndexSearchState } from "../utils/search-utils";
+import { mergeDisplaySettings } from "../utils/display-settings";
 import {
   normalizeMeiliHost,
   createMeiliClient,
@@ -15,9 +16,11 @@ export const useSettingsStore = defineStore("settings", {
     currentInstance: null,
     instances: [],
     // Per-index display preferences
-    indexDisplaySettings: {}, // { indexName: { imageField: 'image_url', viewMode: 'compact' } }
+    indexDisplaySettings: {}, // { indexName: { imageField, listFields, listColumns, listViewMode, compactFieldLimit } }
     // Per-index search state persistence
     indexSearchState: {}, // { indexName: { query: '', filters: {}, sort: '', page: 0, filtersVisible: true, ...search options } }
+    // Latest Meilisearch index settings fetched or saved in-session
+    indexSettingsCache: {}, // { indexName: { filterableAttributes: [], ... } }
     darkMode: true,
     // Unsaved settings tracking
     hasUnsavedSettings: false,
@@ -171,9 +174,51 @@ export const useSettingsStore = defineStore("settings", {
         await testClient.getVersion();
 
         this.instances.push(newInstance);
-        return this.instances.length - 1;
+        const instanceIndex = this.instances.length - 1;
+
+        if (this.currentInstance === null) {
+          await this.switchInstance(instanceIndex);
+        }
+
+        return instanceIndex;
       } catch (error) {
         throw new Error(`Invalid instance: ${error.message}`);
+      }
+    },
+
+    // Ensure persisted instance selection matches active credentials
+    async restoreActiveInstance() {
+      if (!this.instances.length) {
+        if (
+          this.indexUrl &&
+          this.indexUrl !== "https://#" &&
+          this.indexKey &&
+          this.indexKey !== "abcdefg"
+        ) {
+          try {
+            await this.validateConnection();
+          } catch {
+            this.confirmed = false;
+          }
+        } else {
+          this.confirmed = false;
+        }
+        return;
+      }
+
+      const selectedIndex = this.currentInstance;
+      const hasValidSelection =
+        typeof selectedIndex === "number" &&
+        selectedIndex >= 0 &&
+        selectedIndex < this.instances.length;
+      const targetIndex = hasValidSelection ? selectedIndex : 0;
+      const instance = this.instances[targetIndex];
+      const normalizedUrl = normalizeMeiliHost(instance.indexUrl);
+      const credentialsMatch =
+        this.indexUrl === normalizedUrl && this.indexKey === instance.indexKey;
+
+      if (!hasValidSelection || !credentialsMatch || !this.confirmed) {
+        await this.switchInstance(targetIndex);
       }
     },
 
@@ -197,12 +242,7 @@ export const useSettingsStore = defineStore("settings", {
 
     // Get display settings for an index
     getIndexDisplaySettings(indexName) {
-      return (
-        this.indexDisplaySettings[indexName] || {
-          imageField: null,
-          viewMode: "compact",
-        }
-      );
+      return mergeDisplaySettings(this.indexDisplaySettings[indexName]);
     },
 
     // Set display settings for an index
@@ -224,6 +264,18 @@ export const useSettingsStore = defineStore("settings", {
       this.indexSearchState[indexName] = {
         ...this.getIndexSearchState(indexName),
         ...state,
+      };
+    },
+
+    getIndexSettingsCache(indexName) {
+      return this.indexSettingsCache[indexName] || null;
+    },
+
+    setIndexSettingsCache(indexName, settings) {
+      if (!indexName) return;
+      this.indexSettingsCache[indexName] = {
+        ...(this.indexSettingsCache[indexName] || {}),
+        ...settings,
       };
     },
 
