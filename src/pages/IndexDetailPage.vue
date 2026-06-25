@@ -161,6 +161,7 @@
                   <DocumentsFiltersPanel
                     :filterable-attributes="filterableAttributes"
                     :filter-density="savedSearchState.filterDensity"
+                    @update:filter-density="onFilterDensityChange"
                     @close="filtersVisible = false"
                   />
                 </div>
@@ -501,6 +502,15 @@ const onFiltersPanelWidthChange = (width) => {
   });
 };
 
+const onFilterDensityChange = (density) => {
+  if (density !== "compact" && density !== "comfortable") return;
+  savedSearchState.value = {
+    ...savedSearchState.value,
+    filterDensity: density,
+  };
+  persistSearchState();
+};
+
 const hasConfiguredEmbedders = computed(() => {
   const embedders = iSettings.value?.embedders;
   return !!(
@@ -641,7 +651,7 @@ const loadInstance = async () => {
 
   // Load saved search state for this index
   const savedState = theSettings.getIndexSearchState(currentIndex.value);
-  savedSearchState.value = { ...savedState };
+  savedSearchState.value = { ...getDefaultIndexSearchState(), ...savedState };
   sanitizeSearchStateForCompat();
   rebuildSearchClient();
   filtersVisible.value = savedState.filtersVisible ?? true;
