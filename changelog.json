@@ -1,9 +1,23 @@
 [
   {
-    "version": "1.22.10",
+    "version": "1.22.12",
     "week": "2026-W26",
     "dateRange": "2026, Week 26",
     "changes": [
+      {
+        "subject": "Merge pull request #20 from Bwilliamson55/dev",
+        "notes": [
+          "Fix list field rendering and table pagination totals"
+        ]
+      },
+      {
+        "subject": "Fix list field rendering and table pagination totals",
+        "notes": [
+          "Show all configured list columns in table view and mark missing hit fields with —",
+          "Resolve dot-path field values and explain displayedAttributes requirement in UI",
+          "Remove q-table page slicing; footer reflects InstantSearch nbHits and search page"
+        ]
+      },
       {
         "subject": "Merge pull request #19 from Bwilliamson55/dev",
         "notes": [
