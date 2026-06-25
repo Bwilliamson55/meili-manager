@@ -1,5 +1,11 @@
 <template>
   <div class="min-w-0 pl-3 flex flex-col flex-1 min-h-0">
+    <ais-stats>
+      <template #default="{ nbHits, page, hitsPerPage }">
+        <span v-show="false">{{ syncSearchStats(nbHits, page, hitsPerPage) }}</span>
+      </template>
+    </ais-stats>
+
     <div class="flex justify-center mb-3 flex-shrink-0">
       <AisPaginationNav :padding="2" />
     </div>
@@ -24,6 +30,11 @@
           :image-field="displaySettings.imageField"
           :resolved-list-fields="resolvedListFields"
           :use-all-item-fields="useAllItemFields"
+          :use-configured-field-list="includeConfiguredMissing"
+          :include-configured-missing="includeConfiguredMissing"
+          :nb-hits="searchStats.nbHits"
+          :current-page="searchStats.page"
+          :hits-per-page="searchStats.hitsPerPage"
         />
         <div v-else class="flex flex-col gap-2 overflow-y-auto flex-1 min-h-0">
           <DocumentHitCard
@@ -35,6 +46,7 @@
             :image-field="displaySettings.imageField"
             :resolved-list-fields="resolvedListFields"
             :use-all-item-fields="useAllItemFields"
+            :include-configured-missing="includeConfiguredMissing"
             :list-view-mode="displaySettings.listViewMode"
             :compact-field-limit="displaySettings.compactFieldLimit || 4"
             :list-columns="displaySettings.listColumns"
@@ -53,6 +65,7 @@
 </template>
 
 <script setup>
+import { ref } from "vue";
 import AisPaginationNav from "components/aisComponents/AisPaginationNav.vue";
 import DocumentHitCard from "components/documents/DocumentHitCard.vue";
 import DocumentsHitsTable from "components/documents/DocumentsHitsTable.vue";
@@ -82,11 +95,30 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  includeConfiguredMissing: {
+    type: Boolean,
+    default: false,
+  },
   showSimilar: {
     type: Boolean,
     default: false,
   },
 });
+
+const searchStats = ref({
+  nbHits: 0,
+  page: 0,
+  hitsPerPage: 50,
+});
+
+const syncSearchStats = (nbHits, page, hitsPerPage) => {
+  searchStats.value = {
+    nbHits: nbHits ?? 0,
+    page: page ?? 0,
+    hitsPerPage: hitsPerPage ?? 50,
+  };
+  return "";
+};
 
 const documentId = (item, index) =>
   getDocumentIdFromItem(item, props.primaryKey) ?? `row-${index}`;

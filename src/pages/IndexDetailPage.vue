@@ -561,12 +561,17 @@ const useAllItemFields = computed(() =>
   }),
 );
 
+const includeConfiguredMissing = computed(
+  () => (displaySettings.value.listFields || []).length > 0,
+);
+
 const hitsColumnProps = computed(() => ({
   currentIndex: currentIndex.value,
   primaryKey: iPk.value,
   displaySettings: displaySettings.value,
   resolvedListFields: resolvedListFields.value,
   useAllItemFields: useAllItemFields.value,
+  includeConfiguredMissing: includeConfiguredMissing.value,
   showSimilar:
     meiliCompat.value.supportsSimilarEndpoint && hasConfiguredEmbedders.value,
 }));

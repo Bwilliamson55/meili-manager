@@ -47,6 +47,29 @@ export const getDocumentIdFromItem = (item, primaryKey = "") => {
   return id;
 };
 
+export const MISSING_FIELD_LABEL = "—";
+export const MISSING_FIELD_TOOLTIP =
+  "Not returned in search hits. Add this field to the index displayedAttributes setting.";
+
+export const getDocumentFieldValue = (item, fieldPath) => {
+  if (!item || !fieldPath) return undefined;
+  if (Object.hasOwn(item, fieldPath)) return item[fieldPath];
+
+  const parts = String(fieldPath).split(".");
+  if (parts.length === 1) return undefined;
+
+  let current = item;
+  for (const part of parts) {
+    if (current == null || typeof current !== "object") return undefined;
+    if (!Object.hasOwn(current, part)) return undefined;
+    current = current[part];
+  }
+  return current;
+};
+
+export const isDocumentFieldPresent = (item, fieldPath) =>
+  getDocumentFieldValue(item, fieldPath) !== undefined;
+
 export const formatDocumentFieldValue = (value, { truncate = 0 } = {}) => {
   if (value === null || value === undefined) return "";
   if (typeof value === "object") return JSON.stringify(value);
@@ -55,6 +78,21 @@ export const formatDocumentFieldValue = (value, { truncate = 0 } = {}) => {
     return `${text.slice(0, truncate)}…`;
   }
   return text;
+};
+
+export const formatDocumentFieldDisplay = (
+  item,
+  fieldPath,
+  { truncate = 0, showMissing = false } = {},
+) => {
+  const value = getDocumentFieldValue(item, fieldPath);
+  if (value === undefined) {
+    return showMissing
+      ? { text: MISSING_FIELD_LABEL, title: MISSING_FIELD_TOOLTIP, missing: true }
+      : { text: "", title: "", missing: true };
+  }
+  const text = formatDocumentFieldValue(value, { truncate });
+  return { text, title: text, missing: false };
 };
 
 export const getDocumentTitleLabel = (item, primaryKey = "", documentId) => {
@@ -79,6 +117,7 @@ export const resolveTableFields = ({
   primaryKey = "",
   imageField = null,
   useAllItemFields = false,
+  useConfiguredFieldList = false,
   limit = 8,
 }) => {
   let fields = [...resolvedListFields];
@@ -97,7 +136,8 @@ export const resolveTableFields = ({
     primaryKey,
     ...fields.filter((field) => field && field !== primaryKey && field !== imageField),
   ].filter(Boolean);
-  return [...new Set(withPk)].slice(0, limit);
+  const unique = [...new Set(withPk)];
+  return useConfiguredFieldList ? unique : unique.slice(0, limit);
 };
 
 export const resolveFilterableAttributes = (
@@ -173,13 +213,19 @@ export const resolveListFields = ({
 export const resolveListFieldsForItem = (
   resolvedFields,
   item,
-  { useAllItemFields = false, primaryKey = "", imageField = null } = {},
+  {
+    useAllItemFields = false,
+    includeConfiguredMissing = false,
+    primaryKey = "",
+    imageField = null,
+  } = {},
 ) => {
   if (useAllItemFields && item && typeof item === "object") {
     return excludeReservedFields(Object.keys(item), primaryKey, imageField);
   }
   if (!item || typeof item !== "object") return resolvedFields;
-  return resolvedFields.filter((field) => Object.hasOwn(item, field));
+  if (includeConfiguredMissing) return resolvedFields;
+  return resolvedFields.filter((field) => isDocumentFieldPresent(item, field));
 };
 
 export const getListFieldsSourceLabel = ({
