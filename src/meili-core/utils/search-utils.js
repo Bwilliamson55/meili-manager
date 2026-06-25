@@ -20,7 +20,7 @@ export const DEFAULT_INDEX_SEARCH_STATE = Object.freeze({
   enableHybrid: false,
   hybridEmbedder: "",
   hybridSemanticRatio: null,
-  filterDensity: "comfortable",
+  filterDensity: "compact",
   filtersPanelWidth: 380,
   detailPanelTab: "documents",
 });
