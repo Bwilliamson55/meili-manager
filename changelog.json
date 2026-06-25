@@ -1,9 +1,31 @@
 [
   {
-    "version": "1.22.5",
+    "version": "1.22.8",
     "week": "2026-W26",
     "dateRange": "2026, Week 26",
     "changes": [
+      {
+        "subject": "Merge pull request #18 from Bwilliamson55/dev",
+        "notes": [
+          "Improve filters panel density, search, and collapse behavior"
+        ]
+      },
+      {
+        "subject": "Fix filter density toggle and clarify hide-empty control",
+        "notes": [
+          "Apply distinct compact vs comfortable sizing to facet rows and group headers",
+          "Rename Hide 0 to Hide empty with tooltip explaining zero document counts",
+          "Merge default search state on index load so filterDensity persists reliably"
+        ]
+      },
+      {
+        "subject": "Improve filters panel density, search, and collapse behavior",
+        "notes": [
+          "Collapsed expansion items with lazy facet loading and attribute search",
+          "Added expand/collapse all, hide-zero toggle, and in-panel density control",
+          "Tightened refinement list styling and default compact filter density"
+        ]
+      },
       {
         "subject": "Merge pull request #17 from Bwilliamson55/dev",
         "notes": [
