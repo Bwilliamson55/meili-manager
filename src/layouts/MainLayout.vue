@@ -70,7 +70,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useSettingsStore } from "src/meili-core/stores/settings-store";
 import { storeToRefs } from "pinia";
 import { useQuasar } from "quasar";
@@ -94,5 +94,13 @@ $q.dark.set(darkMode.value);
 // Watch for dark mode changes and update Quasar
 watch(darkMode, (newVal) => {
   $q.dark.set(newVal);
+});
+
+onMounted(async () => {
+  try {
+    await theSettings.restoreActiveInstance();
+  } catch (error) {
+    console.warn("Failed to restore active instance:", error.message);
+  }
 });
 </script>

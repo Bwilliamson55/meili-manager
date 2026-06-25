@@ -1,391 +1,193 @@
 <template>
-  <q-page padding>
-    <div class="flex flex-col gap-4 w-full">
-      <IndexDetailTabs>
-        <template #overview-tab>
-          <q-card flat bordered>
-            <q-card-section>
-              <q-card-section>
-                <div
-                  v-if="iStats && iPk"
-                  class="flex justify-around items-center"
-                >
-                  <q-chip icon="numbers" class="bg-info"
-                    >Count: {{ iStats.numberOfDocuments }}</q-chip
-                  >
-                  <div>
-                    Primary Key: <strong>{{ iPk }}</strong>
-                  </div>
-                  <q-chip
-                    :icon="iStats.isIndexing ? 'done' : 'sync'"
-                    class="bg-secondary text-white"
-                    >Indexing: {{ iStats.isIndexing }}</q-chip
-                  >
-                </div>
-              </q-card-section>
-
-              <q-separator />
-
-              <q-card-section>
-                <div v-if="iStats && iPk" class="flex flex-col gap-4">
-                  <div class="w-full text-center">
-                    <p class="text-h6">Field Distribution</p>
-                  </div>
-                  <div class="px-4 mx-auto w-full">
-                    <q-table
-                      dense
-                      :rows="fdRows"
-                      :columns="fdColumns"
-                      row-key="Field Name"
-                      :rows-per-page-options="[5, 10, 15, 0]"
-                      flat
-                      bordered
-                    />
-                  </div>
-                  <div class="w-full text-center mt-6">
-                    <p class="text-h6">Fields Metadata</p>
-                  </div>
-                  <div class="flex items-end justify-center gap-2 mb-2">
-                    <q-input
-                      v-model.number="fieldsOffset"
-                      type="number"
-                      dense
-                      outlined
-                      label="Offset"
-                      class="w-28"
-                      :min="0"
-                    />
-                    <q-input
-                      v-model.number="fieldsLimit"
-                      type="number"
-                      dense
-                      outlined
-                      label="Limit"
-                      class="w-28"
-                      :min="1"
-                      :max="1000"
-                    />
-                    <q-btn
-                      flat
-                      dense
-                      color="secondary"
-                      icon="refresh"
-                      label="Reload Fields"
-                      :loading="fieldsLoading"
-                      @click="loadFieldsMetadata"
-                    />
-                  </div>
-                  <div
-                    v-if="fieldsRows.length === 0"
-                    class="text-caption text-grey-7 text-center"
-                  >
-                    Fields metadata unavailable or empty for this index/key.
-                  </div>
-                  <div class="px-4 mx-auto w-full">
-                    <q-table
-                      dense
-                      :rows="fieldsRows"
-                      :columns="fieldsColumns"
-                      row-key="field"
-                      :rows-per-page-options="[5, 10, 15, 25]"
-                      flat
-                      bordered
-                    />
-                  </div>
-                </div>
-              </q-card-section>
-            </q-card-section>
-          </q-card>
-        </template>
-        <template #settings-tab>
-          <SettingsForm></SettingsForm>
-        </template>
-      </IndexDetailTabs>
-    </div>
-    <div class="flex items-center justify-between mt-4 mb-3">
-      <div class="flex items-center gap-4 flex-wrap">
-        <span class="text-h6 w-full dark:text-white">Documents</span>
-        <div class="flex items-center gap-2">
-          <span class="text-caption text-gray-600 dark:text-gray-400 mr-1"
-            >Show thumbnails:</span
+  <q-page padding class="index-detail-page flex flex-col">
+    <IndexDetailTabs v-model="detailPanelTab" class="flex-1 min-h-0">
+      <template #overview-tab>
+        <div v-if="iStats && iPk" class="flex flex-wrap gap-2 mb-4">
+          <q-chip icon="numbers" color="info" text-color="white">
+            Count: {{ iStats.numberOfDocuments }}
+          </q-chip>
+          <q-chip color="grey-8" text-color="white">
+            Primary key: {{ iPk }}
+          </q-chip>
+          <q-chip
+            :icon="iStats.isIndexing ? 'sync' : 'done'"
+            color="secondary"
+            text-color="white"
           >
-          <q-select
-            v-model="displaySettings.imageField"
-            :options="imageFieldOptions"
-            placeholder="None"
-            dense
-            outlined
-            clearable
-            class="w-40"
-            @update:model-value="saveDisplaySettings"
-          >
-            <template #prepend>
-              <q-icon name="image" size="xs" />
-            </template>
-          </q-select>
+            Indexing: {{ iStats.isIndexing }}
+          </q-chip>
         </div>
-        <div class="flex items-center gap-2">
+
+        <div class="text-subtitle1 font-semibold mb-2 dark:text-white">
+          Field distribution
+        </div>
+        <q-table
+          dense
+          :rows="fdRows"
+          :columns="fdColumns"
+          row-key="Field Name"
+          :rows-per-page-options="[10, 25, 50, 0]"
+          flat
+          bordered
+          class="mb-6"
+        />
+
+        <div class="flex flex-wrap items-end gap-2 mb-3">
+          <div class="text-subtitle1 font-semibold dark:text-white flex-1">
+            Fields metadata
+          </div>
           <q-input
-            v-model="batchDocumentIdsInput"
+            v-model.number="fieldsOffset"
+            type="number"
             dense
             outlined
-            clearable
-            class="w-80"
-            label="Fetch documents by IDs"
-            hint="Comma-separated IDs"
+            label="Offset"
+            class="w-28"
+            :min="0"
+          />
+          <q-input
+            v-model.number="fieldsLimit"
+            type="number"
+            dense
+            outlined
+            label="Limit"
+            class="w-28"
+            :min="1"
+            :max="1000"
           />
           <q-btn
             flat
             dense
             color="secondary"
-            icon="list_alt"
-            label="Fetch IDs"
-            :loading="batchFetchLoading"
-            :disable="!meiliCompat.supportsDocumentsFetchByIds"
-            @click="fetchDocumentsByIds"
+            icon="refresh"
+            label="Reload"
+            :loading="fieldsLoading"
+            @click="loadFieldsMetadata"
           />
         </div>
-      </div>
-      <q-btn flat dense icon="add_circle" :to="`/documents/${currentIndex}/new`"
-        >New</q-btn
-      >
-    </div>
-    <ais-instant-search
-      v-if="iPk && searchClient"
-      :search-client="searchClient"
-      :index-name="currentIndex"
-    >
-      <SearchExperiencePanel
-        :state="savedSearchState"
-        :sort-by-items="sortByItems"
-        :matching-strategy-options="matchingStrategyOptions"
-        :compat="meiliCompat"
-        @apply-preset="applyHybridPreset"
-      />
-      <div class="flex gap-3">
-        <!-- Filters Column with toggle -->
-        <div v-if="filtersVisible" class="w-64 flex-shrink-0">
-          <div class="sticky top-2">
-            <q-card flat bordered>
-              <q-card-section class="p-4">
-                <div class="flex items-center justify-between mb-4">
-                  <span class="text-subtitle2 font-semibold dark:text-white"
-                    >Filters</span
-                  >
-                  <div class="flex gap-2">
-                    <AisClearButton label="Clear" />
-                    <q-btn
-                      flat
-                      dense
-                      size="sm"
-                      icon="close"
-                      class="dark:text-gray-300"
-                      @click="filtersVisible = false"
-                    />
-                  </div>
-                </div>
+        <q-table
+          dense
+          :rows="fieldsRows"
+          :columns="fieldsColumns"
+          row-key="field"
+          :rows-per-page-options="[10, 25, 50]"
+          flat
+          bordered
+        />
+      </template>
 
-                <AisCurrentRefinements container-class="mb-3" chip-size="sm" />
+      <template #settings-tab>
+        <SettingsForm @settings-updated="onIndexSettingsUpdated" />
+      </template>
 
-                <div
-                  v-if="
-                    iSettings.filterableAttributes &&
-                    iSettings.filterableAttributes.length > 0
-                  "
-                >
-                  <q-separator class="my-4" />
-                  <div
-                    class="text-subtitle2 font-semibold mb-2 dark:text-white"
-                  >
-                    Filter By
-                  </div>
-                  <q-scroll-area
-                    :thumb-style="{ width: '4px', opacity: 0.5 }"
-                    style="height: calc(100vh - 300px)"
-                  >
-                    <q-list dense>
-                      <q-expansion-item
-                        v-for="att in iSettings.filterableAttributes"
-                        :key="att"
-                        :label="att"
-                        dense
-                        header-class="text-body2 dark:text-gray-200"
-                        class="mb-2 rounded-md border border-gray-200 dark:border-gray-700"
-                        :default-opened="false"
-                      >
-                        <template #header>
-                          <q-item-section>
-                            <div
-                              class="flex items-center justify-between w-full"
-                            >
-                              <span class="text-sm dark:text-gray-200">{{
-                                att
-                              }}</span>
-                              <q-badge
-                                v-if="getActiveFilterCount(att) > 0"
-                                :label="getActiveFilterCount(att)"
-                                color="primary"
-                                class="ml-2"
-                              />
-                            </div>
-                          </q-item-section>
-                        </template>
-                        <AisRefinementList
-                          :attribute="att"
-                          :show-more="true"
-                          :show-more-limit="50"
-                          :density="savedSearchState.filterDensity"
-                        />
-                      </q-expansion-item>
-                    </q-list>
-                  </q-scroll-area>
-                </div>
-              </q-card-section>
-            </q-card>
+      <template #documents-tab>
+        <div class="flex flex-col flex-1 min-h-0 p-3 pt-2">
+          <div
+            class="flex flex-wrap items-center justify-between gap-2 mb-3 flex-shrink-0"
+          >
+            <div class="flex flex-wrap items-center gap-2">
+              <DocumentsDisplayMenu
+                :display-settings="displaySettings"
+                :image-field-options="imageFieldOptions"
+                :list-field-options="listFieldOptions"
+                :list-column-options="listColumnOptions"
+                :list-fields-source-label="listFieldsSourceLabel"
+                @update:display-settings="onDisplaySettingsPatch"
+                @list-fields-change="onListFieldsChange"
+                @open-order="showListFieldsOrderDialog = true"
+                @reset-fields="resetListFields"
+              />
+              <q-btn
+                flat
+                dense
+                icon="filter_list"
+                :label="filtersVisible ? 'Hide filters' : 'Show filters'"
+                @click="filtersVisible = !filtersVisible"
+              />
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <q-input
+                v-model="batchDocumentIdsInput"
+                dense
+                outlined
+                clearable
+                class="w-64"
+                label="Fetch by IDs"
+                hint="Comma-separated"
+              />
+              <q-btn
+                flat
+                dense
+                color="secondary"
+                icon="list_alt"
+                label="Fetch"
+                :loading="batchFetchLoading"
+                :disable="!meiliCompat.supportsDocumentsFetchByIds"
+                @click="fetchDocumentsByIds"
+              />
+              <q-btn
+                flat
+                dense
+                icon="add_circle"
+                label="New"
+                :to="`/documents/${currentIndex}/new`"
+              />
+            </div>
           </div>
-        </div>
 
-        <!-- Documents Column -->
-        <div class="flex-1 min-w-0">
-          <!-- Filter toggle button when hidden -->
-          <div v-if="!filtersVisible" class="mb-4">
-            <q-btn
-              flat
-              dense
-              icon="filter_list"
-              label="Show Filters"
-              color="primary"
-              @click="filtersVisible = true"
+          <ais-instant-search
+            v-if="iPk && searchClient"
+            :search-client="searchClient"
+            :index-name="currentIndex"
+            class="flex flex-col flex-1 min-h-0"
+          >
+            <SearchExperiencePanel
+              :state="savedSearchState"
+              :sort-by-items="sortByItems"
+              :matching-strategy-options="matchingStrategyOptions"
+              :compat="meiliCompat"
+              @apply-preset="applyHybridPreset"
             />
-          </div>
-
-          <!-- Pagination at the top -->
-          <div class="flex justify-center mb-4">
-            <AisPaginationNav :padding="2" />
-          </div>
-
-          <ais-hits :escapeHTML="true">
-            <template #default="{ items }">
-              <div v-if="items.length === 0" class="text-center py-16">
-                <q-icon
-                  name="search_off"
-                  size="48px"
-                  class="text-gray-400 dark:text-gray-600"
-                />
-                <p class="text-subtitle1 text-gray-600 dark:text-gray-400 mt-4">
-                  No documents found
-                </p>
-              </div>
-              <div v-else class="flex flex-col gap-3">
-                <q-card
-                  v-for="item in items"
-                  :key="getDocumentId(item)"
-                  flat
-                  bordered
-                  class="cursor-pointer transition-colors hover:border-primary dark:hover:border-primary"
-                >
-                  <q-card-section class="p-4">
-                    <div class="flex gap-3">
-                      <!-- Optional Image -->
-                      <div
-                        v-if="
-                          displaySettings.imageField &&
-                          item[displaySettings.imageField]
-                        "
-                        class="flex-shrink-0"
-                      >
-                        <q-img
-                          :src="item[displaySettings.imageField]"
-                          :alt="getDocumentId(item)"
-                          class="rounded"
-                          style="width: 80px; height: 80px; object-fit: cover"
-                          @error="(e) => (e.target.style.display = 'none')"
-                        />
-                      </div>
-
-                      <!-- Content -->
-                      <div class="flex-1 min-w-0">
-                        <div class="flex items-center justify-between mb-2">
-                          <span
-                            class="font-semibold text-sm truncate dark:text-white"
-                            >{{ getDocumentId(item) }}</span
-                          >
-                          <q-btn
-                            flat
-                            dense
-                            size="sm"
-                            icon="edit"
-                            color="primary"
-                            :to="`/documents/${currentIndex}/${getDocumentId(item)}`"
-                          />
-                          <q-btn
-                            v-if="
-                              meiliCompat.supportsSimilarEndpoint &&
-                              hasConfiguredEmbedders
-                            "
-                            flat
-                            dense
-                            size="sm"
-                            icon="hub"
-                            color="secondary"
-                            :to="`/similar/${currentIndex}/${getDocumentId(item)}`"
-                          />
-                        </div>
-
-                        <!-- Compact field display - 2 columns -->
-                        <div class="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
-                          <template
-                            v-for="field in Object.keys(item)
-                              .filter((i) => {
-                                return (
-                                  !String(i).startsWith('_') &&
-                                  !String(i).startsWith('__') &&
-                                  i !== iPk &&
-                                  i !== displaySettings.imageField &&
-                                  i
-                                );
-                              })
-                              .slice(0, 8)"
-                            :key="field"
-                          >
-                            <div class="truncate">
-                              <span class="text-gray-600 dark:text-gray-400"
-                                >{{ field }}:</span
-                              >
-                              <span class="ml-1 dark:text-gray-200">
-                                {{
-                                  typeof item[field] === "object"
-                                    ? JSON.stringify(item[field])
-                                    : item[field]
-                                }}
-                              </span>
-                            </div>
-                          </template>
-                        </div>
-                      </div>
-                    </div>
-                  </q-card-section>
-                </q-card>
-              </div>
-            </template>
-          </ais-hits>
+            <q-splitter
+              v-if="filtersVisible"
+              v-model="filtersPanelWidth"
+              :limits="[260, 640]"
+              unit="px"
+              class="documents-splitter flex-1 min-h-0"
+              @update:model-value="onFiltersPanelWidthChange"
+            >
+              <template #before>
+                <div class="pr-2 h-full min-h-0">
+                  <DocumentsFiltersPanel
+                    :filterable-attributes="filterableAttributes"
+                    :filter-density="savedSearchState.filterDensity"
+                    @close="filtersVisible = false"
+                  />
+                </div>
+              </template>
+              <template #after>
+                <DocumentsHitsColumn v-bind="hitsColumnProps" />
+              </template>
+            </q-splitter>
+            <DocumentsHitsColumn v-else v-bind="hitsColumnProps" />
+            <AisSearchDiagnostics
+              :header-enabled="savedSearchState.includeSearchMetadataHeader"
+              :header-value="savedSearchState.searchMetadataHeaderValue"
+              :hybrid-enabled="savedSearchState.enableHybrid"
+              :hybrid-embedder="savedSearchState.hybridEmbedder"
+              :hybrid-semantic-ratio="
+                normalizeThreshold(savedSearchState.hybridSemanticRatio)
+              "
+            />
+            <ais-configure v-bind="searchParams" />
+            <SearchStatePersistence
+              :index-name="currentIndex"
+              @state-changed="handleSearchStateChange"
+            />
+          </ais-instant-search>
         </div>
-      </div>
-      <AisSearchDiagnostics
-        :header-enabled="savedSearchState.includeSearchMetadataHeader"
-        :header-value="savedSearchState.searchMetadataHeaderValue"
-        :hybrid-enabled="savedSearchState.enableHybrid"
-        :hybrid-embedder="savedSearchState.hybridEmbedder"
-        :hybrid-semantic-ratio="
-          normalizeThreshold(savedSearchState.hybridSemanticRatio)
-        "
-      />
-      <ais-configure v-bind="searchParams" />
-      <SearchStatePersistence
-        :index-name="currentIndex"
-        @state-changed="handleSearchStateChange"
-      />
-    </ais-instant-search>
+      </template>
+    </IndexDetailTabs>
 
     <q-dialog v-model="showBatchFetchDialog" maximized>
       <q-card>
@@ -419,6 +221,12 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <ListFieldsOrderDialog
+      v-model="showListFieldsOrderDialog"
+      :fields="displaySettings.listFields"
+      @update:fields="onListFieldsOrderChange"
+    />
   </q-page>
 </template>
 
@@ -439,13 +247,20 @@ import { onMounted, ref, watch, nextTick, computed } from "vue";
 import { useRoute } from "vue-router";
 import IndexDetailTabs from "components/IndexDetailTabs.vue";
 import SettingsForm from "components/SettingsForm.vue";
-import AisClearButton from "components/aisComponents/AisClearButton.vue";
-import AisCurrentRefinements from "components/aisComponents/AisCurrentRefinements.vue";
-import AisRefinementList from "components/aisComponents/AisRefinementList.vue";
-import AisPaginationNav from "components/aisComponents/AisPaginationNav.vue";
 import AisSearchDiagnostics from "components/aisComponents/AisSearchDiagnostics.vue";
 import SearchStatePersistence from "components/SearchStatePersistence.vue";
 import SearchExperiencePanel from "components/SearchExperiencePanel.vue";
+import DocumentsFiltersPanel from "components/documents/DocumentsFiltersPanel.vue";
+import DocumentsHitsColumn from "components/documents/DocumentsHitsColumn.vue";
+import DocumentsDisplayMenu from "components/documents/DocumentsDisplayMenu.vue";
+import ListFieldsOrderDialog from "components/documents/ListFieldsOrderDialog.vue";
+import {
+  resolveListFields,
+  resolveFilterableAttributes,
+  shouldUseAllItemFields,
+  getListFieldsSourceLabel,
+  mergeDisplaySettings,
+} from "src/meili-core/utils/display-settings";
 import { showError, showSuccess } from "src/utils/notifications";
 
 const route = useRoute();
@@ -506,10 +321,18 @@ const fieldsColumns = [
     sortable: true,
   },
 ];
-const displaySettings = ref({ imageField: null });
+const displaySettings = ref(mergeDisplaySettings());
+const detailPanelTab = ref("documents");
 const imageFieldOptions = ref([]);
+const listFieldOptions = ref([]);
+const listColumnOptions = [
+  { label: "1 col", value: 1 },
+  { label: "2 cols", value: 2 },
+  { label: "3 cols", value: 3 },
+];
+const showListFieldsOrderDialog = ref(false);
 const filtersVisible = ref(true);
-const activeFilters = ref({});
+const filtersPanelWidth = ref(380);
 const previousIndex = ref("");
 const previousQuery = ref("");
 const fieldsOffset = ref(0);
@@ -550,6 +373,9 @@ const searchParams = computed(() => {
         : undefined,
     ...compatParams,
   };
+  if (filterableAttributes.value.length > 0) {
+    params.facets = filterableAttributes.value;
+  }
   return params;
 });
 
@@ -559,6 +385,8 @@ const rebuildSearchClient = () => {
     meiliCompat.value,
   );
   const options = {
+    placeholderSearch: true,
+    keepZeroFacets: true,
     meiliSearchParams: {
       ...compatParams,
     },
@@ -615,6 +443,7 @@ const persistSearchState = () => {
   theSettings.setIndexSearchState(currentIndex.value, {
     ...savedSearchState.value,
     filtersVisible: filtersVisible.value,
+    filtersPanelWidth: filtersPanelWidth.value,
   });
 };
 
@@ -630,22 +459,46 @@ const saveDisplaySettings = () => {
   );
 };
 
-// Helper to get count of active filters for an attribute
-const getActiveFilterCount = (attribute) => {
-  return activeFilters.value[attribute] || 0;
+const onDisplaySettingsPatch = (nextSettings) => {
+  displaySettings.value = { ...nextSettings };
+  saveDisplaySettings();
 };
 
-// Helper to safely get the document ID from a search result item
-const getDocumentId = (item) => {
-  if (!item || !iPk.value) return undefined;
-  // Try to get the primary key value
-  const id = item[iPk.value];
-  // If not found, try common fallbacks (shouldn't happen, but defensive)
-  if (id === undefined || id === null) {
-    // Try 'id' as fallback
-    return item.id;
-  }
-  return id;
+const persistDetailPanelTab = () => {
+  if (!currentIndex.value) return;
+  theSettings.setIndexSearchState(currentIndex.value, {
+    ...theSettings.getIndexSearchState(currentIndex.value),
+    detailPanelTab: detailPanelTab.value,
+  });
+};
+
+const onListFieldsChange = (nextFields) => {
+  const previous = displaySettings.value.listFields || [];
+  const appended = (nextFields || []).filter((field) => !previous.includes(field));
+  displaySettings.value.listFields = [
+    ...previous.filter((field) => (nextFields || []).includes(field)),
+    ...appended,
+  ];
+  saveDisplaySettings();
+};
+
+const onListFieldsOrderChange = (nextFields) => {
+  displaySettings.value.listFields = nextFields;
+  saveDisplaySettings();
+};
+
+const resetListFields = () => {
+  displaySettings.value.listFields = [];
+  saveDisplaySettings();
+};
+
+const onFiltersPanelWidthChange = (width) => {
+  filtersPanelWidth.value = width;
+  if (!currentIndex.value) return;
+  theSettings.setIndexSearchState(currentIndex.value, {
+    ...theSettings.getIndexSearchState(currentIndex.value),
+    filtersPanelWidth: width,
+  });
 };
 
 const hasConfiguredEmbedders = computed(() => {
@@ -656,6 +509,77 @@ const hasConfiguredEmbedders = computed(() => {
     Object.keys(embedders).length > 0
   );
 });
+
+const resolvedListFields = computed(() =>
+  resolveListFields({
+    displaySettings: displaySettings.value,
+    indexSettings: iSettings.value,
+    primaryKey: iPk.value,
+    imageField: displaySettings.value.imageField,
+    fieldDistributionKeys: fdRows.value.map((row) => row["Field Name"]),
+  }),
+);
+
+const filterableAttributes = computed(() => {
+  const cached =
+    theSettings.getIndexSettingsCache(currentIndex.value) || iSettings.value;
+  return resolveFilterableAttributes(cached, fieldsRows.value);
+});
+
+const syncIndexSettings = (settings) => {
+  if (!settings || !currentIndex.value) return;
+  theSettings.setIndexSettingsCache(currentIndex.value, settings);
+  iSettings.value = { ...settings };
+  buildSortByItems();
+};
+
+const onIndexSettingsUpdated = (settings) => {
+  syncIndexSettings(settings);
+};
+
+const useAllItemFields = computed(() =>
+  shouldUseAllItemFields({
+    displaySettings: displaySettings.value,
+    indexSettings: iSettings.value,
+  }),
+);
+
+const hitsColumnProps = computed(() => ({
+  currentIndex: currentIndex.value,
+  primaryKey: iPk.value,
+  displaySettings: displaySettings.value,
+  resolvedListFields: resolvedListFields.value,
+  useAllItemFields: useAllItemFields.value,
+  showSimilar:
+    meiliCompat.value.supportsSimilarEndpoint && hasConfiguredEmbedders.value,
+}));
+
+const listFieldsSourceLabel = computed(() =>
+  getListFieldsSourceLabel({
+    displaySettings: displaySettings.value,
+    indexSettings: iSettings.value,
+  }),
+);
+
+const buildSortByItems = () => {
+  sortByItems.value = [
+    {
+      value: currentIndex.value,
+      label: "Relevance",
+    },
+  ];
+  for (const atString of iSettings.value.sortableAttributes || []) {
+    if (!atString || atString === "*") continue;
+    sortByItems.value.push({
+      value: `${currentIndex.value}:${atString}:asc`,
+      label: `${atString} asc`,
+    });
+    sortByItems.value.push({
+      value: `${currentIndex.value}:${atString}:desc`,
+      label: `${atString} desc`,
+    });
+  }
+};
 
 const loadFieldsMetadata = async () => {
   if (!meiliCompat.value.supportsFieldsMetadataEndpoint) {
@@ -700,7 +624,8 @@ const loadInstance = async () => {
     meiliCompat.value = getCompatFeatures("1.11.0");
   }
   iStats.value = await mclient.getStats();
-  iSettings.value = await mclient.getSettings();
+  const settings = await mclient.getSettings();
+  syncIndexSettings(settings);
   const fieldDistribution = iStats.value?.fieldDistribution || {};
   fdRows.value = Object.keys(fieldDistribution).map((key) => {
     return { "Field Name": key, Count: fieldDistribution[key] };
@@ -710,8 +635,8 @@ const loadInstance = async () => {
   await loadFieldsMetadata();
 
   // Load display settings for this index
-  displaySettings.value = theSettings.getIndexDisplaySettings(
-    currentIndex.value,
+  displaySettings.value = mergeDisplaySettings(
+    theSettings.getIndexDisplaySettings(currentIndex.value),
   );
 
   // Load saved search state for this index
@@ -720,6 +645,8 @@ const loadInstance = async () => {
   sanitizeSearchStateForCompat();
   rebuildSearchClient();
   filtersVisible.value = savedState.filtersVisible ?? true;
+  filtersPanelWidth.value = savedState.filtersPanelWidth ?? 380;
+  detailPanelTab.value = savedState.detailPanelTab ?? "documents";
   // Initialize previous query to detect query changes
   previousQuery.value = savedState.query || "";
   // If there's no saved query, reset page to 0 (first page, 0-based)
@@ -729,28 +656,8 @@ const loadInstance = async () => {
   }
 
   // Build image field options from all fields
-  imageFieldOptions.value = [
-    "(none)",
-    ...fdRows.value.map((row) => row["Field Name"]),
-  ];
-
-  // Build sort by items (no default relevance option - just sortable attributes)
-  sortByItems.value = [
-    {
-      value: currentIndex.value,
-      label: "Relevance",
-    },
-  ];
-  for (const atString of iSettings.value.sortableAttributes || []) {
-    sortByItems.value.push({
-      value: `${currentIndex.value}:${atString}:asc`,
-      label: `${atString} asc`,
-    });
-    sortByItems.value.push({
-      value: `${currentIndex.value}:${atString}:desc`,
-      label: `${atString} desc`,
-    });
-  }
+  imageFieldOptions.value = fdRows.value.map((row) => row["Field Name"]);
+  listFieldOptions.value = fdRows.value.map((row) => row["Field Name"]);
 };
 
 const fetchDocumentsByIds = async () => {
@@ -834,14 +741,12 @@ const handleSearchStateChange = (state) => {
 // Watch filtersVisible to save it for the current index
 watch(filtersVisible, () => {
   if (currentIndex.value) {
-    const currentState = theSettings.getIndexSearchState(currentIndex.value);
-    savedSearchState.value = {
-      ...savedSearchState.value,
-      ...currentState,
-      filtersVisible: filtersVisible.value,
-    };
     persistSearchState();
   }
+});
+
+watch(detailPanelTab, () => {
+  persistDetailPanelTab();
 });
 
 watch(
@@ -861,6 +766,7 @@ watch(
       theSettings.setIndexSearchState(oldIndexUid, {
         ...oldState,
         filtersVisible: filtersVisible.value,
+        filtersPanelWidth: filtersPanelWidth.value,
       });
     }
 
@@ -908,3 +814,13 @@ watch(
   { deep: true },
 );
 </script>
+
+<style scoped>
+.index-detail-page {
+  min-height: calc(100vh - 50px);
+}
+
+.documents-splitter {
+  min-height: calc(100vh - 220px);
+}
+</style>

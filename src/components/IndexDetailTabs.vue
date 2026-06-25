@@ -1,40 +1,74 @@
 <template>
-  <div class="q-pa-md full-width">
-    <div class="q-gutter-y-md">
-      <q-card>
-        <q-tabs
-          v-model="tab"
-          dense
-          class="text-grey"
-          active-color="primary"
-          indicator-color="primary"
-          align="justify"
-          narrow-indicator
-        >
-          <q-tab name="overview" label="Overview" />
-          <q-tab name="settings" label="Settings" />
-        </q-tabs>
+  <div class="flex flex-col flex-1 min-h-0 w-full">
+    <q-card flat bordered class="flex flex-col flex-1 min-h-0">
+      <q-tabs
+        v-model="tabModel"
+        dense
+        class="text-grey flex-shrink-0"
+        active-color="primary"
+        indicator-color="primary"
+        align="left"
+        narrow-indicator
+      >
+        <q-tab name="documents" label="Documents" icon="description" />
+        <q-tab name="overview" label="Overview" icon="analytics" />
+        <q-tab name="settings" label="Settings" icon="settings" />
+      </q-tabs>
 
-        <q-separator />
+      <q-separator />
 
-        <q-tab-panels v-model="tab" animated>
-          <q-tab-panel name="overview">
-            <div class="text-h6 text-center">Overview</div>
-            <slot name="overview-tab"></slot>
-          </q-tab-panel>
+      <q-tab-panels
+        v-model="tabModel"
+        animated
+        class="flex-1 min-h-0 bg-transparent"
+      >
+        <q-tab-panel name="documents" class="p-0 flex flex-col flex-1 min-h-0">
+          <slot name="documents-tab" />
+        </q-tab-panel>
 
-          <q-tab-panel name="settings">
-            <div class="text-h6 text-center">Settings</div>
-            <slot name="settings-tab"></slot>
-          </q-tab-panel>
-        </q-tab-panels>
-      </q-card>
-    </div>
+        <q-tab-panel name="overview" class="p-4">
+          <slot name="overview-tab" />
+        </q-tab-panel>
+
+        <q-tab-panel name="settings" class="p-4">
+          <slot name="settings-tab" />
+        </q-tab-panel>
+      </q-tab-panels>
+    </q-card>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { computed } from "vue";
 
-const tab = ref("overview");
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: "documents",
+  },
+});
+
+const emit = defineEmits(["update:modelValue"]);
+
+const tabModel = computed({
+  get: () => props.modelValue,
+  set: (value) => emit("update:modelValue", value),
+});
 </script>
+
+<style scoped>
+:deep(.q-tab-panels) {
+  flex: 1;
+  min-height: 0;
+}
+
+:deep(.q-panel) {
+  min-height: 0;
+}
+
+:deep(.q-tab-panel) {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 160px);
+}
+</style>
