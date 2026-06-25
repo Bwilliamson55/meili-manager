@@ -6,9 +6,9 @@
   >
     <q-card-section class="p-3">
       <div class="flex gap-3">
-        <div v-if="imageField && item[imageField]" class="flex-shrink-0">
+        <div v-if="imageField && getDocumentFieldValue(item, imageField)" class="flex-shrink-0">
           <q-img
-            :src="item[imageField]"
+            :src="getDocumentFieldValue(item, imageField)"
             :alt="documentId"
             class="rounded"
             style="width: 64px; height: 64px; object-fit: cover"
@@ -62,9 +62,10 @@
               <span class="text-gray-600 dark:text-gray-400">{{ field }}:</span>
               <span
                 class="ml-1 dark:text-gray-200 break-all"
-                :title="formatFieldValue(item[field])"
+                :class="{ 'text-gray-400 italic': fieldDisplay(field).missing }"
+                :title="fieldDisplay(field).title"
               >
-                {{ formatFieldValue(item[field]) }}
+                {{ fieldDisplay(field).text }}
               </span>
             </div>
           </div>
@@ -79,8 +80,9 @@ import { computed, ref, watch } from "vue";
 import {
   resolveListFieldsForItem,
   resolveCompactPreviewFields,
-  formatDocumentFieldValue,
+  formatDocumentFieldDisplay,
   getDocumentTitleLabel,
+  getDocumentFieldValue,
 } from "src/meili-core/utils/display-settings";
 
 const props = defineProps({
@@ -132,6 +134,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  includeConfiguredMissing: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const expanded = ref(false);
@@ -146,6 +152,7 @@ watch(
 const allFieldsForItem = computed(() =>
   resolveListFieldsForItem(props.resolvedListFields, props.item, {
     useAllItemFields: props.useAllItemFields,
+    includeConfiguredMissing: props.includeConfiguredMissing,
     primaryKey: props.primaryKey,
     imageField: props.imageField,
   }),
@@ -182,5 +189,8 @@ const gridClass = computed(() => {
   return "grid-cols-1 md:grid-cols-2";
 });
 
-const formatFieldValue = (value) => formatDocumentFieldValue(value);
+const fieldDisplay = (field) =>
+  formatDocumentFieldDisplay(props.item, field, {
+    showMissing: props.includeConfiguredMissing,
+  });
 </script>

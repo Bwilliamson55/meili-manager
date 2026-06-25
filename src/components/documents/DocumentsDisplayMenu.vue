@@ -102,6 +102,10 @@
       <q-item v-if="listFieldsSourceLabel">
         <q-item-section>
           <q-item-label caption>{{ listFieldsSourceLabel }}</q-item-label>
+          <q-item-label v-if="displaySettings.listFields?.length" caption class="mt-1">
+            Fields show — when absent from search hits; add them to index
+            displayedAttributes to load values.
+          </q-item-label>
         </q-item-section>
       </q-item>
     </q-list>
