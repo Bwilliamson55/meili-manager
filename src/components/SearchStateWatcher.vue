@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { watch, ref, onMounted } from "vue";
+import { watch, ref, onMounted, onBeforeUnmount } from "vue";
 import { useSettingsStore } from "src/meili-core/stores/settings-store";
 
 const props = defineProps({
@@ -23,54 +23,46 @@ const theSettings = useSettingsStore();
 const isInitialized = ref(false);
 const hasSeenNonEmptyState = ref(false);
 
+const persistFromInstantSearchState = (newState) => {
+  if (!newState || !props.indexName) return;
+
+  const searchState = {
+    query: newState.query || "",
+    filters: extractFilters(newState),
+    sort: newState.sortBy || "",
+    page: newState.page !== undefined ? newState.page : 0,
+  };
+
+  const hasState =
+    searchState.query ||
+    Object.keys(searchState.filters).length > 0 ||
+    searchState.sort ||
+    searchState.page > 0;
+
+  if (!isInitialized.value) {
+    if (hasState) {
+      hasSeenNonEmptyState.value = true;
+      isInitialized.value = true;
+    } else {
+      return;
+    }
+  }
+
+  if (hasSeenNonEmptyState.value || hasState) {
+    const existingState = theSettings.getIndexSearchState(props.indexName);
+    theSettings.setIndexSearchState(props.indexName, {
+      ...existingState,
+      ...searchState,
+    });
+    emit("state-changed", searchState);
+  }
+};
+
 // Watch for state changes and save them
 watch(
   () => props.state,
   (newState) => {
-    if (!newState || !props.indexName) return;
-
-    // Extract relevant state
-    // Note: InstantSearch uses 0-based page indexing internally (0 = first page, 1 = second page)
-    const searchState = {
-      query: newState.query || "",
-      filters: extractFilters(newState),
-      sort: newState.sortBy || "",
-      page: newState.page !== undefined ? newState.page : 0,
-    };
-
-    // Check if this is a meaningful state change (not just initial empty state)
-    const hasState =
-      searchState.query ||
-      Object.keys(searchState.filters).length > 0 ||
-      searchState.sort ||
-      searchState.page > 0;
-
-    // On initial mount, wait until we see a non-empty state or until initialized
-    // This prevents overwriting saved state with empty initial state
-    if (!isInitialized.value) {
-      if (hasState) {
-        hasSeenNonEmptyState.value = true;
-        isInitialized.value = true;
-      } else {
-        // Wait a bit for ais-configure to apply saved state
-        // If state is still empty after initialization delay, it's likely truly empty
-        return;
-      }
-    }
-
-    // Only save if we've seen a non-empty state or if this is a meaningful change
-    // This prevents overwriting saved state with empty state on initial mount
-    if (hasSeenNonEmptyState.value || hasState) {
-      // Save to store
-      const existingState = theSettings.getIndexSearchState(props.indexName);
-      theSettings.setIndexSearchState(props.indexName, {
-        ...existingState,
-        ...searchState,
-      });
-
-      // Emit event for parent component
-      emit("state-changed", searchState);
-    }
+    persistFromInstantSearchState(newState);
   },
   { deep: true },
 );
@@ -94,6 +86,10 @@ onMounted(() => {
       }
     }
   }, 100);
+});
+
+onBeforeUnmount(() => {
+  persistFromInstantSearchState(props.state);
 });
 
 // Helper to extract filters from state

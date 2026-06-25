@@ -238,13 +238,14 @@ import { useIndexesStore } from "src/meili-core/stores/indexes-store";
 import {
   normalizeThreshold,
   getDefaultIndexSearchState,
+  buildRefinementListFromFilters,
 } from "src/meili-core/utils/search-utils";
 import {
   getCompatFeatures,
   buildCompatibleSearchParams,
 } from "src/meili-core/utils/meili-compat";
 import { storeToRefs } from "pinia";
-import { onMounted, ref, watch, nextTick, computed } from "vue";
+import { onMounted, ref, watch, nextTick, computed, onBeforeUnmount } from "vue";
 import { useRoute } from "vue-router";
 import IndexDetailTabs from "components/IndexDetailTabs.vue";
 import SettingsForm from "components/SettingsForm.vue";
@@ -364,6 +365,9 @@ const searchParams = computed(() => {
     savedSearchState.value,
     meiliCompat.value,
   );
+  const refinementList = buildRefinementListFromFilters(
+    savedSearchState.value.filters,
+  );
   const params = {
     hitsPerPage: 50,
     query: savedSearchState.value.query || undefined,
@@ -374,6 +378,9 @@ const searchParams = computed(() => {
         : undefined,
     ...compatParams,
   };
+  if (Object.keys(refinementList).length > 0) {
+    params.refinementList = refinementList;
+  }
   if (filterableAttributes.value.length > 0) {
     params.facets = filterableAttributes.value;
   }
@@ -657,13 +664,7 @@ const loadInstance = async () => {
   filtersVisible.value = savedState.filtersVisible ?? true;
   filtersPanelWidth.value = savedState.filtersPanelWidth ?? 380;
   detailPanelTab.value = savedState.detailPanelTab ?? "documents";
-  // Initialize previous query to detect query changes
   previousQuery.value = savedState.query || "";
-  // If there's no saved query, reset page to 0 (first page, 0-based)
-  // Don't restore pagination for empty searches
-  if (!savedState.query) {
-    savedSearchState.value.page = 0;
-  }
 
   // Build image field options from all fields
   imageFieldOptions.value = fdRows.value.map((row) => row["Field Name"]);
@@ -800,6 +801,12 @@ onMounted(async () => {
 
   // Set up watchers for search state after component is mounted
   await nextTick();
+});
+
+onBeforeUnmount(() => {
+  if (currentIndex.value) {
+    persistSearchState();
+  }
 });
 
 watch(
