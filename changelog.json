@@ -1,5 +1,50 @@
 [
   {
+    "version": "1.22.5",
+    "week": "2026-W26",
+    "dateRange": "2026, Week 26",
+    "changes": [
+      {
+        "subject": "Merge pull request #17 from Bwilliamson55/dev",
+        "notes": [
+          "Dev"
+        ]
+      },
+      {
+        "subject": "Merge pull request #16 from Bwilliamson55/feature/documents-browser-ui",
+        "notes": [
+          "Feature/documents browser UI"
+        ]
+      },
+      {
+        "subject": "DRY document display helpers and refresh docs",
+        "notes": [
+          "Centralized document id, title, routes, and field formatting in display-settings.js",
+          "Fixed table column resolution and row-key fallbacks",
+          "Updated README, meili-core README, and copilot-instructions for Documents tab UX"
+        ]
+      },
+      {
+        "subject": "Improve Documents layout with tabs, compact view, and table mode",
+        "notes": [
+          "Move Documents to its own tab (default) so search UI uses full viewport height",
+          "Add List display menu for view mode, fields, thumbnails, and columns",
+          "Add compact cards with expand, detailed cards, and table scanning mode",
+          "Widen default filters splitter and persist active detail tab per index"
+        ]
+      },
+      {
+        "subject": "Refactor Documents browser UI and fix instance/facet wiring",
+        "notes": [
+          "Added resizable filters panel, per-index list field config, and DocumentHitCard",
+          "Fixed first-instance selection by isolating sidebar form state from store credentials",
+          "Synced index settings cache so filterable attributes reach the facets panel after submit",
+          "Honored displayedAttributes wildcard for full-field list items and explicit facets in search"
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.21.4",
     "week": "2026-W24",
     "dateRange": "2026, Week 24",
