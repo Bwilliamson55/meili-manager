@@ -166,29 +166,10 @@
                 </div>
               </template>
               <template #after>
-                <DocumentsHitsColumn
-                  :current-index="currentIndex"
-                  :primary-key="iPk"
-                  :display-settings="displaySettings"
-                  :resolved-list-fields="resolvedListFields"
-                  :use-all-item-fields="useAllItemFields"
-                  :show-similar="
-                    meiliCompat.supportsSimilarEndpoint && hasConfiguredEmbedders
-                  "
-                />
+                <DocumentsHitsColumn v-bind="hitsColumnProps" />
               </template>
             </q-splitter>
-            <DocumentsHitsColumn
-              v-else
-              :current-index="currentIndex"
-              :primary-key="iPk"
-              :display-settings="displaySettings"
-              :resolved-list-fields="resolvedListFields"
-              :use-all-item-fields="useAllItemFields"
-              :show-similar="
-                meiliCompat.supportsSimilarEndpoint && hasConfiguredEmbedders
-              "
-            />
+            <DocumentsHitsColumn v-else v-bind="hitsColumnProps" />
             <AisSearchDiagnostics
               :header-enabled="savedSearchState.includeSearchMetadataHeader"
               :header-value="savedSearchState.searchMetadataHeaderValue"
@@ -278,6 +259,7 @@ import {
   resolveFilterableAttributes,
   shouldUseAllItemFields,
   getListFieldsSourceLabel,
+  mergeDisplaySettings,
 } from "src/meili-core/utils/display-settings";
 import { showError, showSuccess } from "src/utils/notifications";
 
@@ -339,13 +321,7 @@ const fieldsColumns = [
     sortable: true,
   },
 ];
-const displaySettings = ref({
-  imageField: null,
-  listFields: [],
-  listColumns: 2,
-  listViewMode: "compact",
-  compactFieldLimit: 4,
-});
+const displaySettings = ref(mergeDisplaySettings());
 const detailPanelTab = ref("documents");
 const imageFieldOptions = ref([]);
 const listFieldOptions = ref([]);
@@ -568,6 +544,16 @@ const useAllItemFields = computed(() =>
   }),
 );
 
+const hitsColumnProps = computed(() => ({
+  currentIndex: currentIndex.value,
+  primaryKey: iPk.value,
+  displaySettings: displaySettings.value,
+  resolvedListFields: resolvedListFields.value,
+  useAllItemFields: useAllItemFields.value,
+  showSimilar:
+    meiliCompat.value.supportsSimilarEndpoint && hasConfiguredEmbedders.value,
+}));
+
 const listFieldsSourceLabel = computed(() =>
   getListFieldsSourceLabel({
     displaySettings: displaySettings.value,
@@ -649,14 +635,9 @@ const loadInstance = async () => {
   await loadFieldsMetadata();
 
   // Load display settings for this index
-  displaySettings.value = {
-    listViewMode: "compact",
-    compactFieldLimit: 4,
-    listColumns: 2,
-    listFields: [],
-    imageField: null,
-    ...theSettings.getIndexDisplaySettings(currentIndex.value),
-  };
+  displaySettings.value = mergeDisplaySettings(
+    theSettings.getIndexDisplaySettings(currentIndex.value),
+  );
 
   // Load saved search state for this index
   const savedState = theSettings.getIndexSearchState(currentIndex.value);

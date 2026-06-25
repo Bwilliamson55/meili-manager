@@ -1,5 +1,6 @@
 import { defineStore, acceptHMRUpdate } from "pinia";
 import { getDefaultIndexSearchState } from "../utils/search-utils";
+import { mergeDisplaySettings } from "../utils/display-settings";
 import {
   normalizeMeiliHost,
   createMeiliClient,
@@ -15,7 +16,7 @@ export const useSettingsStore = defineStore("settings", {
     currentInstance: null,
     instances: [],
     // Per-index display preferences
-    indexDisplaySettings: {}, // { indexName: { imageField: 'image_url', listFields: [], listColumns: 2 } }
+    indexDisplaySettings: {}, // { indexName: { imageField, listFields, listColumns, listViewMode, compactFieldLimit } }
     // Per-index search state persistence
     indexSearchState: {}, // { indexName: { query: '', filters: {}, sort: '', page: 0, filtersVisible: true, ...search options } }
     // Latest Meilisearch index settings fetched or saved in-session
@@ -241,15 +242,7 @@ export const useSettingsStore = defineStore("settings", {
 
     // Get display settings for an index
     getIndexDisplaySettings(indexName) {
-      return (
-        this.indexDisplaySettings[indexName] || {
-          imageField: null,
-          listFields: [],
-          listColumns: 2,
-          listViewMode: "compact",
-          compactFieldLimit: 4,
-        }
-      );
+      return mergeDisplaySettings(this.indexDisplaySettings[indexName]);
     },
 
     // Set display settings for an index

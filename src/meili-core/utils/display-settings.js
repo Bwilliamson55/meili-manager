@@ -32,6 +32,74 @@ export const COMPACT_FIELD_CANDIDATES = [
   "url",
 ];
 
+export const TITLE_FIELD_CANDIDATES = ["name", "title", "label"];
+
+export const mergeDisplaySettings = (saved = {}) => ({
+  ...DEFAULT_DISPLAY_SETTINGS,
+  ...saved,
+});
+
+export const getDocumentIdFromItem = (item, primaryKey = "") => {
+  if (!item) return undefined;
+  if (!primaryKey) return item.id;
+  const id = item[primaryKey];
+  if (id === undefined || id === null) return item.id;
+  return id;
+};
+
+export const formatDocumentFieldValue = (value, { truncate = 0 } = {}) => {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "object") return JSON.stringify(value);
+  const text = String(value);
+  if (truncate > 0 && text.length > truncate) {
+    return `${text.slice(0, truncate)}…`;
+  }
+  return text;
+};
+
+export const getDocumentTitleLabel = (item, primaryKey = "", documentId) => {
+  const candidates = [...TITLE_FIELD_CANDIDATES, primaryKey].filter(Boolean);
+  for (const field of candidates) {
+    if (item?.[field]) return String(item[field]);
+  }
+  return documentId ?? getDocumentIdFromItem(item, primaryKey) ?? "";
+};
+
+export const buildDocumentRoutes = (indexName, documentId) => {
+  const id = encodeURIComponent(documentId);
+  return {
+    edit: `/documents/${indexName}/${id}`,
+    similar: `/similar/${indexName}/${id}`,
+  };
+};
+
+export const resolveTableFields = ({
+  items = [],
+  resolvedListFields = [],
+  primaryKey = "",
+  imageField = null,
+  useAllItemFields = false,
+  limit = 8,
+}) => {
+  let fields = [...resolvedListFields];
+  if (useAllItemFields) {
+    const keys = new Set();
+    for (const item of items) {
+      resolveListFieldsForItem(resolvedListFields, item, {
+        useAllItemFields: true,
+        primaryKey,
+        imageField,
+      }).forEach((field) => keys.add(field));
+    }
+    fields = [...keys];
+  }
+  const withPk = [
+    primaryKey,
+    ...fields.filter((field) => field && field !== primaryKey && field !== imageField),
+  ].filter(Boolean);
+  return [...new Set(withPk)].slice(0, limit);
+};
+
 export const resolveFilterableAttributes = (
   indexSettings = {},
   fieldsMetadata = [],
@@ -118,15 +186,25 @@ export const getListFieldsSourceLabel = ({
   displaySettings = {},
   indexSettings = {},
 }) => {
+  const viewHint =
+    displaySettings.listViewMode === "table"
+      ? " (table view)"
+      : displaySettings.listViewMode === "detailed"
+        ? " (detailed view)"
+        : " (compact preview)";
+
   if ((displaySettings.listFields || []).length > 0) {
-    return "Custom field list";
+    return `Custom field list${viewHint}`;
   }
   if (isWildcardAttributes(indexSettings.displayedAttributes)) {
-    return "All document fields (displayedAttributes: *)";
+    if (displaySettings.listViewMode === "detailed") {
+      return `All document fields (displayedAttributes: *)${viewHint}`;
+    }
+    return `Index field distribution (displayedAttributes: *)${viewHint}`;
   }
   const displayed = indexSettings.displayedAttributes;
   if (Array.isArray(displayed) && displayed.length > 0) {
-    return "Index displayedAttributes";
+    return `Index displayedAttributes${viewHint}`;
   }
-  return "First 8 index fields (fallback)";
+  return `First 8 index fields (fallback)${viewHint}`;
 };

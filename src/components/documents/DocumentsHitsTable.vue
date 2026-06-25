@@ -5,12 +5,12 @@
     dense
     :rows="rows"
     :columns="columns"
-    row-key="__rowKey"
+    :row-key="rowKey"
     :rows-per-page-options="[10, 25, 50]"
     class="documents-hits-table"
   >
-    <template #body-cell-actions="props">
-      <q-td :props="props" auto-width>
+    <template #body-cell-actions="cell">
+      <q-td :props="cell" auto-width>
         <q-btn
           flat
           dense
@@ -18,17 +18,18 @@
           size="sm"
           icon="edit"
           color="primary"
-          :to="props.row.__editRoute"
+          :to="cell.row.__editRoute"
         />
       </q-td>
     </template>
-    <template #body-cell="props">
-      <q-td :props="props">
-        <span
-          class="text-xs break-all"
-          :title="props.value"
-        >
-          {{ props.value }}
+    <template
+      v-for="field in tableFields"
+      :key="field"
+      #[`body-cell-${field}`]="cell"
+    >
+      <q-td :props="cell">
+        <span class="text-xs break-all" :title="cell.row[field]">
+          {{ cell.row[field] }}
         </span>
       </q-td>
     </template>
@@ -37,7 +38,12 @@
 
 <script setup>
 import { computed } from "vue";
-import { resolveListFieldsForItem } from "src/meili-core/utils/display-settings";
+import {
+  buildDocumentRoutes,
+  formatDocumentFieldValue,
+  getDocumentIdFromItem,
+  resolveTableFields,
+} from "src/meili-core/utils/display-settings";
 
 const props = defineProps({
   items: {
@@ -70,28 +76,16 @@ const props = defineProps({
   },
 });
 
-const getDocumentId = (item) => {
-  if (!item || !props.primaryKey) return item?.id;
-  const id = item[props.primaryKey];
-  if (id === undefined || id === null) return item.id;
-  return id;
-};
-
-const tableFields = computed(() => {
-  const sample = props.items[0];
-  const fields = sample
-    ? resolveListFieldsForItem(props.resolvedListFields, sample, {
-        useAllItemFields: props.useAllItemFields,
-        primaryKey: props.primaryKey,
-        imageField: props.imageField,
-      })
-    : props.resolvedListFields;
-  const withPk = [
-    props.primaryKey,
-    ...fields.filter((field) => field !== props.primaryKey),
-  ].filter(Boolean);
-  return [...new Set(withPk)].slice(0, props.tableFieldLimit);
-});
+const tableFields = computed(() =>
+  resolveTableFields({
+    items: props.items,
+    resolvedListFields: props.resolvedListFields,
+    primaryKey: props.primaryKey,
+    imageField: props.imageField,
+    useAllItemFields: props.useAllItemFields,
+    limit: props.tableFieldLimit,
+  }),
+);
 
 const columns = computed(() => [
   ...tableFields.value.map((field) => ({
@@ -109,24 +103,20 @@ const columns = computed(() => [
   },
 ]);
 
-const formatFieldValue = (value) => {
-  if (value === null || value === undefined) return "";
-  if (typeof value === "object") return JSON.stringify(value);
-  const text = String(value);
-  return text.length > 120 ? `${text.slice(0, 120)}…` : text;
-};
-
 const rows = computed(() =>
-  props.items.map((item) => {
-    const id = getDocumentId(item);
+  props.items.map((item, index) => {
+    const id = getDocumentIdFromItem(item, props.primaryKey) ?? `row-${index}`;
+    const routes = buildDocumentRoutes(props.currentIndex, id);
     const row = {
       __rowKey: id,
-      __editRoute: `/documents/${props.currentIndex}/${id}`,
+      __editRoute: routes.edit,
     };
     for (const field of tableFields.value) {
-      row[field] = formatFieldValue(item[field]);
+      row[field] = formatDocumentFieldValue(item[field], { truncate: 120 });
     }
     return row;
   }),
 );
+
+const rowKey = (row) => row.__rowKey;
 </script>

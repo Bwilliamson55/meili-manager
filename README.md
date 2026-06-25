@@ -75,7 +75,7 @@ Save and switch between multiple Meilisearch instances (development, staging, pr
 
 ### Document Management
 
-- Browse and search documents with advanced filters
+- Browse and search documents with resizable facet filters, compact/detailed/table views, and per-index display preferences
 - Edit documents using a full-featured JSON editor
 - Add new documents with validation
 
@@ -112,7 +112,7 @@ Save and switch between multiple Meilisearch instances (development, staging, pr
 
 ### Centralized Client Management
 
-All Meilisearch client creation goes through `settings-store.js`, providing:
+All Meilisearch client creation goes through `src/meili-core/stores/settings-store.js`, providing:
 
 - Automatic connection validation
 - Consistent on-demand client creation via store getter
@@ -130,8 +130,10 @@ This allows pages to control both the main view and sidebar independently.
 
 ### State Management
 
-- **settings-store.js** - Instance credentials, active client, connection state
-- **preview-store.js** - Preview configurations with tokenization support
+- **settings-store.js** (`src/meili-core/stores/`) — Instance credentials, active client, per-index search/display settings, and settings cache
+- **preview-store.js** — Preview configurations with tokenization support
+
+Document list field resolution and display defaults live in `src/meili-core/utils/display-settings.js` (headless; reusable by other UIs). See [`src/meili-core/README.md`](src/meili-core/README.md).
 
 ---
 
@@ -216,52 +218,49 @@ The delete icon will give a warning that needs confirmation before it sends the 
 
 ## Index detail page
 
-### Top Card
+The index detail page uses three tabs: **Documents** (default), **Overview**, and **Settings**. Tab choice is persisted per index in local search state.
 
-#### Overview Tab
-
-In the overview tab you can see the results of the `getStats` endpoint in a friendly way.
+### Overview tab
 
 - Count of records in the index
 - Primary key of the index if set
 - Indexing true/false
-- Field Distribution table
+- Field distribution table
+- Paginated fields metadata table (when the server exposes `/fields`)
 
-_The table is limited to 1000 fields_
+### Settings tab
 
-#### Settings Tab
+Review and update all index settings. The settings object is displayed in full (and in real time) if you expand the **Raw Settings JSON** section at the top. This is a read-only view, but may be easier to understand at first than the full form.
 
-In the settings tab you can review and update all of the settings about an index. The settings object is displayed in full (And real time) if you expand the `Raw Settings JSON` section at the top. This is a read only view, but may be easier to understand at first than the full form.
+Please follow the link there for the settings documentation — each field has its own purpose that needs to be understood.
 
-Pleasepleaseplease follow the link there for the settings documentation- each field has it's own purpose that needs to be understood.
+While the form is stored in your local memory, it is not pushed to your Meilisearch instance until you press **Submit**, for safety. Submitting also refreshes the in-memory settings cache used by the Documents tab filters.
 
-While the form is stored in your local memory- it is not pushed to your meilisearch instance until you press the **"Submit"** button, for safety.
+### Documents tab
 
-### Instant Search demo area
+Full-height document browser with Vue InstantSearch:
 
-Below the top card you can interact with the index documents.
-There is a "New" button to create an example document. **_This is not the recommended way to add documents._**
+- **Search toolbar** — query, sort, hybrid/diagnostic options (version-gated), and saved search state
+- **Display menu** — compact / detailed / table view, optional thumbnail field, custom list fields and column count, reset to index defaults
+- **Resizable filters panel** — facet refinements for `filterableAttributes` (hidden/shown via toolbar; width persisted per index)
+- **Fetch by IDs** — batch document lookup when the server supports it
+- **New** — create an example document (not the recommended bulk-ingest path)
 
-The statistics shown are produced from the Vue Instantsearch components.
+#### View modes
 
-The search query is a default Vue Instantsearch component pointed at the current index.
+| Mode | Behavior |
+|------|----------|
+| **Compact** (default) | Shows a short preview (~4 fields) per card with expand for the rest; uses index `displayedAttributes` or field distribution when unset |
+| **Detailed** | Shows all resolved list fields on each card; when `displayedAttributes` is `["*"]` and no custom list is set, every field on the document is shown |
+| **Table** | Dense `q-table` with primary key plus up to 8 list columns and an edit action |
 
-The sort options are derived from the attributes in the `sortable attributes` setting.
+List field source order: custom `listFields` → index `displayedAttributes` → field distribution (wildcard `*` uses distribution keys in compact/table, all keys per hit in detailed).
 
-The current refinements area will display any filters selected.
+#### Result cards / table rows
 
-Between the refinements and the document list, there is a dynamic filter area. Whatever attributes you have in your `filterable attributes` will be displayed here as simple default filter widgets.
+Each hit shows a title from `name`, `title`, `label`, or the primary key; optional thumbnail; field values (objects as JSON strings); **Edit** to open the JSON editor; **Similar** when embedders are configured and the server supports similar search.
 
-### Result Cards
-
-Each document card displays:
-
-- **Document ID** (primary key value) in the header
-- **Edit button** to open the JSON editor
-- **All document fields** in a clean key-value list
-- **Nested objects** are shown as compact JSON strings
-
-Click "Edit" to open the full JSON editor where you can modify any field.
+Settings changes on the Settings tab update facet widgets on Documents without a full page reload.
 
 ### Endpoints/Methods used
 

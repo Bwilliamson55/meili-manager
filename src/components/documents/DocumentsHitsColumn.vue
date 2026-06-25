@@ -27,10 +27,10 @@
         />
         <div v-else class="flex flex-col gap-2 overflow-y-auto flex-1 min-h-0">
           <DocumentHitCard
-            v-for="item in items"
-            :key="getDocumentId(item)"
+            v-for="(item, index) in items"
+            :key="rowKey(item, index)"
             :item="item"
-            :document-id="getDocumentId(item)"
+            :document-id="documentId(item, index)"
             :primary-key="primaryKey"
             :image-field="displaySettings.imageField"
             :resolved-list-fields="resolvedListFields"
@@ -38,8 +38,8 @@
             :list-view-mode="displaySettings.listViewMode"
             :compact-field-limit="displaySettings.compactFieldLimit || 4"
             :list-columns="displaySettings.listColumns"
-            :edit-route="`/documents/${currentIndex}/${getDocumentId(item)}`"
-            :similar-route="`/similar/${currentIndex}/${getDocumentId(item)}`"
+            :edit-route="routes(item, index).edit"
+            :similar-route="routes(item, index).similar"
             :show-similar="showSimilar"
           />
         </div>
@@ -56,6 +56,10 @@
 import AisPaginationNav from "components/aisComponents/AisPaginationNav.vue";
 import DocumentHitCard from "components/documents/DocumentHitCard.vue";
 import DocumentsHitsTable from "components/documents/DocumentsHitsTable.vue";
+import {
+  buildDocumentRoutes,
+  getDocumentIdFromItem,
+} from "src/meili-core/utils/display-settings";
 
 const props = defineProps({
   currentIndex: {
@@ -84,10 +88,11 @@ const props = defineProps({
   },
 });
 
-const getDocumentId = (item) => {
-  if (!item || !props.primaryKey) return item?.id;
-  const id = item[props.primaryKey];
-  if (id === undefined || id === null) return item.id;
-  return id;
-};
+const documentId = (item, index) =>
+  getDocumentIdFromItem(item, props.primaryKey) ?? `row-${index}`;
+
+const rowKey = (item, index) => documentId(item, index);
+
+const routes = (item, index) =>
+  buildDocumentRoutes(props.currentIndex, documentId(item, index));
 </script>

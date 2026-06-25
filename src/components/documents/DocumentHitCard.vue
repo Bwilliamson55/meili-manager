@@ -20,7 +20,7 @@
           <div class="flex items-center gap-1 mb-1">
             <span
               class="font-semibold text-sm truncate dark:text-white flex-1 min-w-0"
-              :title="documentId"
+              :title="String(titleLabel)"
             >
               {{ titleLabel }}
             </span>
@@ -79,6 +79,8 @@ import { computed, ref, watch } from "vue";
 import {
   resolveListFieldsForItem,
   resolveCompactPreviewFields,
+  formatDocumentFieldValue,
+  getDocumentTitleLabel,
 } from "src/meili-core/utils/display-settings";
 
 const props = defineProps({
@@ -169,15 +171,9 @@ const canExpand = computed(
   () => isCompact.value && hiddenFieldCount.value > 0,
 );
 
-const titleLabel = computed(() => {
-  const candidates = ["name", "title", "label", props.primaryKey];
-  for (const field of candidates) {
-    if (field && props.item?.[field]) {
-      return String(props.item[field]);
-    }
-  }
-  return props.documentId;
-});
+const titleLabel = computed(() =>
+  getDocumentTitleLabel(props.item, props.primaryKey, props.documentId),
+);
 
 const gridClass = computed(() => {
   const cols = Math.min(Math.max(props.listColumns, 1), 3);
@@ -186,9 +182,5 @@ const gridClass = computed(() => {
   return "grid-cols-1 md:grid-cols-2";
 });
 
-const formatFieldValue = (value) => {
-  if (value === null || value === undefined) return "";
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value);
-};
+const formatFieldValue = (value) => formatDocumentFieldValue(value);
 </script>
