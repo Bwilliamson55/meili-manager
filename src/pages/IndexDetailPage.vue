@@ -1,280 +1,212 @@
 <template>
-  <q-page padding>
-    <div class="flex flex-col gap-4 w-full">
-      <IndexDetailTabs>
-        <template #overview-tab>
-          <q-card flat bordered>
-            <q-card-section>
-              <q-card-section>
-                <div
-                  v-if="iStats && iPk"
-                  class="flex justify-around items-center"
-                >
-                  <q-chip icon="numbers" class="bg-info"
-                    >Count: {{ iStats.numberOfDocuments }}</q-chip
-                  >
-                  <div>
-                    Primary Key: <strong>{{ iPk }}</strong>
-                  </div>
-                  <q-chip
-                    :icon="iStats.isIndexing ? 'done' : 'sync'"
-                    class="bg-secondary text-white"
-                    >Indexing: {{ iStats.isIndexing }}</q-chip
-                  >
-                </div>
-              </q-card-section>
-
-              <q-separator />
-
-              <q-card-section>
-                <div v-if="iStats && iPk" class="flex flex-col gap-4">
-                  <div class="w-full text-center">
-                    <p class="text-h6">Field Distribution</p>
-                  </div>
-                  <div class="px-4 mx-auto w-full">
-                    <q-table
-                      dense
-                      :rows="fdRows"
-                      :columns="fdColumns"
-                      row-key="Field Name"
-                      :rows-per-page-options="[5, 10, 15, 0]"
-                      flat
-                      bordered
-                    />
-                  </div>
-                  <div class="w-full text-center mt-6">
-                    <p class="text-h6">Fields Metadata</p>
-                  </div>
-                  <div class="flex items-end justify-center gap-2 mb-2">
-                    <q-input
-                      v-model.number="fieldsOffset"
-                      type="number"
-                      dense
-                      outlined
-                      label="Offset"
-                      class="w-28"
-                      :min="0"
-                    />
-                    <q-input
-                      v-model.number="fieldsLimit"
-                      type="number"
-                      dense
-                      outlined
-                      label="Limit"
-                      class="w-28"
-                      :min="1"
-                      :max="1000"
-                    />
-                    <q-btn
-                      flat
-                      dense
-                      color="secondary"
-                      icon="refresh"
-                      label="Reload Fields"
-                      :loading="fieldsLoading"
-                      @click="loadFieldsMetadata"
-                    />
-                  </div>
-                  <div
-                    v-if="fieldsRows.length === 0"
-                    class="text-caption text-grey-7 text-center"
-                  >
-                    Fields metadata unavailable or empty for this index/key.
-                  </div>
-                  <div class="px-4 mx-auto w-full">
-                    <q-table
-                      dense
-                      :rows="fieldsRows"
-                      :columns="fieldsColumns"
-                      row-key="field"
-                      :rows-per-page-options="[5, 10, 15, 25]"
-                      flat
-                      bordered
-                    />
-                  </div>
-                </div>
-              </q-card-section>
-            </q-card-section>
-          </q-card>
-        </template>
-        <template #settings-tab>
-          <SettingsForm @settings-updated="onIndexSettingsUpdated" />
-        </template>
-      </IndexDetailTabs>
-    </div>
-    <div class="flex flex-wrap items-center justify-between gap-3 mt-4 mb-3">
-      <span class="text-h6 dark:text-white">Documents</span>
-      <div class="flex flex-wrap items-center gap-2">
-        <div class="flex items-center gap-2">
-          <span class="text-caption text-gray-600 dark:text-gray-400"
-            >Show thumbnails:</span
+  <q-page padding class="index-detail-page flex flex-col">
+    <IndexDetailTabs v-model="detailPanelTab" class="flex-1 min-h-0">
+      <template #overview-tab>
+        <div v-if="iStats && iPk" class="flex flex-wrap gap-2 mb-4">
+          <q-chip icon="numbers" color="info" text-color="white">
+            Count: {{ iStats.numberOfDocuments }}
+          </q-chip>
+          <q-chip color="grey-8" text-color="white">
+            Primary key: {{ iPk }}
+          </q-chip>
+          <q-chip
+            :icon="iStats.isIndexing ? 'sync' : 'done'"
+            color="secondary"
+            text-color="white"
           >
-          <q-select
-            v-model="displaySettings.imageField"
-            :options="imageFieldOptions"
-            placeholder="None"
+            Indexing: {{ iStats.isIndexing }}
+          </q-chip>
+        </div>
+
+        <div class="text-subtitle1 font-semibold mb-2 dark:text-white">
+          Field distribution
+        </div>
+        <q-table
+          dense
+          :rows="fdRows"
+          :columns="fdColumns"
+          row-key="Field Name"
+          :rows-per-page-options="[10, 25, 50, 0]"
+          flat
+          bordered
+          class="mb-6"
+        />
+
+        <div class="flex flex-wrap items-end gap-2 mb-3">
+          <div class="text-subtitle1 font-semibold dark:text-white flex-1">
+            Fields metadata
+          </div>
+          <q-input
+            v-model.number="fieldsOffset"
+            type="number"
             dense
             outlined
-            clearable
-            class="w-40"
-            @update:model-value="saveDisplaySettings"
-          >
-            <template #prepend>
-              <q-icon name="image" size="xs" />
-            </template>
-          </q-select>
-        </div>
-        <q-select
-          v-model="displaySettings.listFields"
-          :options="listFieldOptions"
-          label="List fields"
-          dense
-          outlined
-          multiple
-          use-chips
-          class="min-w-48 max-w-xs"
-          @update:model-value="onListFieldsChange"
-        />
-        <span
-          v-if="listFieldsSourceLabel"
-          class="text-caption text-gray-500 dark:text-gray-400 w-full sm:w-auto"
-        >
-          {{ listFieldsSourceLabel }}
-        </span>
-        <q-btn
-          flat
-          dense
-          icon="reorder"
-          label="Order"
-          :disable="!displaySettings.listFields?.length"
-          @click="showListFieldsOrderDialog = true"
-        />
-        <q-btn
-          flat
-          dense
-          icon="restart_alt"
-          label="Reset fields"
-          :disable="!displaySettings.listFields?.length"
-          @click="resetListFields"
-        />
-        <q-select
-          v-model="displaySettings.listColumns"
-          :options="listColumnOptions"
-          label="Columns"
-          dense
-          outlined
-          emit-value
-          map-options
-          class="w-28"
-          @update:model-value="saveDisplaySettings"
-        />
-        <q-input
-          v-model="batchDocumentIdsInput"
-          dense
-          outlined
-          clearable
-          class="w-72"
-          label="Fetch documents by IDs"
-          hint="Comma-separated IDs"
-        />
-        <q-btn
-          flat
-          dense
-          color="secondary"
-          icon="list_alt"
-          label="Fetch IDs"
-          :loading="batchFetchLoading"
-          :disable="!meiliCompat.supportsDocumentsFetchByIds"
-          @click="fetchDocumentsByIds"
-        />
-        <q-btn
-          flat
-          dense
-          icon="add_circle"
-          label="New"
-          :to="`/documents/${currentIndex}/new`"
-        />
-      </div>
-    </div>
-    <ais-instant-search
-      v-if="iPk && searchClient"
-      :search-client="searchClient"
-      :index-name="currentIndex"
-    >
-      <SearchExperiencePanel
-        :state="savedSearchState"
-        :sort-by-items="sortByItems"
-        :matching-strategy-options="matchingStrategyOptions"
-        :compat="meiliCompat"
-        @apply-preset="applyHybridPreset"
-      />
-      <q-splitter
-        v-if="filtersVisible"
-        v-model="filtersPanelWidth"
-        :limits="[220, 600]"
-        unit="px"
-        class="documents-splitter"
-        @update:model-value="onFiltersPanelWidthChange"
-      >
-        <template #before>
-          <div class="pr-2 h-full">
-            <DocumentsFiltersPanel
-              :filterable-attributes="filterableAttributes"
-              :filter-density="savedSearchState.filterDensity"
-              @close="filtersVisible = false"
-            />
-          </div>
-        </template>
-        <template #after>
-          <DocumentsHitsColumn
-            :current-index="currentIndex"
-            :primary-key="iPk"
-            :display-settings="displaySettings"
-            :resolved-list-fields="resolvedListFields"
-            :use-all-item-fields="useAllItemFields"
-            :show-similar="
-              meiliCompat.supportsSimilarEndpoint && hasConfiguredEmbedders
-            "
+            label="Offset"
+            class="w-28"
+            :min="0"
           />
-        </template>
-      </q-splitter>
-      <div v-else>
-        <div class="mb-3">
+          <q-input
+            v-model.number="fieldsLimit"
+            type="number"
+            dense
+            outlined
+            label="Limit"
+            class="w-28"
+            :min="1"
+            :max="1000"
+          />
           <q-btn
             flat
             dense
-            icon="filter_list"
-            label="Show Filters"
-            color="primary"
-            @click="filtersVisible = true"
+            color="secondary"
+            icon="refresh"
+            label="Reload"
+            :loading="fieldsLoading"
+            @click="loadFieldsMetadata"
           />
         </div>
-        <DocumentsHitsColumn
-          :current-index="currentIndex"
-          :primary-key="iPk"
-          :display-settings="displaySettings"
-          :resolved-list-fields="resolvedListFields"
-          :use-all-item-fields="useAllItemFields"
-          :show-similar="
-            meiliCompat.supportsSimilarEndpoint && hasConfiguredEmbedders
-          "
+        <q-table
+          dense
+          :rows="fieldsRows"
+          :columns="fieldsColumns"
+          row-key="field"
+          :rows-per-page-options="[10, 25, 50]"
+          flat
+          bordered
         />
-      </div>
-      <AisSearchDiagnostics
-        :header-enabled="savedSearchState.includeSearchMetadataHeader"
-        :header-value="savedSearchState.searchMetadataHeaderValue"
-        :hybrid-enabled="savedSearchState.enableHybrid"
-        :hybrid-embedder="savedSearchState.hybridEmbedder"
-        :hybrid-semantic-ratio="
-          normalizeThreshold(savedSearchState.hybridSemanticRatio)
-        "
-      />
-      <ais-configure v-bind="searchParams" />
-      <SearchStatePersistence
-        :index-name="currentIndex"
-        @state-changed="handleSearchStateChange"
-      />
-    </ais-instant-search>
+      </template>
+
+      <template #settings-tab>
+        <SettingsForm @settings-updated="onIndexSettingsUpdated" />
+      </template>
+
+      <template #documents-tab>
+        <div class="flex flex-col flex-1 min-h-0 p-3 pt-2">
+          <div
+            class="flex flex-wrap items-center justify-between gap-2 mb-3 flex-shrink-0"
+          >
+            <div class="flex flex-wrap items-center gap-2">
+              <DocumentsDisplayMenu
+                :display-settings="displaySettings"
+                :image-field-options="imageFieldOptions"
+                :list-field-options="listFieldOptions"
+                :list-column-options="listColumnOptions"
+                :list-fields-source-label="listFieldsSourceLabel"
+                @update:display-settings="onDisplaySettingsPatch"
+                @list-fields-change="onListFieldsChange"
+                @open-order="showListFieldsOrderDialog = true"
+                @reset-fields="resetListFields"
+              />
+              <q-btn
+                flat
+                dense
+                icon="filter_list"
+                :label="filtersVisible ? 'Hide filters' : 'Show filters'"
+                @click="filtersVisible = !filtersVisible"
+              />
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <q-input
+                v-model="batchDocumentIdsInput"
+                dense
+                outlined
+                clearable
+                class="w-64"
+                label="Fetch by IDs"
+                hint="Comma-separated"
+              />
+              <q-btn
+                flat
+                dense
+                color="secondary"
+                icon="list_alt"
+                label="Fetch"
+                :loading="batchFetchLoading"
+                :disable="!meiliCompat.supportsDocumentsFetchByIds"
+                @click="fetchDocumentsByIds"
+              />
+              <q-btn
+                flat
+                dense
+                icon="add_circle"
+                label="New"
+                :to="`/documents/${currentIndex}/new`"
+              />
+            </div>
+          </div>
+
+          <ais-instant-search
+            v-if="iPk && searchClient"
+            :search-client="searchClient"
+            :index-name="currentIndex"
+            class="flex flex-col flex-1 min-h-0"
+          >
+            <SearchExperiencePanel
+              :state="savedSearchState"
+              :sort-by-items="sortByItems"
+              :matching-strategy-options="matchingStrategyOptions"
+              :compat="meiliCompat"
+              @apply-preset="applyHybridPreset"
+            />
+            <q-splitter
+              v-if="filtersVisible"
+              v-model="filtersPanelWidth"
+              :limits="[260, 640]"
+              unit="px"
+              class="documents-splitter flex-1 min-h-0"
+              @update:model-value="onFiltersPanelWidthChange"
+            >
+              <template #before>
+                <div class="pr-2 h-full min-h-0">
+                  <DocumentsFiltersPanel
+                    :filterable-attributes="filterableAttributes"
+                    :filter-density="savedSearchState.filterDensity"
+                    @close="filtersVisible = false"
+                  />
+                </div>
+              </template>
+              <template #after>
+                <DocumentsHitsColumn
+                  :current-index="currentIndex"
+                  :primary-key="iPk"
+                  :display-settings="displaySettings"
+                  :resolved-list-fields="resolvedListFields"
+                  :use-all-item-fields="useAllItemFields"
+                  :show-similar="
+                    meiliCompat.supportsSimilarEndpoint && hasConfiguredEmbedders
+                  "
+                />
+              </template>
+            </q-splitter>
+            <DocumentsHitsColumn
+              v-else
+              :current-index="currentIndex"
+              :primary-key="iPk"
+              :display-settings="displaySettings"
+              :resolved-list-fields="resolvedListFields"
+              :use-all-item-fields="useAllItemFields"
+              :show-similar="
+                meiliCompat.supportsSimilarEndpoint && hasConfiguredEmbedders
+              "
+            />
+            <AisSearchDiagnostics
+              :header-enabled="savedSearchState.includeSearchMetadataHeader"
+              :header-value="savedSearchState.searchMetadataHeaderValue"
+              :hybrid-enabled="savedSearchState.enableHybrid"
+              :hybrid-embedder="savedSearchState.hybridEmbedder"
+              :hybrid-semantic-ratio="
+                normalizeThreshold(savedSearchState.hybridSemanticRatio)
+              "
+            />
+            <ais-configure v-bind="searchParams" />
+            <SearchStatePersistence
+              :index-name="currentIndex"
+              @state-changed="handleSearchStateChange"
+            />
+          </ais-instant-search>
+        </div>
+      </template>
+    </IndexDetailTabs>
 
     <q-dialog v-model="showBatchFetchDialog" maximized>
       <q-card>
@@ -339,6 +271,7 @@ import SearchStatePersistence from "components/SearchStatePersistence.vue";
 import SearchExperiencePanel from "components/SearchExperiencePanel.vue";
 import DocumentsFiltersPanel from "components/documents/DocumentsFiltersPanel.vue";
 import DocumentsHitsColumn from "components/documents/DocumentsHitsColumn.vue";
+import DocumentsDisplayMenu from "components/documents/DocumentsDisplayMenu.vue";
 import ListFieldsOrderDialog from "components/documents/ListFieldsOrderDialog.vue";
 import {
   resolveListFields,
@@ -406,7 +339,14 @@ const fieldsColumns = [
     sortable: true,
   },
 ];
-const displaySettings = ref({ imageField: null, listFields: [], listColumns: 2 });
+const displaySettings = ref({
+  imageField: null,
+  listFields: [],
+  listColumns: 2,
+  listViewMode: "compact",
+  compactFieldLimit: 4,
+});
+const detailPanelTab = ref("documents");
 const imageFieldOptions = ref([]);
 const listFieldOptions = ref([]);
 const listColumnOptions = [
@@ -416,7 +356,7 @@ const listColumnOptions = [
 ];
 const showListFieldsOrderDialog = ref(false);
 const filtersVisible = ref(true);
-const filtersPanelWidth = ref(320);
+const filtersPanelWidth = ref(380);
 const previousIndex = ref("");
 const previousQuery = ref("");
 const fieldsOffset = ref(0);
@@ -541,6 +481,19 @@ const saveDisplaySettings = () => {
     currentIndex.value,
     displaySettings.value,
   );
+};
+
+const onDisplaySettingsPatch = (nextSettings) => {
+  displaySettings.value = { ...nextSettings };
+  saveDisplaySettings();
+};
+
+const persistDetailPanelTab = () => {
+  if (!currentIndex.value) return;
+  theSettings.setIndexSearchState(currentIndex.value, {
+    ...theSettings.getIndexSearchState(currentIndex.value),
+    detailPanelTab: detailPanelTab.value,
+  });
 };
 
 const onListFieldsChange = (nextFields) => {
@@ -696,9 +649,14 @@ const loadInstance = async () => {
   await loadFieldsMetadata();
 
   // Load display settings for this index
-  displaySettings.value = theSettings.getIndexDisplaySettings(
-    currentIndex.value,
-  );
+  displaySettings.value = {
+    listViewMode: "compact",
+    compactFieldLimit: 4,
+    listColumns: 2,
+    listFields: [],
+    imageField: null,
+    ...theSettings.getIndexDisplaySettings(currentIndex.value),
+  };
 
   // Load saved search state for this index
   const savedState = theSettings.getIndexSearchState(currentIndex.value);
@@ -706,7 +664,8 @@ const loadInstance = async () => {
   sanitizeSearchStateForCompat();
   rebuildSearchClient();
   filtersVisible.value = savedState.filtersVisible ?? true;
-  filtersPanelWidth.value = savedState.filtersPanelWidth ?? 320;
+  filtersPanelWidth.value = savedState.filtersPanelWidth ?? 380;
+  detailPanelTab.value = savedState.detailPanelTab ?? "documents";
   // Initialize previous query to detect query changes
   previousQuery.value = savedState.query || "";
   // If there's no saved query, reset page to 0 (first page, 0-based)
@@ -716,10 +675,7 @@ const loadInstance = async () => {
   }
 
   // Build image field options from all fields
-  imageFieldOptions.value = [
-    "(none)",
-    ...fdRows.value.map((row) => row["Field Name"]),
-  ];
+  imageFieldOptions.value = fdRows.value.map((row) => row["Field Name"]);
   listFieldOptions.value = fdRows.value.map((row) => row["Field Name"]);
 };
 
@@ -808,6 +764,10 @@ watch(filtersVisible, () => {
   }
 });
 
+watch(detailPanelTab, () => {
+  persistDetailPanelTab();
+});
+
 watch(
   () => savedSearchState.value.filterDensity,
   () => {
@@ -875,7 +835,11 @@ watch(
 </script>
 
 <style scoped>
+.index-detail-page {
+  min-height: calc(100vh - 50px);
+}
+
 .documents-splitter {
-  min-height: calc(100vh - 320px);
+  min-height: calc(100vh - 220px);
 }
 </style>

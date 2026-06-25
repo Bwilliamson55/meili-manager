@@ -21,7 +21,8 @@ export const DEFAULT_INDEX_SEARCH_STATE = Object.freeze({
   hybridEmbedder: "",
   hybridSemanticRatio: null,
   filterDensity: "comfortable",
-  filtersPanelWidth: 320,
+  filtersPanelWidth: 380,
+  detailPanelTab: "documents",
 });
 
 export const getDefaultIndexSearchState = () => ({

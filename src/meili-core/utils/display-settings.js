@@ -17,7 +17,20 @@ export const DEFAULT_DISPLAY_SETTINGS = Object.freeze({
   imageField: null,
   listFields: [],
   listColumns: 2,
+  listViewMode: "compact",
+  compactFieldLimit: 4,
 });
+
+export const COMPACT_FIELD_CANDIDATES = [
+  "name",
+  "title",
+  "label",
+  "description",
+  "type",
+  "category",
+  "filename",
+  "url",
+];
 
 export const resolveFilterableAttributes = (
   indexSettings = {},
@@ -43,8 +56,21 @@ export const shouldUseAllItemFields = ({
   displaySettings = {},
   indexSettings = {},
 }) => {
+  if (displaySettings.listViewMode !== "detailed") return false;
   if ((displaySettings.listFields || []).length > 0) return false;
   return isWildcardAttributes(indexSettings.displayedAttributes);
+};
+
+export const resolveCompactPreviewFields = (
+  allFields,
+  limit = DEFAULT_DISPLAY_SETTINGS.compactFieldLimit,
+) => {
+  if (!Array.isArray(allFields) || allFields.length === 0) return [];
+  const preferred = COMPACT_FIELD_CANDIDATES.filter((field) =>
+    allFields.includes(field),
+  );
+  const rest = allFields.filter((field) => !preferred.includes(field));
+  return [...preferred, ...rest].slice(0, limit);
 };
 
 export const resolveListFields = ({

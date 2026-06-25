@@ -1,6 +1,6 @@
 <template>
-  <div class="min-w-0 pl-3">
-    <div class="flex justify-center mb-3">
+  <div class="min-w-0 pl-3 flex flex-col flex-1 min-h-0">
+    <div class="flex justify-center mb-3 flex-shrink-0">
       <AisPaginationNav :padding="2" />
     </div>
 
@@ -16,7 +16,16 @@
             No documents found
           </p>
         </div>
-        <div v-else class="flex flex-col gap-2">
+        <DocumentsHitsTable
+          v-else-if="displaySettings.listViewMode === 'table'"
+          :items="items"
+          :current-index="currentIndex"
+          :primary-key="primaryKey"
+          :image-field="displaySettings.imageField"
+          :resolved-list-fields="resolvedListFields"
+          :use-all-item-fields="useAllItemFields"
+        />
+        <div v-else class="flex flex-col gap-2 overflow-y-auto flex-1 min-h-0">
           <DocumentHitCard
             v-for="item in items"
             :key="getDocumentId(item)"
@@ -26,6 +35,8 @@
             :image-field="displaySettings.imageField"
             :resolved-list-fields="resolvedListFields"
             :use-all-item-fields="useAllItemFields"
+            :list-view-mode="displaySettings.listViewMode"
+            :compact-field-limit="displaySettings.compactFieldLimit || 4"
             :list-columns="displaySettings.listColumns"
             :edit-route="`/documents/${currentIndex}/${getDocumentId(item)}`"
             :similar-route="`/similar/${currentIndex}/${getDocumentId(item)}`"
@@ -35,7 +46,7 @@
       </template>
     </ais-hits>
 
-    <div class="flex justify-center mt-3 mb-2">
+    <div class="flex justify-center mt-3 mb-2 flex-shrink-0">
       <AisPaginationNav :padding="2" />
     </div>
   </div>
@@ -44,6 +55,7 @@
 <script setup>
 import AisPaginationNav from "components/aisComponents/AisPaginationNav.vue";
 import DocumentHitCard from "components/documents/DocumentHitCard.vue";
+import DocumentsHitsTable from "components/documents/DocumentsHitsTable.vue";
 
 const props = defineProps({
   currentIndex: {

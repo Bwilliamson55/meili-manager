@@ -246,6 +246,8 @@ export const useSettingsStore = defineStore("settings", {
           imageField: null,
           listFields: [],
           listColumns: 2,
+          listViewMode: "compact",
+          compactFieldLimit: 4,
         }
       );
     },
