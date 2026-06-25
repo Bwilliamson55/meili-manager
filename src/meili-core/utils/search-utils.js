@@ -40,3 +40,23 @@ export const buildHybridConfig = (state) => {
   }
   return hybrid;
 };
+
+export const buildRefinementListFromFilters = (filters = {}) => {
+  const refinementList = {};
+  for (const [attribute, values] of Object.entries(filters)) {
+    if (Array.isArray(values) && values.length > 0) {
+      refinementList[attribute] = [...values];
+    }
+  }
+  return refinementList;
+};
+
+export const hasActiveSavedSearch = (state = {}) => {
+  const filters = state.filters || {};
+  const hasFilters = Object.values(filters).some(
+    (values) => Array.isArray(values) && values.length > 0,
+  );
+  return Boolean(
+    state.query?.trim() || hasFilters || state.sort || (state.page ?? 0) > 0,
+  );
+};
