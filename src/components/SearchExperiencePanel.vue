@@ -1,11 +1,18 @@
 <template>
   <q-card flat bordered class="mb-4">
     <q-card-section class="p-4">
-      <div class="flex items-center gap-4 mb-4">
-        <AisStatsDisplay />
-        <div class="flex gap-3 flex-1">
-          <AisSearchInput placeholder="Search documents..." />
-          <AisSortBySelect :items="sortByItems" />
+      <div
+        class="flex flex-col md:flex-row md:items-stretch gap-3 md:gap-4 mb-3"
+      >
+        <div class="flex items-center flex-shrink-0">
+          <AisStatsDisplay />
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2 flex-1 min-w-0">
+          <AisSearchInput
+            placeholder="Search documents..."
+            class="flex-1 min-w-0"
+          />
+          <AisSortBySelect :items="sortByItems" class="w-full sm:w-56" />
         </div>
       </div>
       <q-expansion-item

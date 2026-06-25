@@ -9,7 +9,8 @@
         Version: {{ version || "N/A" }}
       </div>
       <div class="text-sm font-normal text-gray-600 dark:text-gray-400">
-        Instance: {{ instances[currentInstance]?.indexUrl ?? "none" }}
+        Instance:
+        {{ activeInstance?.indexUrl ?? "none" }}
       </div>
     </div>
 
@@ -17,7 +18,7 @@
     <q-form @submit="onSubmit" @reset="onReset" class="space-y-4 mb-6">
       <q-input
         filled
-        v-model="indexLabel"
+        v-model="formLabel"
         label="The Label for this instance"
         hint="eg. 'Dev instance readonly'"
         lazy-rules
@@ -25,14 +26,14 @@
       />
       <q-input
         filled
-        v-model="indexUrl"
+        v-model="formUrl"
         label="The MeiliSearch index URL"
         hint="https://myEngine.com"
         lazy-rules
         :rules="[(val) => (val && val.length > 0) || 'Please type something']"
       />
       <q-input
-        v-model="indexKey"
+        v-model="formKey"
         label="The MeiliSearch index API Key"
         filled
         :type="isPwd ? 'password' : 'text'"
@@ -84,9 +85,7 @@
         </div>
         <div>
           <span class="font-semibold">Current instance:</span>
-          <span class="ml-2">{{
-            instances[currentInstance]?.label ?? ""
-          }}</span>
+          <span class="ml-2">{{ activeInstance?.label ?? "" }}</span>
         </div>
       </div>
     </div>
@@ -105,7 +104,7 @@
           v-ripple
           class="cursor-pointer dark:hover:bg-gray-800"
           :class="{
-            'bg-blue-50 dark:bg-blue-900': currentInstance == key,
+            'bg-blue-50 dark:bg-blue-900': isActiveInstance(key),
           }"
         >
           <q-item-section @click="selectInstance(key)">
@@ -162,63 +161,65 @@
 <script setup>
 import { copyToClipboard } from "quasar";
 import { useSettingsStore } from "src/meili-core/stores/settings-store";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import {
   showSuccess,
   showError,
   showConfirmation,
 } from "src/utils/notifications";
+
 const theSettings = useSettingsStore();
-const {
-  indexUrl,
-  indexKey,
-  confirmed,
-  currentIndex,
-  currentInstance,
-  instances,
-  isConnecting,
-  clientError,
-} = storeToRefs(theSettings);
-const indexLabel = ref("");
+const { currentIndex, currentInstance, instances } = storeToRefs(theSettings);
+
+const formLabel = ref("");
+const formUrl = ref("");
+const formKey = ref("");
 const version = ref("");
 const isPwd = ref(true);
+const isConnecting = ref(false);
 
-if (!instances.value?.length) {
-  instances.value = [];
-}
+const activeInstance = computed(() => {
+  if (currentInstance.value === null || currentInstance.value === undefined) {
+    return null;
+  }
+  return instances.value[currentInstance.value] ?? null;
+});
+
+const isActiveInstance = (instanceKey) =>
+  Number(currentInstance.value) === Number(instanceKey);
 
 const onSubmit = async () => {
+  isConnecting.value = true;
   try {
     const instanceIndex = await theSettings.addInstance(
-      indexLabel.value,
-      indexUrl.value,
-      indexKey.value,
+      formLabel.value,
+      formUrl.value,
+      formKey.value,
     );
 
     await theSettings.switchInstance(instanceIndex);
 
-    // Get version info
     try {
       const client = theSettings.client;
       version.value = (await client.getVersion()).pkgVersion ?? 0;
-    } catch (e) {
+    } catch {
       // Version is optional
     }
 
     showSuccess("Instance Added & Activated");
-
     onReset();
   } catch (error) {
     showError(`Failed to add instance: ${error.message}`);
+  } finally {
+    isConnecting.value = false;
   }
 };
 
 const onReset = () => {
-  indexUrl.value = "";
-  indexKey.value = "";
-  indexLabel.value = "";
-  version.value = "";
+  formUrl.value = "";
+  formKey.value = "";
+  formLabel.value = "";
 };
 
 const selectInstance = async (instanceKey) => {
@@ -226,7 +227,7 @@ const selectInstance = async (instanceKey) => {
     await theSettings.switchInstance(instanceKey);
 
     const inst = instances.value[instanceKey];
-    indexLabel.value = inst.label;
+    formLabel.value = inst.label;
 
     showSuccess(`Switched to ${inst.label}`);
   } catch (error) {
@@ -246,8 +247,6 @@ const deleteInstance = (instanceKey) => {
 };
 
 const copyKey = async (instanceKey) => {
-  console.log(instanceKey);
-  console.log(instances.value[instanceKey]);
   await copyToClipboard(instances.value[instanceKey].indexKey).then(() => {
     showSuccess("Key copied to clipboard");
   });
