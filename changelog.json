@@ -1,9 +1,23 @@
 [
   {
-    "version": "1.22.8",
+    "version": "1.22.10",
     "week": "2026-W26",
     "dateRange": "2026, Week 26",
     "changes": [
+      {
+        "subject": "Merge pull request #19 from Bwilliamson55/dev",
+        "notes": [
+          "Restore per-index facet filters when returning to document list"
+        ]
+      },
+      {
+        "subject": "Restore per-index facet filters when returning to document list",
+        "notes": [
+          "Pass saved filters to ais-configure as refinementList on index detail load",
+          "Keep pagination when browsing with filters but no query text",
+          "Flush search state to the store on unmount before doc edit navigation"
+        ]
+      },
       {
         "subject": "Merge pull request #18 from Bwilliamson55/dev",
         "notes": [
