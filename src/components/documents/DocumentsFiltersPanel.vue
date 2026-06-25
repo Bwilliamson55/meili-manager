@@ -61,7 +61,7 @@
         />
         <q-space />
         <q-btn-toggle
-          v-model="densityModel"
+          :model-value="filterDensity"
           flat
           dense
           no-caps
@@ -69,14 +69,23 @@
           toggle-color="primary"
           class="text-caption"
           :options="densityOptions"
+          @update:model-value="onDensityChange"
         />
-        <q-toggle
-          v-model="hideZeroCounts"
-          dense
-          size="sm"
-          label="Hide 0"
-          class="text-caption"
-        />
+        <div class="inline-flex items-center gap-0.5">
+          <q-toggle
+            v-model="hideZeroCounts"
+            dense
+            size="sm"
+            color="primary"
+          />
+          <span class="text-caption whitespace-nowrap">Hide empty</span>
+          <q-icon name="info_outline" size="14px" color="grey-6" class="cursor-help">
+            <q-tooltip max-width="240px">
+              Hide facet values whose document count is 0 for the current
+              search. Selected values always stay visible.
+            </q-tooltip>
+          </q-icon>
+        </div>
       </div>
 
       <AisCurrentRefinements container-class="mt-2 mb-0" chip-size="xs" />
@@ -152,10 +161,11 @@ const densityOptions = [
   { label: "Comfy", value: "comfortable" },
 ];
 
-const densityModel = computed({
-  get: () => props.filterDensity,
-  set: (value) => emit("update:filterDensity", value),
-});
+const onDensityChange = (value) => {
+  if (value === "compact" || value === "comfortable") {
+    emit("update:filterDensity", value);
+  }
+};
 
 const filteredAttributes = computed(() => {
   const query = attributeSearch.value.trim().toLowerCase();

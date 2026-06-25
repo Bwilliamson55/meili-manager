@@ -503,7 +503,11 @@ const onFiltersPanelWidthChange = (width) => {
 };
 
 const onFilterDensityChange = (density) => {
-  savedSearchState.value.filterDensity = density;
+  if (density !== "compact" && density !== "comfortable") return;
+  savedSearchState.value = {
+    ...savedSearchState.value,
+    filterDensity: density,
+  };
   persistSearchState();
 };
 
@@ -647,7 +651,7 @@ const loadInstance = async () => {
 
   // Load saved search state for this index
   const savedState = theSettings.getIndexSearchState(currentIndex.value);
-  savedSearchState.value = { ...savedState };
+  savedSearchState.value = { ...getDefaultIndexSearchState(), ...savedState };
   sanitizeSearchStateForCompat();
   rebuildSearchClient();
   filtersVisible.value = savedState.filtersVisible ?? true;
