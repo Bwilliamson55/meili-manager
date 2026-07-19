@@ -1,5 +1,192 @@
 [
   {
+    "version": "1.23.25",
+    "week": "2026-W29",
+    "dateRange": "2026, Week 29",
+    "changes": [
+      {
+        "subject": "Merge pull request #21 from Bwilliamson55/dev",
+        "notes": [
+          "v2.1.0: Theme catalog, index-first UX, and Playground"
+        ]
+      },
+      {
+        "subject": "Refresh theme docs and note MIT license",
+        "notes": [
+          "Pointed workspace-ux shell theme notes at docs/themes.md and src/themes/catalog.js",
+          "Added a short MIT License section in README linking to LICENSE"
+        ]
+      },
+      {
+        "subject": "Quarantine src-bex and ignore env files",
+        "notes": [
+          "Ignored src-bex browser extension scaffold (not product)",
+          "Ignored .env and .env.* so local secrets stay out of git"
+        ]
+      },
+      {
+        "subject": "Add MIT LICENSE",
+        "notes": [
+          "Added standard MIT license text with Copyright (c) 2026 Weeumson"
+        ]
+      },
+      {
+        "subject": "Fix Documents filter attribute search clear crash",
+        "notes": [
+          "Quasar clearable sets the model to null; coerce back to an empty string and null-guard trim call sites."
+        ]
+      },
+      {
+        "subject": "Strengthen title hierarchy with full-contrast headings",
+        "notes": [
+          "Added global heading weight/color rules and mm-page-title, mm-section-title, mm-section-kicker utilities",
+          "Bumped index/settings tabs inactive ink toward text; applied shared title classes on high-traffic pages"
+        ]
+      },
+      {
+        "subject": "Fix Overview stats chips for theme contrast",
+        "notes": [
+          "Replaced hard-coded info, grey-8, and secondary white chips with outline chip-context tokens",
+          "Kept Count, Primary key, and Indexing chips readable on high-contrast and light themes"
+        ]
+      },
+      {
+        "subject": "Fix hybrid search to always send required embedder",
+        "notes": [
+          "Guarded buildHybridConfig so hybrid never ships without embedder",
+          "Auto-filled Hybrid Embedder from the first index embedder on presets/toggle",
+          "Blocked hybrid when the index has no embedders and cleared it on preset Clear"
+        ]
+      },
+      {
+        "subject": "Fix LLM demo presets to apply hybrid search state",
+        "notes": [
+          "Wired presets to mutate enableHybrid, semantic ratio, and ranking flags in place",
+          "Added Clear control and active preset highlight with captions/tooltips",
+          "Tracked activeLlmPreset and showed Meili version gate when hybrid is unavailable"
+        ]
+      },
+      {
+        "subject": "Clarify Playground hierarchy and quieter exports",
+        "notes": [
+          "Renamed Body / knobs to Body and gated search fields under Search options",
+          "Made presets segmented (selected primary, others outline) with Send as sole CTA",
+          "Quieted export row and sharpened empty response / key-export tooltips"
+        ]
+      },
+      {
+        "subject": "Fix high-contrast banners and dark JSON editor",
+        "notes": [
+          "Switched document warning banners to elevated surface with warning border",
+          "Forced on-primary ink on primary banners and page ink on warning banners",
+          "Synced vue-jsoneditor darkTheme with app darkMode",
+          "Replaced hard-coded white/black banner text with theme tokens"
+        ]
+      },
+      {
+        "subject": "Fix sticky footer readability across themes",
+        "notes": [
+          "Override Quasar q-footer primary fill with elevated surface and muted ink",
+          "Slim credit line padding and link weight so it reads as attribution, not a banner"
+        ]
+      },
+      {
+        "subject": "Update sticky footer Weeumson Software attribution",
+        "notes": [
+          "Changed footer copy to Built by Weeumson Software with brand link",
+          "Switched link to text-text with underline for AA contrast on page-elevated"
+        ]
+      },
+      {
+        "subject": "Fix theme contrast and expand picker to four swatches",
+        "notes": [
+          "Raised weeumson-dark textMuted for readable document field labels",
+          "Kept theme picker selected labels on text-text instead of primary",
+          "Switched header context chip to token ink and border",
+          "Derived four catalog swatches (page, elevated, primary, text)"
+        ]
+      },
+      {
+        "subject": "Fix Playground n8n export to canvas-pasteable HTTP Request node",
+        "notes": [
+          "Replaced the informal method/url/headers/body payload with a workflow snippet that pastes into the n8n canvas, using real HTTP Request V3/4.x parameter names and light timeout/retry defaults for Meili calls."
+        ]
+      },
+      {
+        "subject": "Add high-contrast to theme screenshot suite",
+        "notes": []
+      },
+      {
+        "subject": "Bump version to 2.1.0 for theme catalog and UX work",
+        "notes": [
+          "Raised package and README version after themes, Playground, and shell polish"
+        ]
+      },
+      {
+        "subject": "Add sticky Weeumson attribution footer on all pages",
+        "notes": [
+          "Placed a discreet MainLayout footer linking to https://weeumson.com",
+          "Styled with theme tokens so contrast follows the active catalog preset"
+        ]
+      },
+      {
+        "subject": "Add control tooltips, aria-labels, and square form polish",
+        "notes": [
+          "Clarified icon-only and export/copy actions with short tooltips and aria-labels",
+          "Aligned key forms and dialogs to outlined square controls and theme tokens",
+          "Explained disabled Fetch-by-IDs and New rule states without new features"
+        ]
+      },
+      {
+        "subject": "Fix high-contrast primary button ink and field contrast",
+        "notes": [
+          "Keep near-black onPrimary on yellow primary so filled Send buttons stay AA",
+          "Force Quasar filled primary labels to use catalog onPrimary instead of white",
+          "Strengthen high-contrast muted text, field labels, and outline borders"
+        ]
+      },
+      {
+        "subject": "Document theme catalog and Playwright screenshot review",
+        "notes": [
+          "Linked themes and e2e docs from README quick start",
+          "Documented npm run dev and check:themes in the local workflow"
+        ]
+      },
+      {
+        "subject": "Add Playwright shell screenshots and responsive header QA",
+        "notes": [
+          "Added e2e visual specs for unconnected shell and theme picker review",
+          "Ignored Playwright artifacts and screenshot output; documented review workflow",
+          "Wired test:e2e and review:screenshots scripts with Playwright dependency"
+        ]
+      },
+      {
+        "subject": "Polish Playground presets, export, and clipboard copy",
+        "notes": [
+          "Clarified preset and export controls for safer request iteration",
+          "Extracted shared clipboard helper for reliable copy feedback"
+        ]
+      },
+      {
+        "subject": "Add theme catalog with WCAG AA presets and picker",
+        "notes": [
+          "Added named theme presets from a single catalog with runtime CSS vars and Quasar brand sync",
+          "Replaced hard-coded greys with theme tokens across shell and admin pages",
+          "Added contrast check script and themes docs; migrated darkMode to themeId"
+        ]
+      },
+      {
+        "subject": "Weeumson-style UX overhaul with index workspace and Playground",
+        "notes": [
+          "Ported docs theme tokens, persistent drawer shell, and Instances page",
+          "Added index-first tabs with resume, document JSON side panel, and sticky settings save",
+          "Added Playground tab with redacted curl/HTTP/n8n exports and Documents bridge",
+          "Restyled Keys/Tasks/Dynamic rules and documented the open-source workspace UX"
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.22.12",
     "week": "2026-W26",
     "dateRange": "2026, Week 26",
