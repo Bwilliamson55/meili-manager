@@ -303,6 +303,10 @@ Paginated, sortable, searchable table of recent tasks (capped around the most re
 
 ---
 
+## License
+
+MIT. See [`LICENSE`](LICENSE).
+
 ## Contributing
 
 Issues and PRs are welcome. Keep changes focused; prefer extending `meili-core` carefully over breaking store contracts. Run `npm run lint` before opening a PR. Manual acceptance ideas against a real index are listed in [`docs/workspace-ux.md`](docs/workspace-ux.md) and the UX overhaul plan checklist (Continue, side panel Esc/copy, settings Submit, Playground redacted curl, drawer Instances/Keys/Tasks/Rules).

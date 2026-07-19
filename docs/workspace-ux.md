@@ -7,7 +7,7 @@ Meili-Manager is open source. This note describes the current shell and index-fi
 - Persistent left drawer: Indexes, Instances, Keys, Tasks, Dynamic rules.
 - Header context chip shows active instance label, host, and current index when you are inside an index route.
 - Unconnected state shows a connect panel that links to **Instances** instead of blanking the app behind a hard banner.
-- Theme tokens follow a Weeumson docs-style dark shell (IBM Plex Sans, terracotta primary, square elevated surfaces). Values live in `src/css/tailwind.css`, `src/css/app.scss`, and `src/css/quasar.variables.scss`.
+- Themes are named presets from [`src/themes/catalog.js`](../src/themes/catalog.js) (Weeumson Dark default, plus Light / Slate / High Contrast). Runtime CSS vars and Quasar `setCssVar` come from the catalog; see [`docs/themes.md`](themes.md). Shell uses IBM Plex Sans and square elevated surfaces.
 
 ## Indexes home
 
