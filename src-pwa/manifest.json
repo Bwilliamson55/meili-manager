@@ -1,0 +1,9 @@
+{
+  "name": "Meili Manager",
+  "short_name": "Meili Manager",
+  "description": "Manage Meilisearch instances from the browser",
+  "display": "standalone",
+  "start_url": "/",
+  "background_color": "#1a1714",
+  "theme_color": "#b85538"
+}

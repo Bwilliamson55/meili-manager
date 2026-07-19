@@ -10,7 +10,38 @@
 
 import { configure } from "quasar/wrappers";
 
-export default configure(function (/* ctx */) {
+const APP_NAME = "Meili Manager";
+const APP_DESCRIPTION =
+  "A Quasar app to manage multiple Meilisearch instances";
+
+const manifestIcons = [
+  {
+    src: "icons/icon-192x192.png",
+    sizes: "192x192",
+    type: "image/png",
+    purpose: "any",
+  },
+  {
+    src: "icons/icon-512x512.png",
+    sizes: "512x512",
+    type: "image/png",
+    purpose: "any",
+  },
+  {
+    src: "icons/maskable-icon-192x192.png",
+    sizes: "192x192",
+    type: "image/png",
+    purpose: "maskable",
+  },
+  {
+    src: "icons/maskable-icon-512x512.png",
+    sizes: "512x512",
+    type: "image/png",
+    purpose: "maskable",
+  },
+];
+
+export default configure(function (ctx) {
   return {
     eslint: {
       // fix: true,
@@ -61,7 +92,7 @@ export default configure(function (/* ctx */) {
       // ignorePublicFolder: true,
       // minify: false,
       // polyfillModulePreload: true,
-      // distDir
+      distDir: ctx.mode.pwa ? "dist/pwa" : "dist/spa",
 
       // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},
@@ -94,7 +125,7 @@ export default configure(function (/* ctx */) {
         },
       },
 
-      plugins: ["Notify", "Dark", "Dialog"],
+      plugins: ["Notify", "Dark", "Dialog", "Loading"],
     },
 
     // animations: 'all', // --- includes all animations
@@ -136,16 +167,47 @@ export default configure(function (/* ctx */) {
 
     // https://v2.quasar.dev/quasar-cli/developing-pwa/configuring-pwa
     pwa: {
-      workboxMode: "generateSW", // or 'injectManifest'
-      injectPwaMetaTags: true,
+      workboxMode: "InjectManifest",
+      injectPwaMetaTags({ publicPath, pwaManifest }) {
+        const theme = pwaManifest.theme_color ?? "#b85538";
+        return (
+          `<meta name="theme-color" content="${theme}">` +
+          '<meta name="mobile-web-app-capable" content="yes">' +
+          '<meta name="apple-mobile-web-app-status-bar-style" content="default">' +
+          `<meta name="apple-mobile-web-app-title" content="${APP_NAME}">` +
+          '<meta name="msapplication-TileColor" content="#1a1714">' +
+          `<link rel="apple-touch-icon" href="${publicPath}icons/apple-touch-icon.png">`
+        );
+      },
       swFilename: "sw.js",
       manifestFilename: "manifest.json",
       useCredentialsForManifestTag: false,
       // useFilenameHashes: true,
       // extendGenerateSWOptions (cfg) {}
       // extendInjectManifestOptions (cfg) {},
-      // extendManifestJson (json) {}
       // extendPWACustomSWConf (esbuildConf) {}
+      manifest: {
+        name: APP_NAME,
+        short_name: APP_NAME,
+        description: APP_DESCRIPTION,
+        start_url: "/",
+        scope: "/",
+        display: "standalone",
+        orientation: "any",
+        background_color: "#1a1714",
+        theme_color: "#b85538",
+        icons: manifestIcons,
+      },
+      extendManifestJson(manifest) {
+        Object.assign(manifest, {
+          name: APP_NAME,
+          short_name: APP_NAME,
+          description: APP_DESCRIPTION,
+          background_color: "#1a1714",
+          theme_color: "#b85538",
+          icons: manifestIcons,
+        });
+      },
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli/developing-cordova-apps/configuring-cordova
