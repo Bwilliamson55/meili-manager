@@ -1,9 +1,36 @@
 [
   {
-    "version": "1.23.25",
+    "version": "1.23.29",
     "week": "2026-W29",
     "dateRange": "2026, Week 29",
     "changes": [
+      {
+        "subject": "Merge pull request #22 from Bwilliamson55/dev",
+        "notes": [
+          "Add Umami analytics and use main for deploy"
+        ]
+      },
+      {
+        "subject": "Wire Umami env into Actions deploy build",
+        "notes": [
+          "Passed VITE_UMAMI_URL and VITE_UMAMI_WEBSITE_ID from repository vars into the build step",
+          "Documented Actions variable names and values in docs/umami.md and README"
+        ]
+      },
+      {
+        "subject": "Use main as deploy workflow trigger branch",
+        "notes": [
+          "Dropped obsolete master branch trigger after GitHub default rename"
+        ]
+      },
+      {
+        "subject": "Add optional Umami analytics boot",
+        "notes": [
+          "Added src/boot/umami.js gated by VITE_UMAMI_* env vars with hash SPA pageviews",
+          "Documented DO build vars and website ID in README and docs/umami.md",
+          "Allowed .env.example through gitignore"
+        ]
+      },
       {
         "subject": "Merge pull request #21 from Bwilliamson55/dev",
         "notes": [
