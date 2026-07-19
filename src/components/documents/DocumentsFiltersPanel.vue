@@ -29,7 +29,7 @@
       </div>
 
       <q-input
-        v-model="attributeSearch"
+        :model-value="attributeSearch"
         dense
         outlined
         square
@@ -38,6 +38,7 @@
         label="Search filter attributes"
         placeholder="Attributes or values…"
         class="mt-2"
+        @update:model-value="onAttributeSearchUpdate"
       >
         <template #prepend>
           <q-icon name="search" size="xs" />
@@ -170,6 +171,10 @@ const densityOptions = [
   { label: "Comfy", value: "comfortable" },
 ];
 
+const onAttributeSearchUpdate = (value) => {
+  attributeSearch.value = value ?? "";
+};
+
 const onDensityChange = (value) => {
   if (value === "compact" || value === "comfortable") {
     emit("update:filterDensity", value);
@@ -177,7 +182,7 @@ const onDensityChange = (value) => {
 };
 
 const filteredAttributes = computed(() => {
-  const query = attributeSearch.value.trim().toLowerCase();
+  const query = (attributeSearch.value ?? "").trim().toLowerCase();
   if (!query) return props.filterableAttributes;
   return props.filterableAttributes.filter((attribute) =>
     attribute.toLowerCase().includes(query),
@@ -220,7 +225,7 @@ watch(
 );
 
 watch(filteredAttributes, (attributes) => {
-  if (!attributeSearch.value.trim() || attributes.length !== 1) return;
+  if (!(attributeSearch.value ?? "").trim() || attributes.length !== 1) return;
   const attribute = attributes[0];
   const expanded = new Set(expandedAttributes.value);
   expanded.add(attribute);
