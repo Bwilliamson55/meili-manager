@@ -1,9 +1,41 @@
 [
   {
-    "version": "1.23.29",
+    "version": "1.23.33",
     "week": "2026-W29",
     "dateRange": "2026, Week 29",
     "changes": [
+      {
+        "subject": "Merge pull request #23 from Bwilliamson55/dev",
+        "notes": [
+          "Meili Manager PWA 2.2.0 with original Weeumson icons"
+        ]
+      },
+      {
+        "subject": "Deploy PWA dist and document install branding",
+        "notes": [
+          "Pointed Actions deploy at build:pwa and dist/pwa with Umami env",
+          "Added docs/pwa.md for offline shell, icons, and update UX",
+          "Updated README for 2.2.0 PWA build and Weeumson mark note"
+        ]
+      },
+      {
+        "subject": "Add InjectManifest PWA mode and bump to 2.2.0",
+        "notes": [
+          "Scaffolded src-pwa custom service worker and update Notify",
+          "Switched quasar.config to InjectManifest with Meili Manager manifest",
+          "Added workbox, register-service-worker, sharp, and build:pwa scripts",
+          "Renamed productName to Meili Manager and set version 2.2.0"
+        ]
+      },
+      {
+        "subject": "Replace Meili official logo with original Weeumson mark",
+        "notes": [
+          "Added meili-manager-icon.svg and icon generation script",
+          "Regenerated favicon and PWA raster set from the new master",
+          "Pointed header and Preview layouts at the Weeumson mark",
+          "Removed meili-logo.svg, chrome PNGs, site.webmanifest, and favicon_io.zip"
+        ]
+      },
       {
         "subject": "Merge pull request #22 from Bwilliamson55/dev",
         "notes": [
