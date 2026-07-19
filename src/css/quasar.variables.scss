@@ -8,20 +8,21 @@ $button-push-border-radius: 0;
 $typography-font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI",
   sans-serif;
 
+// Build-time defaults match weeumson-dark (catalog.js). Runtime setCssVar owns live brand.
 $primary: #b85538;
-$secondary: #6f7a68;
+$secondary: #8a9480;
 $accent: #b8956c;
 
-$dark: #2c2824;
+$dark: #232019;
 $dark-page: #1a1714;
 
-$positive: #5a7a52;
-$negative: #a84335;
-$info: #6b8b9e;
-$warning: #c98838;
+$positive: #7a9a70;
+$negative: #d46a5c;
+$info: #7a9eb0;
+$warning: #d4a05a;
 
-// Readable dark-theme tooltips
+// Readable tooltips (colors overridden at runtime via CSS vars where possible)
 $tooltip-fontsize: 13px;
 $tooltip-color: #ebe6dc;
-$tooltip-background: #2c2824;
+$tooltip-background: #232019;
 $tooltip-padding: 8px 12px;

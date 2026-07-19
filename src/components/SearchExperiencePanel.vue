@@ -162,7 +162,7 @@
             </div>
             <div
               v-if="compat.versionString"
-              class="text-caption text-grey-7 mt-3 flex items-center gap-1"
+              class="text-caption text-text-muted mt-3 flex items-center gap-1"
             >
               <q-icon name="info" size="xs" />
               Version-aware mode: {{ compat.versionString }}

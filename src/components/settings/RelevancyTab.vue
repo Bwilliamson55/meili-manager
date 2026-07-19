@@ -34,7 +34,7 @@
         :current-value="modelValue.rankingRules"
       />
     </div>
-    <q-banner class="bg-grey-2 text-grey-9">
+    <q-banner class="bg-page-elevated text-text border border-border">
       <div class="flex items-end gap-2">
         <q-input
           v-model="pinRankField"
@@ -142,11 +142,11 @@
       expand-separator
       icon="inventory_2"
       label="Search Rules Pack (Portable)"
-      header-class="text-grey-7"
+      header-class="text-text-muted"
     >
       <q-card flat bordered>
         <q-card-section class="q-gutter-sm">
-          <div class="text-caption text-grey-7">
+          <div class="text-caption text-text-muted">
             Export/import ranking and related search rules between projects.
           </div>
           <div class="flex gap-2">

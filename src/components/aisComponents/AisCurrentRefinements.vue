@@ -10,7 +10,6 @@
             removable
             color="primary"
             text-color="white"
-            class="dark:bg-primary dark:text-white"
             @remove="refine(refinement)"
           >
             <span class="font-semibold">{{ item.attribute }}:</span>

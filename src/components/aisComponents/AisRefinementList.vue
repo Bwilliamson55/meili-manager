@@ -119,14 +119,14 @@ const isCompact = computed(() => props.density !== "comfortable");
 
 const itemClass = computed(() =>
   isCompact.value
-    ? "px-0 py-0 min-h-[22px] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-sm"
-    : "px-2 py-1 min-h-[36px] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md",
+    ? "px-0 py-0 min-h-[22px] hover:bg-page rounded-sm"
+    : "px-2 py-1 min-h-[36px] hover:bg-page rounded-md",
 );
 
 const labelClass = computed(() =>
   isCompact.value
-    ? "text-[11px] font-medium dark:text-gray-200 break-all leading-tight"
-    : "text-sm font-medium dark:text-gray-200 break-all leading-snug",
+    ? "text-[11px] font-medium text-text break-all leading-tight"
+    : "text-sm font-medium text-text break-all leading-snug",
 );
 
 const badgeClass = computed(() =>
@@ -137,8 +137,8 @@ const badgeClass = computed(() =>
 
 const emptyClass = computed(() =>
   isCompact.value
-    ? "text-[11px] text-gray-500 dark:text-gray-400 px-2 py-1"
-    : "text-sm text-gray-500 dark:text-gray-400 px-3 py-2",
+    ? "text-[11px] text-text-muted px-2 py-1"
+    : "text-sm text-text-muted px-3 py-2",
 );
 
 const visibleItems = (items) => {

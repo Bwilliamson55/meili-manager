@@ -262,7 +262,7 @@
     <q-dialog v-model="showCreateDialog" persistent>
       <q-card square class="min-w-[400px] bg-page-elevated">
         <q-card-section
-          class="bg-primary text-white flex justify-between items-center"
+          class="bg-primary text-on-primary flex justify-between items-center"
         >
           <div class="text-h6">Create new index</div>
           <q-btn

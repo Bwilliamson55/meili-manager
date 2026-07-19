@@ -21,8 +21,8 @@
           lazy-rules
         />
         <div class="flex flex-col md:flex-row justify-evenly gap-4">
-          <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded flex-1">
-            <div class="font-semibold mb-2">Granted Actions:</div>
+          <div class="bg-page p-4 border border-border flex-1">
+            <div class="font-semibold mb-2 text-text">Granted Actions:</div>
             <q-select
               filled
               v-model="newKeyObj.actions"
@@ -40,8 +40,8 @@
               @filter-abort="abortFilterFn"
             />
           </div>
-          <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded flex-1">
-            <div class="font-semibold mb-2">Granted Indexes:</div>
+          <div class="bg-page p-4 border border-border flex-1">
+            <div class="font-semibold mb-2 text-text">Granted Indexes:</div>
             <q-select
               filled
               v-model="newKeyObj.indexes"

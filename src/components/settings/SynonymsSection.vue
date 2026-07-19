@@ -28,11 +28,11 @@
       </div>
     </div>
 
-    <q-banner dense class="bg-info text-white q-mb-md">
+    <q-banner dense class="bg-page-elevated text-text border border-border q-mb-md">
       <div class="text-caption">
         <strong>CSV Format:</strong> Each row should have a key word followed by
         its synonyms. Example:<br />
-        <code class="text-white">phone,mobile,smartphone,cellphone</code>
+        <code class="text-text">phone,mobile,smartphone,cellphone</code>
       </div>
     </q-banner>
 

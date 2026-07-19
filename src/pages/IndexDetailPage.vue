@@ -18,7 +18,7 @@
           </q-chip>
         </div>
 
-        <div class="text-subtitle1 font-semibold mb-2 dark:text-white">
+        <div class="text-subtitle1 font-semibold mb-2 text-text">
           Field distribution
         </div>
         <q-table
@@ -33,7 +33,7 @@
         />
 
         <div class="flex flex-wrap items-end gap-2 mb-3">
-          <div class="text-subtitle1 font-semibold dark:text-white flex-1">
+          <div class="text-subtitle1 font-semibold text-text flex-1">
             Fields metadata
           </div>
           <q-input

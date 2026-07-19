@@ -93,7 +93,7 @@
       <q-card flat bordered>
         <q-card-section>
           <div class="text-center mb-4">
-            <p class="text-lg font-semibold dark:text-gray-200">
+            <p class="text-lg font-semibold text-text">
               {{ filteredKeys.length }} Key{{
                 filteredKeys.length !== 1 ? "s" : ""
               }}
@@ -108,12 +108,12 @@
           >
             <q-card bordered>
               <q-card-section>
-                <p class="text-center mb-4 dark:text-gray-300">
+                <p class="text-center mb-4 text-text-muted">
                   The following is a real time look at your keys objects in
                   full.
                 </p>
                 <pre
-                  class="text-xs overflow-auto bg-gray-900 dark:bg-gray-950 text-white p-4 rounded"
+                  class="text-xs overflow-auto bg-page text-text border border-border p-4"
                   >{{ JSON.stringify(iKeys, null, 2) }}</pre
                 >
               </q-card-section>
@@ -137,7 +137,7 @@
                   <q-icon name="key" size="sm" />
                   <div>
                     <div class="font-semibold">{{ key.name }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                    <div class="text-xs text-text-muted">
                       UID: {{ key.uid }}
                     </div>
                   </div>
@@ -150,7 +150,7 @@
               </div>
             </template>
             <q-card class="p-6" flat bordered>
-              <p class="text-center font-bold mb-4 dark:text-gray-200">
+              <p class="text-center font-bold mb-4 text-text">
                 {{ key.name }}
               </p>
               <q-form @submit="onSubmit(key.uid)" class="space-y-4">
@@ -191,7 +191,7 @@
 
               <q-separator class="my-6" />
               <div class="text-center mb-4">
-                <p class="font-semibold dark:text-gray-300">
+                <p class="font-semibold text-text-muted">
                   The following key details can only be set at the time of
                   creation
                 </p>
@@ -233,28 +233,28 @@
                 class="mb-4"
               />
               <div class="flex flex-col md:flex-row justify-evenly gap-4 mb-4">
-                <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded flex-1">
-                  <div class="font-semibold mb-2 dark:text-gray-200">
+                <div class="bg-page p-4 border border-border flex-1">
+                  <div class="font-semibold mb-2 text-text">
                     Granted Actions:
                   </div>
-                  <ul class="list-disc list-inside dark:text-gray-300">
+                  <ul class="list-disc list-inside text-text-muted">
                     <template v-for="action in key.actions" :key="action">
                       <li>{{ action }}</li>
                     </template>
                   </ul>
                 </div>
-                <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded flex-1">
-                  <div class="font-semibold mb-2 dark:text-gray-200">
+                <div class="bg-page p-4 border border-border flex-1">
+                  <div class="font-semibold mb-2 text-text">
                     Granted Indexes:
                   </div>
-                  <ul class="list-disc list-inside dark:text-gray-300">
+                  <ul class="list-disc list-inside text-text-muted">
                     <template v-for="idx in key.indexes" :key="idx">
                       <li>{{ idx }}</li>
                     </template>
                   </ul>
                 </div>
               </div>
-              <div class="text-center space-y-2 dark:text-gray-300">
+              <div class="text-center space-y-2 text-text-muted">
                 <p>
                   <strong>Created At:</strong> {{ formatDate(key.createdAt) }}
                 </p>
@@ -283,7 +283,7 @@
       <q-dialog v-model="showCreateDialog" persistent>
         <q-card class="min-w-[500px]">
           <q-card-section
-            class="bg-primary text-white flex justify-between items-center"
+            class="bg-primary text-on-primary flex justify-between items-center"
           >
             <div class="text-h6">Create New API Key</div>
             <q-btn

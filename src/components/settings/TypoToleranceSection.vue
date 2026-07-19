@@ -6,7 +6,7 @@
         Typo Tolerance
         <q-badge
           v-if="hasFieldChanged('typoTolerance')"
-          color="orange"
+          color="warning"
           text-color="white"
           label="Modified"
           class="q-ml-xs"

@@ -27,7 +27,7 @@ export default configure(function (/* ctx */) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli/boot-files
-    boot: ["instant-search"],
+    boot: ["theme", "instant-search"],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: ["tailwind.css", "app.scss"],
@@ -80,16 +80,17 @@ export default configure(function (/* ctx */) {
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework
     framework: {
       config: {
+        // Build-time defaults match weeumson-dark; runtime applyTheme setCssVar owns live brand.
         brand: {
           primary: "#b85538",
-          secondary: "#6f7a68",
+          secondary: "#8a9480",
           accent: "#b8956c",
-          dark: "#2c2824",
+          dark: "#232019",
           "dark-page": "#1a1714",
-          positive: "#5a7a52",
-          negative: "#a84335",
-          info: "#6b8b9e",
-          warning: "#c98838",
+          positive: "#7a9a70",
+          negative: "#d46a5c",
+          info: "#7a9eb0",
+          warning: "#d4a05a",
         },
       },
 

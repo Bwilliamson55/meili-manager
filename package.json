@@ -7,12 +7,14 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "quasar dev",
     "build": "quasar build",
     "build-changelog": "node ./generateChangelog.cjs",
     "deploy": "echo \"Build dist/spa and deploy to your static host\"",
     "lint": "eslint --ext .js,.vue ./",
     "format": "prettier --write \"**/*.{js,vue,scss,html,md,json}\" --ignore-path .gitignore",
-    "test": "echo \"No test specified\" && exit 0"
+    "check:themes": "node scripts/check-theme-contrast.mjs",
+    "test": "echo \"No test specified\" && exit 0",
   },
   "dependencies": {
     "@meilisearch/instant-meilisearch": "^0.31.1",

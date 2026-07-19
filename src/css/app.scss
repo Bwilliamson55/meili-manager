@@ -10,8 +10,8 @@ html {
 }
 
 body {
-  background-color: var(--color-page, #1a1714);
-  color: var(--color-text, #ebe6dc);
+  background-color: var(--color-page);
+  color: var(--color-text);
   font-family: "IBM Plex Sans", system-ui, sans-serif;
 }
 
@@ -30,25 +30,37 @@ h5,
 h6 {
   font-family: "IBM Plex Sans", system-ui, sans-serif;
   font-weight: 600;
-  color: var(--color-text, #ebe6dc);
+  color: var(--color-text);
 }
 
 .q-card {
-  background: var(--color-page-elevated, #232019);
+  background: var(--color-page-elevated);
 }
 
 .q-drawer {
-  background: var(--color-page-elevated, #232019);
+  background: var(--color-page-elevated);
 }
 
 .q-header {
-  background: #2c2824;
-  color: var(--color-text, #ebe6dc);
+  background: var(--color-page-elevated);
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .q-tooltip {
   max-width: min(20rem, 95vw);
-  border: 1px solid var(--color-border, #3d3830);
+  border: 1px solid var(--color-border);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
   line-height: 1.35;
+}
+
+/* High Contrast: thicker chrome borders (color still from catalog vars). */
+[data-theme="high-contrast"] {
+  .q-header,
+  .q-drawer,
+  .q-card,
+  .q-banner,
+  .q-field__control {
+    border-width: 2px;
+  }
 }

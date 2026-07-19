@@ -100,8 +100,8 @@ const headerClass = computed(() =>
 
 const headerLabelClass = computed(() =>
   isCompact.value
-    ? "text-xs font-medium break-all dark:text-gray-200 leading-tight"
-    : "text-sm font-semibold break-all dark:text-gray-200 leading-snug",
+    ? "text-xs font-medium break-all text-text leading-tight"
+    : "text-sm font-semibold break-all text-text leading-snug",
 );
 
 const activeCount = (attribute) =>

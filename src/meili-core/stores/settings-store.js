@@ -7,6 +7,23 @@ import {
   getIndexSettingsWithStats,
 } from "../utils/meili-client";
 
+/** Known theme ids (labels/tokens live in src/themes/catalog.js). */
+const THEME_IDS = [
+  "weeumson-dark",
+  "weeumson-light",
+  "slate-dark",
+  "slate-light",
+  "high-contrast",
+];
+const DEFAULT_THEME_ID = "weeumson-dark";
+const LIGHT_THEME_IDS = new Set(["weeumson-light", "slate-light"]);
+
+function migrateThemeId(data) {
+  if (data?.themeId && THEME_IDS.includes(data.themeId)) return data.themeId;
+  if (data?.darkMode === false) return "weeumson-light";
+  return DEFAULT_THEME_ID;
+}
+
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
     indexUrl: "https://#",
@@ -21,7 +38,7 @@ export const useSettingsStore = defineStore("settings", {
     indexSearchState: {}, // { indexName: { query: '', filters: {}, sort: '', page: 0, filtersVisible: true, ...search options } }
     // Latest Meilisearch index settings fetched or saved in-session
     indexSettingsCache: {}, // { indexName: { filterableAttributes: [], ... } }
-    darkMode: true,
+    themeId: DEFAULT_THEME_ID,
     // Unsaved settings tracking
     hasUnsavedSettings: false,
     // Resume last index workspace visit (Indexes home Continue)
@@ -48,8 +65,14 @@ export const useSettingsStore = defineStore("settings", {
         apiKey: state.indexKey,
       });
     },
+    /** Derived from themeId (legacy darkMode consumers). */
+    darkMode: (state) => !LIGHT_THEME_IDS.has(state.themeId),
   },
   actions: {
+    setThemeId(themeId) {
+      this.themeId = THEME_IDS.includes(themeId) ? themeId : DEFAULT_THEME_ID;
+    },
+
     // Validate connection (separate from client creation)
     async validateConnection() {
       try {
@@ -331,7 +354,7 @@ export const useSettingsStore = defineStore("settings", {
     },
   },
   persist: {
-    paths: [
+    pick: [
       "indexUrl",
       "indexKey",
       "currentIndex",
@@ -342,9 +365,18 @@ export const useSettingsStore = defineStore("settings", {
       "indexPlaygroundState",
       "lastIndexUid",
       "lastIndexTab",
-      "darkMode",
+      "themeId",
       // Don't persist hasUnsavedSettings / playgroundSeed
     ],
+    serializer: {
+      serialize: JSON.stringify,
+      deserialize: (value) => {
+        const data = JSON.parse(value);
+        data.themeId = migrateThemeId(data);
+        delete data.darkMode;
+        return data;
+      },
+    },
     // Exclude runtime state: activeClient, clientError, isConnecting, confirmed
   },
 });

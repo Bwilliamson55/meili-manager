@@ -29,7 +29,7 @@
               >Save</q-btn
             >
           </div>
-          <q-banner square class="bg-primary text-white text-center mt-4">
+          <q-banner square class="bg-primary text-on-primary text-center mt-4">
             Saving a document with the same UID as another will overwrite it.
           </q-banner>
           <q-input

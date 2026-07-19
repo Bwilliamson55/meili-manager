@@ -178,7 +178,7 @@
               }}</span>
             </q-td>
             <q-td key="enqueuedAt" :props="props">
-              <div class="text-xs text-gray-600">
+              <div class="text-xs text-text-muted">
                 {{ formatDate(props.row.enqueuedAt) }}
               </div>
             </q-td>
@@ -214,7 +214,7 @@
           </q-tr>
           <q-tr v-if="props.expand" :props="props">
             <q-td colspan="100%">
-              <div class="p-4 bg-gray-50 dark:bg-gray-800">
+              <div class="p-4 bg-page">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <!-- Task details -->
                   <div>
@@ -225,7 +225,7 @@
                         :key="item.label"
                         class="flex justify-between"
                       >
-                        <span class="text-gray-600 dark:text-gray-400">{{
+                        <span class="text-text-muted">{{
                           item.label
                         }}</span>
                         <component
@@ -247,7 +247,7 @@
                         :key="item.label"
                         class="flex justify-between"
                       >
-                        <span class="text-gray-600 dark:text-gray-400">{{
+                        <span class="text-text-muted">{{
                           item.label
                         }}</span>
                         <span>{{ item.value }}</span>
@@ -257,8 +257,8 @@
 
                   <!-- Error details if present -->
                   <div v-if="props.row.error" class="md:col-span-2">
-                    <div class="text-subtitle2 mb-2 text-red-600">Error</div>
-                    <q-banner dense class="bg-red-100 text-red-900">
+                    <div class="text-subtitle2 mb-2 text-negative">Error</div>
+                    <q-banner dense class="bg-negative text-on-primary">
                       <div class="space-y-1 text-sm">
                         <div>
                           <strong>Code:</strong> {{ props.row.error.code }}
@@ -275,7 +275,7 @@
                           <a
                             :href="props.row.error.link"
                             target="_blank"
-                            class="text-blue-600 underline"
+                            class="underline text-on-primary"
                             >{{ props.row.error.link }}</a
                           >
                         </div>
@@ -289,7 +289,7 @@
                     <q-card
                       flat
                       bordered
-                      class="bg-gray-900 dark:bg-gray-950 text-white"
+                      class="bg-page text-text"
                     >
                       <q-card-section>
                         <pre class="text-xs overflow-auto">{{
@@ -307,8 +307,8 @@
         <template v-slot:no-data>
           <div class="text-center p-8">
             <q-icon name="info" size="xl" color="grey-5" class="mb-4" />
-            <div class="text-h6 text-grey-7">No tasks found</div>
-            <div class="text-caption text-grey-6">
+            <div class="text-h6 text-text-muted">No tasks found</div>
+            <div class="text-caption text-text-muted">
               Tasks will appear here once operations are performed
             </div>
           </div>

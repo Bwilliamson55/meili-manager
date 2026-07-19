@@ -1,7 +1,7 @@
 <template>
   <ais-stats>
     <template #default="{ nbHits, processingTimeMS }">
-      <div class="text-caption text-grey-7">
+      <div class="text-caption text-text-muted">
         {{ nbHits.toLocaleString() }} results in {{ processingTimeMS }}ms
       </div>
     </template>

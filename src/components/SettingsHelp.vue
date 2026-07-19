@@ -35,7 +35,7 @@
 
         <q-banner
           v-if="performanceImpact"
-          :class="`bg-${impactColor} text-white q-mt-md`"
+          :class="`bg-${impactColor} text-on-primary q-mt-md`"
           dense
         >
           <template #avatar>

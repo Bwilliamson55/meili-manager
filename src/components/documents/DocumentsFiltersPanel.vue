@@ -2,11 +2,11 @@
   <q-card flat bordered class="h-full flex flex-col min-h-0">
     <q-card-section class="px-2 py-2 flex-shrink-0">
       <div class="flex items-center justify-between gap-1">
-        <span class="text-subtitle2 font-semibold dark:text-white">
+        <span class="text-subtitle2 font-semibold text-text">
           Filters
           <span
             v-if="filterableAttributes.length"
-            class="text-caption text-gray-500 dark:text-gray-400 ml-1"
+            class="text-caption text-text-muted ml-1"
           >
             ({{ visibleAttributeCount }}/{{ filterableAttributes.length }})
           </span>
@@ -18,7 +18,7 @@
             dense
             size="sm"
             icon="close"
-            class="dark:text-gray-300"
+            class="text-text-muted"
             @click="$emit('close')"
           />
         </div>
@@ -110,14 +110,14 @@
 
           <div
             v-if="filterableAttributes.length && !filteredAttributes.length"
-            class="text-caption text-gray-600 dark:text-gray-400 p-3"
+            class="text-caption text-text-muted p-3"
           >
             No attributes match "{{ attributeSearch }}".
           </div>
 
           <div
             v-else-if="!filterableAttributes.length"
-            class="text-caption text-gray-600 dark:text-gray-400 p-3"
+            class="text-caption text-text-muted p-3"
           >
             No filterable attributes on this index. Add them in the Settings tab,
             click Submit Settings, and the facets will appear here.

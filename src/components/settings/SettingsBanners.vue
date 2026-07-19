@@ -1,6 +1,6 @@
 <template>
   <!-- Unsaved Changes Warning -->
-  <q-banner v-if="hasUnsavedSettings" class="bg-orange text-white q-mb-md">
+  <q-banner v-if="hasUnsavedSettings" class="bg-warning text-page q-mb-md">
     <template #avatar>
       <q-icon name="edit" size="md" />
     </template>
@@ -13,7 +13,7 @@
   <!-- Re-indexing Warning -->
   <q-banner
     v-if="reindexingFields.length > 0"
-    class="bg-warning text-black q-mb-md"
+    class="bg-warning text-page q-mb-md"
   >
     <template #avatar>
       <q-icon name="warning" size="md" />
@@ -30,7 +30,7 @@
           size="sm"
           dense
           color="warning"
-          text-color="black"
+          text-color="dark"
         >
           {{ field }}
         </q-chip>
