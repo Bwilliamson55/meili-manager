@@ -18,28 +18,28 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install dependencies �
+      - name: Install dependencies
         run: npm ci
 
       - name: Generate changelog 📝
         run: npm run build-changelog
 
-      - name: Build application 🔧
+      - name: Build PWA 🔧
         env:
           VITE_UMAMI_URL: ${{ vars.VITE_UMAMI_URL }}
           VITE_UMAMI_WEBSITE_ID: ${{ vars.VITE_UMAMI_WEBSITE_ID }}
-        run: npm run build
+        run: npm run build:pwa
 
       - name: Move changelog to dist 📋
-        run: cp changelog.json dist/spa/changelog.json
+        run: cp changelog.json dist/pwa/changelog.json
 
       - name: Add .nojekyll file
-        run: touch dist/spa/.nojekyll
+        run: touch dist/pwa/.nojekyll
 
       - name: Deploy to GitHub Pages 🚀
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist/spa
+          publish_dir: ./dist/pwa
           publish_branch: deploy-branch
           keep_files: false

@@ -1,14 +1,17 @@
-# Meili-Manager
+# Meili Manager
 
-Open-source Quasar (Vue 3) app for managing multiple Meilisearch instances across development, staging, and production.
+Open-source Quasar (Vue 3) PWA for managing multiple Meilisearch instances across development, staging, and production.
 
-**Version**: 2.1.0  
+**Version**: 2.2.0  
 **Demo**: [https://meili-manager.weeumson.com/#/](https://meili-manager.weeumson.com/#/)
 
 Credentials never leave the browser: instance URLs and API keys are stored in `localStorage` via Pinia persisted state. Do not commit secrets.
 
+Install icons and the header mark are original Weeumson art, not Meilisearch corporate identity. See [`docs/pwa.md`](docs/pwa.md).
+
 ## Docs
 
+- PWA install / offline shell / icon regen: [`docs/pwa.md`](docs/pwa.md)
 - Workspace UX (index-first, Playground, side panel): [`docs/workspace-ux.md`](docs/workspace-ux.md)
 - Themes (picker, catalog, contrast): [`docs/themes.md`](docs/themes.md)
 - Reuse/fork/embed playbook: [`docs/reuse-and-embedding.md`](docs/reuse-and-embedding.md)
@@ -43,13 +46,14 @@ npm run review:screenshots
 
 PNGs land in `tests/e2e/screenshots/` (gitignored). No Meili API keys required; specs capture the unconnected shell. Details: [`docs/e2e-screenshots.md`](docs/e2e-screenshots.md).
 
-### Production build
+### Production build (PWA)
 
 ```bash
-npx quasar build
+npm run icons      # after editing public/icons/meili-manager-icon.svg
+npm run build:pwa  # → dist/pwa/ (sw.js, manifest, 404.html)
 ```
 
-Output: `dist/spa/`
+SPA-only: `npm run build` → `dist/spa/`. CI deploys the PWA output.
 
 ### Changelog
 
