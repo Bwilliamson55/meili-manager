@@ -9,6 +9,7 @@ dist/
 # Local env (never commit secrets)
 .env
 .env.*
+!.env.example
 
 # Quasar core related directories
 .quasar
