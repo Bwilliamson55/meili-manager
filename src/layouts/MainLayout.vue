@@ -206,13 +206,13 @@
       class="bg-page-elevated text-text-muted border-t border-border"
     >
       <div class="px-3 py-2 text-center text-caption">
-        Built with mixed feelings by
+        Built by
         <a
           href="https://weeumson.com"
           target="_blank"
           rel="noopener noreferrer"
-          class="text-primary hover:underline"
-          >Weeumson software</a
+          class="text-text font-medium underline"
+          >Weeumson Software</a
         >
       </div>
     </q-footer>
