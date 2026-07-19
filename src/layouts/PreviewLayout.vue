@@ -5,8 +5,13 @@
         <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
         <q-toolbar-title>
           <q-btn dense flat to="/preview">
-            <img style="max-width: 35px" src="~assets/meili-logo.svg" />
-            &nbsp;Meili-Manager - <em>Preview</em></q-btn
+            <img
+              class="h-7 w-7"
+              src="/icons/meili-manager-icon.svg"
+              alt=""
+              aria-hidden="true"
+            />
+            &nbsp;Meili Manager · <em>Preview</em></q-btn
           >
         </q-toolbar-title>
 
