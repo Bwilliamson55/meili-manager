@@ -2,7 +2,7 @@
 
 Open-source Quasar (Vue 3) app for managing multiple Meilisearch instances across development, staging, and production.
 
-**Version**: 2.0.0  
+**Version**: 2.1.0  
 **Demo**: [https://meili-manager.weeumson.com/#/](https://meili-manager.weeumson.com/#/)
 
 Credentials never leave the browser: instance URLs and API keys are stored in `localStorage` via Pinia persisted state. Do not commit secrets.
