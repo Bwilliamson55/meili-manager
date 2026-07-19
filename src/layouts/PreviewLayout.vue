@@ -16,7 +16,7 @@
             exact
             name="manager"
             label="To Manager"
-            class="text-white"
+            class="text-on-primary"
           />
         </q-tabs>
       </q-toolbar>
@@ -35,14 +35,14 @@
 
     <q-page-container>
       <div v-if="!previewCurrentIndex">
-        <q-banner class="text-white text-center bg-red">
+        <q-banner class="bg-negative text-on-primary text-center">
           You need to enter and save working credentials in the menu.
         </q-banner>
       </div>
       <router-view v-else name="main" />
     </q-page-container>
 
-    <q-footer elevated class="bg-grey-8 text-white">
+    <q-footer elevated class="bg-page-elevated text-text border-t border-border">
       <q-toolbar>
         <q-toolbar-title>
           <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />

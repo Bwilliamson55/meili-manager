@@ -99,6 +99,7 @@
           :navigationBar="false"
           :statusBar="true"
           :readOnly="!editable"
+          :dark-theme="darkMode"
           v-model:text="documentText"
         />
         <div v-else class="text-caption text-text-muted p-4">
@@ -112,8 +113,13 @@
 <script setup>
 import { computed, ref, watch } from "vue";
 import { copyToClipboard } from "quasar";
+import { storeToRefs } from "pinia";
 import VueJsoneditor from "vue3-ts-jsoneditor";
+import { useSettingsStore } from "src/meili-core/stores/settings-store";
 import { showSuccess, showError } from "src/utils/notifications";
+
+const theSettings = useSettingsStore();
+const { darkMode } = storeToRefs(theSettings);
 
 const props = defineProps({
   modelValue: {

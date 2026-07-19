@@ -29,7 +29,10 @@
               >Save</q-btn
             >
           </div>
-          <q-banner square class="bg-primary text-on-primary text-center mt-4">
+          <q-banner
+            square
+            class="bg-page-elevated text-text border border-warning text-center mt-4"
+          >
             Saving a document with the same UID as another will overwrite it.
           </q-banner>
           <q-input
@@ -56,6 +59,7 @@
         :mainMenuBar="false"
         :navigationBar="false"
         :statusBar="true"
+        :dark-theme="darkMode"
         v-model:text="theDocumentText"
       />
     </div>
@@ -72,7 +76,7 @@ import VueJsoneditor from "vue3-ts-jsoneditor";
 import { showSuccess, showError } from "src/utils/notifications";
 const theSettings = useSettingsStore();
 const indexesStore = useIndexesStore();
-const { currentIndex } = storeToRefs(theSettings);
+const { currentIndex, darkMode } = storeToRefs(theSettings);
 const route = useRoute();
 const router = useRouter();
 const theDocument = ref({});

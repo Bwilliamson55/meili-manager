@@ -69,7 +69,7 @@ h6 {
 }
 
 /*
- * Quasar filled brand buttons default to white label text. Catalog onPrimary
+ * Quasar filled brand surfaces default to white label text. Catalog onPrimary
  * is the accessible ink (black on high-contrast yellow; white on terracotta).
  */
 .q-btn.bg-primary:not(.q-btn--outline):not(.q-btn--flat) {
@@ -83,6 +83,30 @@ h6 {
 
 .q-chip.bg-primary {
   color: var(--color-on-primary);
+}
+
+.q-banner.bg-primary,
+.bg-primary.text-on-primary,
+.text-on-primary {
+  color: var(--color-on-primary) !important;
+}
+
+/* Warning fill: page ink reads on amber/yellow warning tokens across themes. */
+.q-banner.bg-warning {
+  color: var(--color-page) !important;
+}
+
+.q-card.q-card--bordered {
+  border-color: var(--color-border);
+}
+
+/* Placeholders / muted field chrome must clear AA on dark and HC surfaces. */
+.q-field__native::placeholder,
+.q-placeholder,
+textarea::placeholder,
+input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
 }
 
 /*

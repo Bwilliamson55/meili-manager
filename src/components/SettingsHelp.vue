@@ -24,7 +24,7 @@
 
         <q-banner
           v-if="metadata.reindexes"
-          class="bg-warning text-black q-mt-md"
+          class="bg-warning text-page q-mt-md"
           dense
         >
           <template #avatar>
