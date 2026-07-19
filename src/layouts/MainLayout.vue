@@ -207,6 +207,22 @@
       </div>
       <router-view v-else />
     </q-page-container>
+
+    <q-footer
+      bordered
+      class="bg-page-elevated text-text-muted border-t border-border"
+    >
+      <div class="px-3 py-2 text-center text-caption">
+        Built with mixed feelings by
+        <a
+          href="https://weeumson.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-primary hover:underline"
+          >Weeumson software</a
+        >
+      </div>
+    </q-footer>
   </q-layout>
 </template>
 
