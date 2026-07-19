@@ -18,6 +18,7 @@ Credentials never leave the browser: instance URLs and API keys are stored in `l
 - Dual-version QA checklist: [`docs/qa-checklist-1.11-1.42.md`](docs/qa-checklist-1.11-1.42.md)
 - GitHub release draft: [`RELEASE_DRAFT_1.42.md`](RELEASE_DRAFT_1.42.md)
 - Playwright shell screenshots (mobile/desktop review): [`docs/e2e-screenshots.md`](docs/e2e-screenshots.md)
+- Umami analytics (optional DO build env): [`docs/umami.md`](docs/umami.md)
 
 ## Quick start
 
@@ -168,6 +169,19 @@ Document list field resolution lives in `src/meili-core/utils/display-settings.j
 - Output directory: `dist/spa`
 
 Host on any static file server (Nginx, Caddy, GitHub Pages, DigitalOcean Static Site, etc.). Hash routes avoid server rewrite requirements.
+
+### Umami (optional)
+
+Client analytics load only when both `VITE_UMAMI_URL` and `VITE_UMAMI_WEBSITE_ID` are set at build time (`src/boot/umami.js`). See [`.env.example`](.env.example) and [`docs/umami.md`](docs/umami.md).
+
+For GitHub Actions builds (`.github/workflows/deploy.yml` → `deploy-branch`), set **repository variables** (not secrets):
+
+- `VITE_UMAMI_URL` = `https://analytics.weeumson.com/stats`
+- `VITE_UMAMI_WEBSITE_ID` = `7d58f62f-6f41-45f2-92be-406714151bbe`
+
+Path: **Settings → Secrets and variables → Actions → Variables**.
+
+The same keys work for DigitalOcean Static Site build env. Register the domain in Umami admin as `meili-manager.weeumson.com`.
 
 ### Native applications
 
