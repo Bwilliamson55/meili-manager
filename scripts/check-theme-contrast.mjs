@@ -42,10 +42,14 @@ const PAIRS = [
   ["text / page", "text", "page", 4.5],
   ["textMuted / page", "textMuted", "page", 4.5],
   ["textMuted / pageElevated", "textMuted", "pageElevated", 4.5],
+  // Filled primary buttons (Send): must never be white-on-yellow.
   ["onPrimary / primary", "onPrimary", "primary", 4.5],
+  // Outline primary labels / borders on page chrome.
   ["primary / page (non-text)", "primary", "page", 3],
+  ["primary / pageElevated (non-text)", "primary", "pageElevated", 3],
   ["focusRing / page", "focusRing", "page", 3],
   ["border / page", "border", "page", 3],
+  ["border / pageElevated", "border", "pageElevated", 3],
 ];
 
 let failed = 0;

@@ -10,7 +10,6 @@
       <q-btn
         class="q-mt-xl"
         color="primary"
-        text-color="white"
         unelevated
         square
         to="/"

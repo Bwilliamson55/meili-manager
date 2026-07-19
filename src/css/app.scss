@@ -54,7 +54,24 @@ h6 {
   line-height: 1.35;
 }
 
-/* High Contrast: thicker chrome borders (color still from catalog vars). */
+/*
+ * Quasar filled brand buttons default to white label text. Catalog onPrimary
+ * is the accessible ink (black on high-contrast yellow; white on terracotta).
+ */
+.q-btn.bg-primary:not(.q-btn--outline):not(.q-btn--flat) {
+  color: var(--color-on-primary) !important;
+}
+
+.q-btn.bg-primary:not(.q-btn--outline):not(.q-btn--flat) .q-icon,
+.q-btn.bg-primary:not(.q-btn--outline):not(.q-btn--flat) .q-spinner {
+  color: inherit;
+}
+
+.q-chip.bg-primary {
+  color: var(--color-on-primary);
+}
+
+/* High Contrast: thicker chrome + clearer field labels/outlines. */
 [data-theme="high-contrast"] {
   .q-header,
   .q-drawer,
@@ -62,5 +79,27 @@ h6 {
   .q-banner,
   .q-field__control {
     border-width: 2px;
+  }
+
+  .q-field__label,
+  .q-field__native,
+  .q-field__prefix,
+  .q-field__suffix,
+  .q-field__marginal {
+    color: var(--color-text);
+  }
+
+  .q-field--outlined .q-field__control:before {
+    border-color: var(--color-border);
+  }
+
+  .q-btn--outline {
+    border-width: 2px;
+  }
+
+  .text-primary,
+  .q-btn--outline.text-primary,
+  .q-btn.q-btn--outline.bg-primary {
+    color: var(--color-primary) !important;
   }
 }

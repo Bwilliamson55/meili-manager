@@ -54,6 +54,11 @@ export function applyTheme(id) {
     const value = theme.tokens[key];
     if (value) setCssVar(key, value);
   }
+  // Ink on filled primary surfaces (Send, unelevated primary). Not a Quasar
+  // brand key; consumed by app.scss and Tailwind text-on-primary.
+  if (theme.tokens.onPrimary) {
+    setCssVar("on-primary", theme.tokens.onPrimary);
+  }
   setCssVar("dark", theme.tokens.pageElevated);
   setCssVar("dark-page", theme.tokens.page);
 

@@ -128,11 +128,12 @@ export const themes = {
     description: "Near black and white with strong borders and focus.",
     isDark: true,
     tokens: {
+      // Primary is bright yellow; onPrimary must stay near-black (not white).
       page: "#000000",
       pageElevated: "#0a0a0a",
       border: "#ffffff",
       text: "#ffffff",
-      textMuted: "#e6e6e6",
+      textMuted: "#f0f0f0",
       primary: "#ffe600",
       secondary: "#ffffff",
       accent: "#00e5ff",
