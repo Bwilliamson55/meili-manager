@@ -123,9 +123,10 @@ const openInPlayground = (state) => {
     q: state?.query || "",
     limit: state?.hitsPerPage || 20,
   };
-  if (props.hybridEnabled) {
+  const embedder = props.hybridEmbedder?.trim();
+  if (props.hybridEnabled && embedder) {
     body.hybrid = {
-      embedder: props.hybridEmbedder || undefined,
+      embedder,
       semanticRatio: props.hybridSemanticRatio ?? 0.5,
     };
   }

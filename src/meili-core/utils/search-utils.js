@@ -75,10 +75,18 @@ export const getDefaultIndexSearchState = () => ({
   filters: {},
 });
 
+/** First configured embedder name from index settings, or empty string. */
+export const getDefaultEmbedderName = (embedders) => {
+  if (!embedders || typeof embedders !== "object") return "";
+  const names = Object.keys(embedders).filter(Boolean);
+  return names[0] || "";
+};
+
 /** Fields written by LLM demo presets (used by Clear / Reset). */
 export const getClearedLlmPresetFields = () => ({
   activeLlmPreset: null,
   enableHybrid: DEFAULT_INDEX_SEARCH_STATE.enableHybrid,
+  hybridEmbedder: DEFAULT_INDEX_SEARCH_STATE.hybridEmbedder,
   hybridSemanticRatio: DEFAULT_INDEX_SEARCH_STATE.hybridSemanticRatio,
   showRankingScore: DEFAULT_INDEX_SEARCH_STATE.showRankingScore,
   showRankingScoreDetails: DEFAULT_INDEX_SEARCH_STATE.showRankingScoreDetails,
@@ -98,15 +106,18 @@ export const getLlmPresetPatch = (presetKey) => {
   };
 };
 
+/**
+ * Build Meilisearch `hybrid` payload. Never returns hybrid without `embedder`
+ * (Meilisearch requires it inside `.queries[].hybrid`).
+ */
 export const buildHybridConfig = (state) => {
   if (!state?.enableHybrid) return undefined;
-  const hybrid = {
+  const embedder = state.hybridEmbedder?.trim();
+  if (!embedder) return undefined;
+  return {
+    embedder,
     semanticRatio: normalizeThreshold(state.hybridSemanticRatio),
   };
-  if (state.hybridEmbedder?.trim()) {
-    hybrid.embedder = state.hybridEmbedder.trim();
-  }
-  return hybrid;
 };
 
 export const buildRefinementListFromFilters = (filters = {}) => {

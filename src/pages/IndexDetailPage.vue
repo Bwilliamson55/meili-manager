@@ -163,6 +163,7 @@
               :sort-by-items="sortByItems"
               :matching-strategy-options="matchingStrategyOptions"
               :compat="meiliCompat"
+              :available-embedders="availableEmbedders"
               @apply-preset="applyHybridPreset"
               @clear-preset="clearHybridPreset"
             />
@@ -286,6 +287,7 @@ import {
   buildRefinementListFromFilters,
   getLlmPresetPatch,
   getClearedLlmPresetFields,
+  getDefaultEmbedderName,
   LLM_DEMO_PRESETS,
 } from "src/meili-core/utils/search-utils";
 import {
@@ -512,6 +514,7 @@ const persistSearchState = () => {
 };
 
 const persistSearchStateAndRebuild = () => {
+  resolveHybridEmbedderOrDisable();
   persistSearchState();
   rebuildSearchClient();
 };
@@ -632,14 +635,42 @@ const onFilterDensityChange = (density) => {
   persistSearchState();
 };
 
-const hasConfiguredEmbedders = computed(() => {
+const availableEmbedders = computed(() => {
   const embedders = iSettings.value?.embedders;
-  return !!(
-    embedders &&
-    typeof embedders === "object" &&
-    Object.keys(embedders).length > 0
-  );
+  if (!embedders || typeof embedders !== "object") return [];
+  return Object.keys(embedders).filter(Boolean);
 });
+
+const hasConfiguredEmbedders = computed(
+  () => availableEmbedders.value.length > 0,
+);
+
+/**
+ * When hybrid is on, ensure a non-empty embedder (prefer existing, else first
+ * index embedder). If none exist, disable hybrid and optionally notify.
+ */
+const resolveHybridEmbedderOrDisable = ({ notify = true } = {}) => {
+  if (!savedSearchState.value.enableHybrid) return true;
+  const existing = savedSearchState.value.hybridEmbedder?.trim();
+  if (existing) {
+    savedSearchState.value.hybridEmbedder = existing;
+    return true;
+  }
+  const fallback = getDefaultEmbedderName(iSettings.value?.embedders);
+  if (fallback) {
+    savedSearchState.value.hybridEmbedder = fallback;
+    return true;
+  }
+  savedSearchState.value.enableHybrid = false;
+  savedSearchState.value.hybridSemanticRatio = null;
+  savedSearchState.value.activeLlmPreset = null;
+  if (notify) {
+    showError(
+      "Hybrid needs an embedder configured on the index. Configure embedders under Settings (AI) first.",
+    );
+  }
+  return false;
+};
 
 const resolvedListFields = computed(() =>
   resolveListFields({
@@ -779,6 +810,9 @@ const loadInstance = async () => {
   const savedState = theSettings.getIndexSearchState(currentIndex.value);
   savedSearchState.value = { ...getDefaultIndexSearchState(), ...savedState };
   sanitizeSearchStateForCompat();
+  // Quiet: avoid Notify spam on every index load when hybrid was saved without embedder.
+  resolveHybridEmbedderOrDisable({ notify: false });
+  persistSearchState();
   rebuildSearchClient();
   filtersVisible.value = savedState.filtersVisible ?? true;
   filtersPanelWidth.value = savedState.filtersPanelWidth ?? 380;
@@ -845,12 +879,23 @@ const applyHybridPreset = (preset) => {
   }
   const next = getLlmPresetPatch(preset);
   if (!next) return;
+  const embedder =
+    savedSearchState.value.hybridEmbedder?.trim() ||
+    getDefaultEmbedderName(iSettings.value?.embedders);
+  if (!embedder) {
+    showError(
+      "Hybrid needs an embedder configured on the index. Configure embedders under Settings (AI) first.",
+    );
+    return;
+  }
   // Mutate in place so panel v-models keep the same object and update immediately.
-  Object.assign(savedSearchState.value, next);
+  Object.assign(savedSearchState.value, next, {
+    hybridEmbedder: embedder,
+  });
   persistSearchStateAndRebuild();
   const label = LLM_DEMO_PRESETS[preset]?.label || preset;
   showSuccess(
-    `Applied ${label}: hybrid on, semantic ratio ${next.hybridSemanticRatio}.`,
+    `Applied ${label}: hybrid on, embedder "${embedder}", semantic ratio ${next.hybridSemanticRatio}.`,
   );
 };
 

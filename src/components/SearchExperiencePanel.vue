@@ -39,9 +39,10 @@
                         class="text-text-muted"
                       >
                         <q-tooltip>
-                          Quick hybrid search mixes. Each preset enables hybrid
-                          and sets semantic ratio (0 = keyword only, 1 =
-                          semantic only).
+                          Quick hybrid search mixes. Each preset enables hybrid,
+                          fills Hybrid Embedder from the index when needed, and
+                          sets semantic ratio (0 = keyword only, 1 = semantic
+                          only).
                         </q-tooltip>
                       </q-icon>
                       <q-btn
@@ -54,7 +55,9 @@
                         :outline="state.activeLlmPreset !== preset.key"
                         :flat="false"
                         color="primary"
-                        :disable="!compat.supportsHybrid"
+                        :disable="
+                          !compat.supportsHybrid || !hasConfiguredEmbedders
+                        "
                         :label="preset.label"
                         @click="$emit('apply-preset', preset.key)"
                       >
@@ -84,6 +87,15 @@
                       <q-icon name="warning" size="xs" />
                       Hybrid presets need Meilisearch newer than 1.11 (current:
                       {{ compat.versionString || "unknown" }}).
+                    </div>
+                    <div
+                      v-else-if="!hasConfiguredEmbedders"
+                      class="text-caption text-warning flex items-center gap-1"
+                    >
+                      <q-icon name="warning" size="xs" />
+                      Hybrid needs an embedder configured on the index
+                      (Settings → AI). Presets will not enable hybrid until one
+                      exists.
                     </div>
                     <div
                       v-else-if="activePresetMeta"
@@ -177,20 +189,32 @@
               <q-toggle
                 v-model="state.enableHybrid"
                 label="Enable Hybrid Search"
-                :disable="!compat.supportsHybrid"
+                :disable="!compat.supportsHybrid || !hasConfiguredEmbedders"
               >
                 <q-tooltip>
                   Mix keyword search with vector/semantic ranking (needs an
                   embedder on the index).
                 </q-tooltip>
               </q-toggle>
+              <q-select
+                v-if="availableEmbedders.length > 0"
+                v-model="state.hybridEmbedder"
+                :options="availableEmbedders"
+                outlined
+                dense
+                clearable
+                label="Hybrid Embedder"
+                hint="Required when hybrid is on (defaults to first index embedder)"
+                :disable="!state.enableHybrid || !compat.supportsHybrid"
+              />
               <q-input
+                v-else
                 v-model="state.hybridEmbedder"
                 outlined
                 dense
                 clearable
-                label="Hybrid Embedder (optional)"
-                hint="Leave blank to use the index default embedder"
+                label="Hybrid Embedder"
+                hint="Required when hybrid is on. Configure embedders under Settings (AI)."
                 :disable="!state.enableHybrid || !compat.supportsHybrid"
               />
               <q-input
@@ -261,6 +285,10 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  availableEmbedders: {
+    type: Array,
+    default: () => [],
+  },
 });
 
 defineEmits(["apply-preset", "clear-preset"]);
@@ -272,6 +300,10 @@ const filterDensityOptions = [
   { label: "Compact", value: "compact" },
 ];
 
+const hasConfiguredEmbedders = computed(
+  () => props.availableEmbedders.length > 0,
+);
+
 const activePresetMeta = computed(() => {
   const key = props.state.activeLlmPreset;
   return key ? LLM_DEMO_PRESETS[key] || null : null;
@@ -282,6 +314,7 @@ const hasActivePresetFields = computed(() => {
   return Boolean(
     s.activeLlmPreset ||
       s.enableHybrid ||
+      s.hybridEmbedder ||
       s.hybridSemanticRatio != null ||
       s.showRankingScore ||
       s.showRankingScoreDetails ||
