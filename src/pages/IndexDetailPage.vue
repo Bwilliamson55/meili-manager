@@ -164,6 +164,7 @@
               :matching-strategy-options="matchingStrategyOptions"
               :compat="meiliCompat"
               @apply-preset="applyHybridPreset"
+              @clear-preset="clearHybridPreset"
             />
             <q-splitter
               v-if="filtersVisible"
@@ -283,6 +284,9 @@ import {
   normalizeThreshold,
   getDefaultIndexSearchState,
   buildRefinementListFromFilters,
+  getLlmPresetPatch,
+  getClearedLlmPresetFields,
+  LLM_DEMO_PRESETS,
 } from "src/meili-core/utils/search-utils";
 import {
   getCompatFeatures,
@@ -494,6 +498,7 @@ const sanitizeSearchStateForCompat = () => {
     savedSearchState.value.enableHybrid = false;
     savedSearchState.value.hybridEmbedder = "";
     savedSearchState.value.hybridSemanticRatio = null;
+    savedSearchState.value.activeLlmPreset = null;
   }
 };
 
@@ -834,26 +839,25 @@ const fetchDocumentsByIds = async () => {
 const applyHybridPreset = (preset) => {
   if (!meiliCompat.value.supportsHybrid) {
     showError(
-      `Hybrid presets require a newer server version (current: ${meiliCompat.value.versionString}).`,
+      `Hybrid presets require Meilisearch newer than 1.11 (current: ${meiliCompat.value.versionString}).`,
     );
     return;
   }
-  const presets = {
-    keyword: { enableHybrid: true, hybridSemanticRatio: 0.2 },
-    balanced: { enableHybrid: true, hybridSemanticRatio: 0.5 },
-    semantic: { enableHybrid: true, hybridSemanticRatio: 0.8 },
-  };
-  const next = presets[preset];
+  const next = getLlmPresetPatch(preset);
   if (!next) return;
-  savedSearchState.value = {
-    ...savedSearchState.value,
-    ...next,
-    showRankingScore: true,
-    showRankingScoreDetails: true,
-    showPerformanceDetails: true,
-  };
+  // Mutate in place so panel v-models keep the same object and update immediately.
+  Object.assign(savedSearchState.value, next);
   persistSearchStateAndRebuild();
-  showSuccess(`Applied ${preset} LLM demo preset.`);
+  const label = LLM_DEMO_PRESETS[preset]?.label || preset;
+  showSuccess(
+    `Applied ${label}: hybrid on, semantic ratio ${next.hybridSemanticRatio}.`,
+  );
+};
+
+const clearHybridPreset = () => {
+  Object.assign(savedSearchState.value, getClearedLlmPresetFields());
+  persistSearchStateAndRebuild();
+  showSuccess("Cleared LLM demo preset and restored hybrid defaults.");
 };
 
 // Handle search state changes from persistence component
@@ -959,9 +963,26 @@ watch(
     enableHybrid: savedSearchState.value.enableHybrid,
     hybridEmbedder: savedSearchState.value.hybridEmbedder,
     hybridSemanticRatio: savedSearchState.value.hybridSemanticRatio,
+    activeLlmPreset: savedSearchState.value.activeLlmPreset,
     filterDensity: savedSearchState.value.filterDensity,
   }),
   () => {
+    // Keep preset highlight in sync when hybrid fields are edited manually.
+    const key = savedSearchState.value.activeLlmPreset;
+    if (key && LLM_DEMO_PRESETS[key]) {
+      const expected = LLM_DEMO_PRESETS[key];
+      if (
+        !savedSearchState.value.enableHybrid ||
+        Number(savedSearchState.value.hybridSemanticRatio) !==
+          expected.hybridSemanticRatio
+      ) {
+        // Avoid re-entering this watcher via activeLlmPreset itself.
+        if (savedSearchState.value.activeLlmPreset !== null) {
+          savedSearchState.value.activeLlmPreset = null;
+          return;
+        }
+      }
+    }
     persistSearchStateAndRebuild();
   },
   { deep: true },

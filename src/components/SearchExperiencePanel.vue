@@ -28,37 +28,73 @@
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
               <div class="md:col-span-3 lg:col-span-4">
                 <q-banner dense class="bg-page text-text border border-border">
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-caption text-text-muted"
-                      >LLM demo presets:</span
+                  <div class="flex flex-col gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="text-caption text-text-muted">
+                        LLM demo presets
+                      </span>
+                      <q-icon
+                        name="help_outline"
+                        size="xs"
+                        class="text-text-muted"
+                      >
+                        <q-tooltip>
+                          Quick hybrid search mixes. Each preset enables hybrid
+                          and sets semantic ratio (0 = keyword only, 1 =
+                          semantic only).
+                        </q-tooltip>
+                      </q-icon>
+                      <q-btn
+                        v-for="preset in presetList"
+                        :key="preset.key"
+                        dense
+                        square
+                        no-caps
+                        :unelevated="state.activeLlmPreset === preset.key"
+                        :outline="state.activeLlmPreset !== preset.key"
+                        :flat="false"
+                        color="primary"
+                        :disable="!compat.supportsHybrid"
+                        :label="preset.label"
+                        @click="$emit('apply-preset', preset.key)"
+                      >
+                        <q-tooltip>{{ preset.tooltip }}</q-tooltip>
+                      </q-btn>
+                      <q-btn
+                        dense
+                        square
+                        flat
+                        no-caps
+                        color="grey-7"
+                        icon="restart_alt"
+                        label="Clear"
+                        :disable="!hasActivePresetFields"
+                        @click="$emit('clear-preset')"
+                      >
+                        <q-tooltip>
+                          Clear preset selection and restore hybrid / ranking
+                          demo defaults
+                        </q-tooltip>
+                      </q-btn>
+                    </div>
+                    <div
+                      v-if="!compat.supportsHybrid"
+                      class="text-caption text-warning flex items-center gap-1"
                     >
-                    <q-btn
-                      flat
-                      dense
-                      square
-                      no-caps
-                      color="primary"
-                      label="Keyword-heavy"
-                      @click="$emit('apply-preset', 'keyword')"
-                    />
-                    <q-btn
-                      flat
-                      dense
-                      square
-                      no-caps
-                      color="primary"
-                      label="Balanced"
-                      @click="$emit('apply-preset', 'balanced')"
-                    />
-                    <q-btn
-                      flat
-                      dense
-                      square
-                      no-caps
-                      color="primary"
-                      label="Semantic-heavy"
-                      @click="$emit('apply-preset', 'semantic')"
-                    />
+                      <q-icon name="warning" size="xs" />
+                      Hybrid presets need Meilisearch newer than 1.11 (current:
+                      {{ compat.versionString || "unknown" }}).
+                    </div>
+                    <div
+                      v-else-if="activePresetMeta"
+                      class="text-caption text-text-muted"
+                    >
+                      Active: {{ activePresetMeta.label }}.
+                      {{ activePresetMeta.caption }}
+                    </div>
+                    <div v-else class="text-caption text-text-muted">
+                      Keyword-heavy 0.2 · Balanced 0.5 · Semantic-heavy 0.8
+                    </div>
                   </div>
                 </q-banner>
               </div>
@@ -74,7 +110,11 @@
                 :max="1"
                 :step="0.01"
                 :disable="!compat.supportsRankingScoreThreshold"
-              />
+              >
+                <q-tooltip>
+                  Drop hits whose ranking score is below this value (0-1).
+                </q-tooltip>
+              </q-input>
               <q-select
                 v-model="state.matchingStrategy"
                 :options="matchingStrategyOptions"
@@ -84,7 +124,12 @@
                 map-options
                 label="Matching Strategy"
                 :disable="!compat.supportsFrequencyMatching"
-              />
+              >
+                <q-tooltip>
+                  How Meilisearch requires query words to match (last / all /
+                  frequency).
+                </q-tooltip>
+              </q-select>
               <q-input
                 v-model="state.distinct"
                 outlined
@@ -92,7 +137,12 @@
                 clearable
                 label="Distinct (query-time)"
                 :disable="!compat.supportsDistinctQuery"
-              />
+              >
+                <q-tooltip>
+                  Return only one hit per distinct attribute value for this
+                  query.
+                </q-tooltip>
+              </q-input>
               <q-toggle
                 v-model="state.showRankingScore"
                 label="Show Ranking Score"
@@ -128,28 +178,41 @@
                 v-model="state.enableHybrid"
                 label="Enable Hybrid Search"
                 :disable="!compat.supportsHybrid"
-              />
+              >
+                <q-tooltip>
+                  Mix keyword search with vector/semantic ranking (needs an
+                  embedder on the index).
+                </q-tooltip>
+              </q-toggle>
               <q-input
                 v-model="state.hybridEmbedder"
                 outlined
                 dense
                 clearable
                 label="Hybrid Embedder (optional)"
+                hint="Leave blank to use the index default embedder"
                 :disable="!state.enableHybrid || !compat.supportsHybrid"
               />
               <q-input
-                v-model.number="state.hybridSemanticRatio"
+                :model-value="hybridRatioDisplay"
                 type="number"
                 outlined
                 dense
                 clearable
                 label="Hybrid Semantic Ratio"
-                hint="0-1 (0 keyword only, 1 semantic only)"
+                hint="0 = keyword only · 1 = semantic only"
                 :min="0"
                 :max="1"
                 :step="0.01"
                 :disable="!state.enableHybrid || !compat.supportsHybrid"
-              />
+                @update:model-value="onHybridRatioUpdate"
+                @clear="onHybridRatioUpdate(null)"
+              >
+                <q-tooltip>
+                  Weight of semantic vs keyword in hybrid mode. Presets set
+                  0.2 / 0.5 / 0.8.
+                </q-tooltip>
+              </q-input>
               <q-select
                 v-model="state.filterDensity"
                 :options="filterDensityOptions"
@@ -175,11 +238,13 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
 import AisSearchInput from "components/aisComponents/AisSearchInput.vue";
 import AisStatsDisplay from "components/aisComponents/AisStatsDisplay.vue";
 import AisSortBySelect from "components/aisComponents/AisSortBySelect.vue";
+import { LLM_DEMO_PRESETS } from "src/meili-core/utils/search-utils";
 
-defineProps({
+const props = defineProps({
   state: {
     type: Object,
     required: true,
@@ -198,10 +263,53 @@ defineProps({
   },
 });
 
-defineEmits(["apply-preset"]);
+defineEmits(["apply-preset", "clear-preset"]);
+
+const presetList = Object.values(LLM_DEMO_PRESETS);
 
 const filterDensityOptions = [
   { label: "Comfortable", value: "comfortable" },
   { label: "Compact", value: "compact" },
 ];
+
+const activePresetMeta = computed(() => {
+  const key = props.state.activeLlmPreset;
+  return key ? LLM_DEMO_PRESETS[key] || null : null;
+});
+
+const hasActivePresetFields = computed(() => {
+  const s = props.state;
+  return Boolean(
+    s.activeLlmPreset ||
+      s.enableHybrid ||
+      s.hybridSemanticRatio != null ||
+      s.showRankingScore ||
+      s.showRankingScoreDetails ||
+      s.showPerformanceDetails,
+  );
+});
+
+const hybridRatioDisplay = computed(() => {
+  const value = props.state.hybridSemanticRatio;
+  if (value === null || value === undefined || value === "") return null;
+  return Number(value);
+});
+
+const onHybridRatioUpdate = (raw) => {
+  if (raw === null || raw === undefined || raw === "") {
+    props.state.hybridSemanticRatio = null;
+    props.state.activeLlmPreset = null;
+    return;
+  }
+  const next = Number(raw);
+  props.state.hybridSemanticRatio = Number.isFinite(next) ? next : null;
+  // Manual edits leave the preset label so it does not look "stuck" selected.
+  const active = props.state.activeLlmPreset;
+  if (active && LLM_DEMO_PRESETS[active]) {
+    const expected = LLM_DEMO_PRESETS[active].hybridSemanticRatio;
+    if (props.state.hybridSemanticRatio !== expected) {
+      props.state.activeLlmPreset = null;
+    }
+  }
+};
 </script>
