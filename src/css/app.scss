@@ -47,6 +47,20 @@ h6 {
   border-bottom: 1px solid var(--color-border);
 }
 
+/*
+ * Quasar defaults q-footer to primary (bright yellow under high-contrast).
+ * Force a thin credit strip: elevated surface + muted ink, never brand fill.
+ */
+.q-footer {
+  background: var(--color-page-elevated) !important;
+  color: var(--color-text-muted) !important;
+  border-top: 1px solid var(--color-border);
+}
+
+.q-footer a {
+  color: var(--color-text);
+}
+
 .q-tooltip {
   max-width: min(20rem, 95vw);
   border: 1px solid var(--color-border);
@@ -83,6 +97,7 @@ h6 {
 /* High Contrast: thicker chrome + clearer field labels/outlines. */
 [data-theme="high-contrast"] {
   .q-header,
+  .q-footer,
   .q-drawer,
   .q-card,
   .q-banner,

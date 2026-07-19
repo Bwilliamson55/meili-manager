@@ -201,17 +201,14 @@
       <router-view v-else />
     </q-page-container>
 
-    <q-footer
-      bordered
-      class="bg-page-elevated text-text-muted border-t border-border"
-    >
-      <div class="px-3 py-2 text-center text-caption">
+    <q-footer class="bg-page-elevated text-text-muted border-t border-border">
+      <div class="px-3 py-1 text-center text-caption leading-tight">
         Built by
         <a
           href="https://weeumson.com"
           target="_blank"
           rel="noopener noreferrer"
-          class="text-text font-medium underline"
+          class="text-text font-normal underline"
           >Weeumson Software</a
         >
       </div>
