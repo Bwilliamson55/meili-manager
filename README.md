@@ -174,12 +174,14 @@ Host on any static file server (Nginx, Caddy, GitHub Pages, DigitalOcean Static 
 
 Client analytics load only when both `VITE_UMAMI_URL` and `VITE_UMAMI_WEBSITE_ID` are set at build time (`src/boot/umami.js`). See [`.env.example`](.env.example) and [`docs/umami.md`](docs/umami.md).
 
-For DigitalOcean builds of **meili-manager.weeumson.com**, set:
+For GitHub Actions builds (`.github/workflows/deploy.yml` → `deploy-branch`), set **repository variables** (not secrets):
 
 - `VITE_UMAMI_URL` = `https://analytics.weeumson.com/stats`
 - `VITE_UMAMI_WEBSITE_ID` = `7d58f62f-6f41-45f2-92be-406714151bbe`
 
-Register the domain in Umami admin as `meili-manager.weeumson.com`.
+Path: **Settings → Secrets and variables → Actions → Variables**.
+
+The same keys work for DigitalOcean Static Site build env. Register the domain in Umami admin as `meili-manager.weeumson.com`.
 
 ### Native applications
 

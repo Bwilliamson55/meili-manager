@@ -25,6 +25,9 @@ jobs:
         run: npm run build-changelog
 
       - name: Build application 🔧
+        env:
+          VITE_UMAMI_URL: ${{ vars.VITE_UMAMI_URL }}
+          VITE_UMAMI_WEBSITE_ID: ${{ vars.VITE_UMAMI_WEBSITE_ID }}
         run: npm run build
 
       - name: Move changelog to dist 📋
