@@ -4,20 +4,29 @@
     @keydown="onKeydown"
   >
     <div
-      class="flex flex-wrap items-center gap-2 flex-shrink-0 border border-border bg-page p-2"
+      class="flex flex-wrap items-center gap-2 flex-shrink-0 border border-border bg-page-elevated p-2"
     >
-      <q-btn
-        v-for="tpl in templates"
-        :key="tpl.id"
-        flat
-        dense
-        square
-        no-caps
-        size="sm"
-        color="primary"
-        :label="tpl.label"
-        @click="applyTemplate(tpl)"
-      />
+      <span class="text-caption text-text-muted mr-1">Presets</span>
+      <div class="flex flex-wrap items-stretch gap-1">
+        <q-btn
+          v-for="tpl in templates"
+          :key="tpl.id"
+          dense
+          square
+          no-caps
+          size="sm"
+          color="primary"
+          :unelevated="activeTemplateId === tpl.id"
+          :outline="activeTemplateId !== tpl.id"
+          :class="
+            activeTemplateId === tpl.id
+              ? 'bg-primary text-on-primary'
+              : 'border-border'
+          "
+          :label="tpl.label"
+          @click="applyTemplate(tpl)"
+        />
+      </div>
       <q-space />
       <q-toggle
         v-if="needsWriteConfirm"
@@ -45,56 +54,63 @@
       class="flex flex-wrap items-center gap-2 flex-shrink-0 border border-border bg-page-elevated p-2"
     >
       <span class="text-caption text-text-muted">Export</span>
-      <q-btn
-        outline
-        dense
-        square
-        no-caps
-        size="sm"
-        color="primary"
-        label="Copy curl"
-        @click="copyExport('curl', true)"
-      />
-      <q-btn
-        flat
-        dense
-        square
-        no-caps
-        size="sm"
-        color="primary"
-        label="curl + key"
-        @click="copyExport('curl', false)"
-      />
-      <q-btn
-        outline
-        dense
-        square
-        no-caps
-        size="sm"
-        color="primary"
-        label="Copy HTTP"
-        @click="copyExport('http', true)"
-      />
-      <q-btn
-        outline
-        dense
-        square
-        no-caps
-        size="sm"
-        color="primary"
-        label="Copy n8n JSON"
-        @click="copyExport('n8n', true)"
-      />
-      <q-btn
-        flat
-        dense
-        square
-        no-caps
-        size="sm"
-        color="primary"
-        label="n8n + key"
-        @click="copyExport('n8n', false)"
-      />
+      <div class="flex flex-wrap items-stretch gap-1">
+        <q-btn
+          outline
+          dense
+          square
+          no-caps
+          size="sm"
+          color="primary"
+          class="border-border"
+          label="Copy curl"
+          @click="copyExport('curl', true)"
+        />
+        <q-btn
+          outline
+          dense
+          square
+          no-caps
+          size="sm"
+          color="primary"
+          class="border-border"
+          label="curl + key"
+          @click="copyExport('curl', false)"
+        />
+        <q-btn
+          outline
+          dense
+          square
+          no-caps
+          size="sm"
+          color="primary"
+          class="border-border"
+          label="Copy HTTP"
+          @click="copyExport('http', true)"
+        />
+        <q-btn
+          outline
+          dense
+          square
+          no-caps
+          size="sm"
+          color="primary"
+          class="border-border"
+          label="Copy n8n JSON"
+          @click="copyExport('n8n', true)"
+        />
+        <q-btn
+          outline
+          dense
+          square
+          no-caps
+          size="sm"
+          color="primary"
+          class="border-border"
+          label="n8n + key"
+          @click="copyExport('n8n', false)"
+        />
+      </div>
     </div>
 
     <div
@@ -111,7 +127,7 @@
             square
             label="Method"
             class="mb-3"
-            @update:model-value="persist"
+            @update:model-value="onRequestEdited"
           />
           <q-input
             v-model="path"
@@ -121,14 +137,31 @@
             label="Path"
             hint="Relative to instance host"
             class="mb-2"
-            @update:model-value="persist"
+            @update:model-value="onRequestEdited"
           />
         </q-card-section>
       </q-card>
 
       <q-card flat bordered square class="bg-page-elevated flex flex-col min-h-0">
         <q-card-section class="pb-2 flex-1 flex flex-col min-h-0">
-          <div class="text-subtitle2 font-semibold mb-2">Body / knobs</div>
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <div class="text-subtitle2 font-semibold">Body / knobs</div>
+            <q-btn
+              outline
+              dense
+              square
+              no-caps
+              size="sm"
+              color="primary"
+              class="border-border"
+              icon="content_copy"
+              label="Copy"
+              :disable="!needsBody || !body.trim()"
+              @click="copyBody"
+            >
+              <q-tooltip>Copy JSON body</q-tooltip>
+            </q-btn>
+          </div>
           <div
             v-if="method === 'POST' && path.includes('/search')"
             class="grid grid-cols-2 gap-2 mb-3"
@@ -203,11 +236,31 @@
 
       <q-card flat bordered square class="bg-page-elevated flex flex-col min-h-0">
         <q-card-section class="pb-2 flex-1 flex flex-col min-h-0">
-          <div class="flex items-center justify-between mb-2">
-            <div class="text-subtitle2 font-semibold">Response</div>
-            <div v-if="responseMeta" class="text-caption text-text-muted">
-              {{ responseMeta.status }} · {{ responseMeta.durationMs }}ms
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="text-subtitle2 font-semibold">Response</div>
+              <div
+                v-if="responseMeta"
+                class="text-caption text-text-muted truncate"
+              >
+                {{ responseMeta.status }} · {{ responseMeta.durationMs }}ms
+              </div>
             </div>
+            <q-btn
+              outline
+              dense
+              square
+              no-caps
+              size="sm"
+              color="primary"
+              class="border-border"
+              icon="content_copy"
+              label="Copy"
+              :disable="!hasCopyableResponse"
+              @click="copyResponse"
+            >
+              <q-tooltip>Copy response</q-tooltip>
+            </q-btn>
           </div>
           <pre
             class="text-caption whitespace-pre-wrap break-all overflow-auto flex-1 min-h-48 bg-page p-3 border border-border"
@@ -221,7 +274,6 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from "vue";
-import { copyToClipboard } from "quasar";
 import { useSettingsStore } from "src/meili-core/stores/settings-store";
 import {
   PLAYGROUND_TEMPLATES,
@@ -232,7 +284,8 @@ import {
   serializeHttp,
   serializeN8nJson,
 } from "src/meili-core/utils/playground-request";
-import { showError, showSuccess } from "src/utils/notifications";
+import { copyText } from "src/utils/clipboard";
+import { showError } from "src/utils/notifications";
 
 const props = defineProps({
   indexUid: {
@@ -252,6 +305,7 @@ const sending = ref(false);
 const writeConfirmed = ref(false);
 const responseText = ref("");
 const responseMeta = ref(null);
+const activeTemplateId = ref(null);
 
 const searchKnobs = reactive({
   q: "",
@@ -270,6 +324,10 @@ const needsWriteConfirm = computed(() =>
   isDestructiveMethod(method.value, path.value),
 );
 
+const hasCopyableResponse = computed(() =>
+  Boolean((responseText.value || "").trim()),
+);
+
 const persist = () => {
   theSettings.setIndexPlaygroundState(props.indexUid, {
     method: method.value,
@@ -278,11 +336,25 @@ const persist = () => {
   });
 };
 
+const matchActiveTemplate = () => {
+  const match = templates.find(
+    (tpl) =>
+      tpl.method === method.value && tpl.path(props.indexUid) === path.value,
+  );
+  activeTemplateId.value = match?.id || null;
+};
+
+const onRequestEdited = () => {
+  matchActiveTemplate();
+  persist();
+};
+
 const applyTemplate = (tpl) => {
   method.value = tpl.method;
   path.value = tpl.path(props.indexUid);
   body.value = tpl.body || "";
   writeConfirmed.value = false;
+  activeTemplateId.value = tpl.id;
   if (tpl.id === "search") {
     syncBodyToKnobs();
   }
@@ -374,6 +446,18 @@ const sendRequest = async () => {
   }
 };
 
+const copyBody = () =>
+  copyText(body.value, {
+    successMessage: "JSON body copied",
+    emptyMessage: "JSON body is empty",
+  });
+
+const copyResponse = () =>
+  copyText(responseText.value, {
+    successMessage: "Response copied",
+    emptyMessage: "No response to copy yet",
+  });
+
 const copyExport = async (kind, redact) => {
   const req = buildExportRequest({
     host: theSettings.indexUrl,
@@ -387,10 +471,11 @@ const copyExport = async (kind, redact) => {
   if (kind === "curl") text = serializeCurl(req);
   else if (kind === "http") text = serializeHttp(req);
   else text = serializeN8nJson(req);
-  await copyToClipboard(text);
-  showSuccess(
-    redact ? "Copied (redacted Bearer)" : "Copied (includes API key)",
-  );
+  await copyText(text, {
+    successMessage: redact
+      ? "Copied (redacted Bearer)"
+      : "Copied (includes API key)",
+  });
 };
 
 const onKeydown = (e) => {
@@ -415,16 +500,17 @@ const applySeed = (seed) => {
         : JSON.stringify(seed.body || { q: "", limit: 20 }, null, 2);
     syncBodyToKnobs();
   }
+  matchActiveTemplate();
   persist();
 };
 
 onMounted(() => {
   const saved = theSettings.getIndexPlaygroundState(props.indexUid);
   method.value = saved.method || "POST";
-  path.value =
-    saved.path || `/indexes/${props.indexUid}/search`;
+  path.value = saved.path || `/indexes/${props.indexUid}/search`;
   body.value = saved.body || '{\n  "q": "",\n  "limit": 20\n}';
   syncBodyToKnobs();
+  matchActiveTemplate();
 
   const seed = theSettings.consumePlaygroundSeed();
   if (seed) applySeed(seed);
@@ -441,6 +527,7 @@ watch(
     writeConfirmed.value = false;
     responseText.value = "";
     responseMeta.value = null;
+    matchActiveTemplate();
   },
 );
 
