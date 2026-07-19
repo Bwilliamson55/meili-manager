@@ -25,13 +25,13 @@
           >
             <img
               class="h-7 w-7 shrink-0"
-              src="~assets/meili-logo.svg"
+              src="/icons/meili-manager-icon.svg"
               alt=""
               aria-hidden="true"
             />
-            <span class="ml-2 truncate text-body1 text-weight-medium">{{
-              brandLabel
-            }}</span>
+            <span class="ml-2 truncate text-body1 text-weight-medium"
+              >Meili Manager</span
+            >
           </q-btn>
         </q-toolbar-title>
 
@@ -280,10 +280,6 @@ const routeIndexUid = computed(() => {
 });
 
 const isInstancesRoute = computed(() => route.path === "/instances");
-
-const brandLabel = computed(() =>
-  $q.screen.gt.xs ? "Meilisearch Manager" : "Meili Manager",
-);
 
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value;

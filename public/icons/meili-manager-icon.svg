@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Meili Manager">
+  <!-- Original Weeumson mark: search lens over index card. Not Meilisearch corporate identity. -->
+  <rect width="64" height="64" rx="14" fill="#1a1714"/>
+  <rect x="12" y="14" width="28" height="36" rx="3" fill="none" stroke="#b85538" stroke-width="2.5"/>
+  <line x1="18" y1="24" x2="34" y2="24" stroke="#b85538" stroke-width="2" stroke-linecap="round"/>
+  <line x1="18" y1="32" x2="34" y2="32" stroke="#8a9480" stroke-width="2" stroke-linecap="round"/>
+  <line x1="18" y1="40" x2="30" y2="40" stroke="#8a9480" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="42" cy="40" r="9" fill="none" stroke="#b85538" stroke-width="2.5"/>
+  <line x1="48.5" y1="46.5" x2="54" y2="52" stroke="#b85538" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
