@@ -1,4 +1,54 @@
-// app global css in SCSS form
+/* House font: IBM Plex Sans (OFL). Matches Weeumson docs shell tokens. */
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap");
 
 // Algolia InstantSearch reset styles
 @import "instantsearch.css/themes/reset.css";
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-page, #1a1714);
+  color: var(--color-text, #ebe6dc);
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+}
+
+.q-layout,
+.q-page-container,
+.q-page {
+  max-width: 100%;
+  min-width: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  font-weight: 600;
+  color: var(--color-text, #ebe6dc);
+}
+
+.q-card {
+  background: var(--color-page-elevated, #232019);
+}
+
+.q-drawer {
+  background: var(--color-page-elevated, #232019);
+}
+
+.q-header {
+  background: #2c2824;
+  color: var(--color-text, #ebe6dc);
+}
+
+.q-tooltip {
+  max-width: min(20rem, 95vw);
+  border: 1px solid var(--color-border, #3d3830);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  line-height: 1.35;
+}

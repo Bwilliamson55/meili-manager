@@ -10,7 +10,7 @@ This is the canonical source of truth for [meili-manager](../../README.md); the 
 meili-core/
   stores/      Pinia stores (settings, indexes, tasks, keys, dynamic-rules, preview)
   services/    Thin Meilisearch REST wrappers (dynamic search rules, experimental features)
-  utils/       Pure helpers (search state, display-settings, settings metadata, version compat, stats, formatting)
+  utils/       Pure helpers (search state, display-settings, playground-request, settings metadata, version compat, stats, formatting)
 ```
 
 Every file imports only `meilisearch`, `jose`, `pinia`, and its siblings (relative paths). Nothing here imports a UI framework, so the folder is portable as-is.
@@ -56,7 +56,8 @@ await useIndexesStore().fetchIndexes();
 
 Treat these as the public API. Refactor internals freely, but keep these signatures:
 
-- `settings-store`: `validateConnection()`, `getIndexClient(indexName)`, `rawRequest(path, options)`, `getIndexSearchState(indexName)`, `setIndexSearchState(indexName, state)`, `getIndexDisplaySettings(indexName)`, `setIndexDisplaySettings(indexName, settings)`, `getIndexSettingsCache(indexName)`, `setIndexSettingsCache(indexName, settings)`
+- `settings-store`: `validateConnection()`, `getIndexClient(indexName)`, `rawRequest(path, options)`, `getIndexSearchState(indexName)`, `setIndexSearchState(indexName, state)`, `getIndexDisplaySettings(indexName)`, `setIndexDisplaySettings(indexName, settings)`, `getIndexSettingsCache(indexName)`, `setIndexSettingsCache(indexName, settings)`, `setLastIndexVisit(indexUid, tab)`, `getIndexPlaygroundState(indexName)`, `setIndexPlaygroundState(indexName, state)`, `setPlaygroundSeed(seed)`, `consumePlaygroundSeed()`
 - `utils/search-utils`: default search state + hybrid config helpers
 - `utils/display-settings`: list field resolution, document id/title helpers, `DEFAULT_DISPLAY_SETTINGS`, `mergeDisplaySettings()`
+- `utils/playground-request`: URL/curl/HTTP/n8n serialization + `executePlaygroundRequest`
 - `utils/settings-config`: `SETTINGS_METADATA` (drives any settings UI)

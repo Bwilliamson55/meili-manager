@@ -3,3 +3,22 @@
 /* Tailwind v4 content configuration */
 @source "../**/*.{vue,js,ts,jsx,tsx}";
 @source "../../index.html";
+
+@custom-variant dark (&:where(.body--dark, .body--dark *, .dark, .dark *));
+
+/* Weeumson docs-style tokens (mirrored; not imported across repos) */
+@theme {
+  --font-display: "IBM Plex Sans", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+
+  --color-page: #1a1714;
+  --color-page-elevated: #232019;
+  --color-text: #ebe6dc;
+  --color-text-muted: #9c958a;
+  --color-border: #3d3830;
+  --color-focus-ring: #d4a574;
+
+  --color-primary: #b85538;
+  --color-secondary: #6f7a68;
+  --color-accent: #b8956c;
+}

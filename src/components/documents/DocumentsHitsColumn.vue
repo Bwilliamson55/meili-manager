@@ -13,14 +13,8 @@
     <ais-hits :escapeHTML="true">
       <template #default="{ items }">
         <div v-if="items.length === 0" class="text-center py-12">
-          <q-icon
-            name="search_off"
-            size="48px"
-            class="text-gray-400 dark:text-gray-600"
-          />
-          <p class="text-subtitle1 text-gray-600 dark:text-gray-400 mt-4">
-            No documents found
-          </p>
+          <q-icon name="search_off" size="48px" class="text-text-muted" />
+          <p class="text-subtitle1 text-text-muted mt-4">No documents found</p>
         </div>
         <DocumentsHitsTable
           v-else-if="displaySettings.listViewMode === 'table'"
@@ -35,6 +29,7 @@
           :nb-hits="searchStats.nbHits"
           :current-page="searchStats.page"
           :hits-per-page="searchStats.hitsPerPage"
+          @select="(payload) => $emit('select', payload)"
         />
         <div v-else class="flex flex-col gap-2 overflow-y-auto flex-1 min-h-0">
           <DocumentHitCard
@@ -53,6 +48,7 @@
             :edit-route="routes(item, index).edit"
             :similar-route="routes(item, index).similar"
             :show-similar="showSimilar"
+            @select="(payload) => $emit('select', payload)"
           />
         </div>
       </template>
@@ -104,6 +100,8 @@ const props = defineProps({
     default: false,
   },
 });
+
+defineEmits(["select"]);
 
 const searchStats = ref({
   nbHits: 0,

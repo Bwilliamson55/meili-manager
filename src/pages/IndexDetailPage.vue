@@ -1,5 +1,5 @@
 <template>
-  <q-page padding class="index-detail-page flex flex-col">
+  <q-page padding class="index-detail-page flex flex-col bg-page">
     <IndexDetailTabs v-model="detailPanelTab" class="flex-1 min-h-0">
       <template #overview-tab>
         <div v-if="iStats && iPk" class="flex flex-wrap gap-2 mb-4">
@@ -80,6 +80,10 @@
         <SettingsForm @settings-updated="onIndexSettingsUpdated" />
       </template>
 
+      <template #playground-tab>
+        <PlaygroundPanel :index-uid="currentIndex || route.params.uid" />
+      </template>
+
       <template #documents-tab>
         <div class="flex flex-col flex-1 min-h-0 p-3 pt-2">
           <div
@@ -100,6 +104,8 @@
               <q-btn
                 flat
                 dense
+                square
+                no-caps
                 icon="filter_list"
                 :label="filtersVisible ? 'Hide filters' : 'Show filters'"
                 @click="filtersVisible = !filtersVisible"
@@ -110,6 +116,7 @@
                 v-model="batchDocumentIdsInput"
                 dense
                 outlined
+                square
                 clearable
                 class="w-64"
                 label="Fetch by IDs"
@@ -118,6 +125,8 @@
               <q-btn
                 flat
                 dense
+                square
+                no-caps
                 color="secondary"
                 icon="list_alt"
                 label="Fetch"
@@ -126,8 +135,10 @@
                 @click="fetchDocumentsByIds"
               />
               <q-btn
-                flat
+                outline
                 dense
+                square
+                no-caps
                 icon="add_circle"
                 label="New"
                 :to="`/documents/${currentIndex}/new`"
@@ -167,11 +178,19 @@
                 </div>
               </template>
               <template #after>
-                <DocumentsHitsColumn v-bind="hitsColumnProps" />
+                <DocumentsHitsColumn
+                  v-bind="hitsColumnProps"
+                  @select="onHitSelect"
+                />
               </template>
             </q-splitter>
-            <DocumentsHitsColumn v-else v-bind="hitsColumnProps" />
+            <DocumentsHitsColumn
+              v-else
+              v-bind="hitsColumnProps"
+              @select="onHitSelect"
+            />
             <AisSearchDiagnostics
+              :index-uid="currentIndex"
               :header-enabled="savedSearchState.includeSearchMetadataHeader"
               :header-value="savedSearchState.searchMetadataHeaderValue"
               :hybrid-enabled="savedSearchState.enableHybrid"
@@ -179,6 +198,7 @@
               :hybrid-semantic-ratio="
                 normalizeThreshold(savedSearchState.hybridSemanticRatio)
               "
+              @open-playground="openSearchInPlayground"
             />
             <ais-configure v-bind="searchParams" />
             <SearchStatePersistence
@@ -189,6 +209,17 @@
         </div>
       </template>
     </IndexDetailTabs>
+
+    <DocumentSidePanel
+      v-model="docPanelOpen"
+      :index-uid="currentIndex || route.params.uid"
+      :document-id="selectedDocumentId"
+      :document="selectedDocument"
+      :show-similar="
+        meiliCompat.supportsSimilarEndpoint && hasConfiguredEmbedders
+      "
+      @open-playground="openDocumentInPlayground"
+    />
 
     <q-dialog v-model="showBatchFetchDialog" maximized>
       <q-card>
@@ -246,15 +277,17 @@ import {
 } from "src/meili-core/utils/meili-compat";
 import { storeToRefs } from "pinia";
 import { onMounted, ref, watch, nextTick, computed, onBeforeUnmount } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import IndexDetailTabs from "components/IndexDetailTabs.vue";
 import SettingsForm from "components/SettingsForm.vue";
+import PlaygroundPanel from "components/playground/PlaygroundPanel.vue";
 import AisSearchDiagnostics from "components/aisComponents/AisSearchDiagnostics.vue";
 import SearchStatePersistence from "components/SearchStatePersistence.vue";
 import SearchExperiencePanel from "components/SearchExperiencePanel.vue";
 import DocumentsFiltersPanel from "components/documents/DocumentsFiltersPanel.vue";
 import DocumentsHitsColumn from "components/documents/DocumentsHitsColumn.vue";
 import DocumentsDisplayMenu from "components/documents/DocumentsDisplayMenu.vue";
+import DocumentSidePanel from "components/documents/DocumentSidePanel.vue";
 import ListFieldsOrderDialog from "components/documents/ListFieldsOrderDialog.vue";
 import {
   resolveListFields,
@@ -266,6 +299,8 @@ import {
 import { showError, showSuccess } from "src/utils/notifications";
 
 const route = useRoute();
+const router = useRouter();
+const VALID_TABS = ["documents", "settings", "playground", "overview"];
 
 const theSettings = useSettingsStore();
 const indexesStore = useIndexesStore();
@@ -325,6 +360,9 @@ const fieldsColumns = [
 ];
 const displaySettings = ref(mergeDisplaySettings());
 const detailPanelTab = ref("documents");
+const docPanelOpen = ref(false);
+const selectedDocument = ref(null);
+const selectedDocumentId = ref("");
 const imageFieldOptions = ref([]);
 const listFieldOptions = ref([]);
 const listColumnOptions = [
@@ -478,6 +516,64 @@ const persistDetailPanelTab = () => {
     ...theSettings.getIndexSearchState(currentIndex.value),
     detailPanelTab: detailPanelTab.value,
   });
+  theSettings.setLastIndexVisit(currentIndex.value, detailPanelTab.value);
+};
+
+const syncTabToRoute = (tab) => {
+  const nextTab = VALID_TABS.includes(tab) ? tab : "documents";
+  if (route.query.tab === nextTab) return;
+  router.replace({
+    query: { ...route.query, tab: nextTab },
+  });
+};
+
+const onHitSelect = ({ item, documentId }) => {
+  selectedDocument.value = item;
+  selectedDocumentId.value = documentId;
+  docPanelOpen.value = true;
+};
+
+const openDocumentInPlayground = (documentId) => {
+  theSettings.setPlaygroundSeed({
+    type: "document",
+    indexUid: currentIndex.value,
+    documentId,
+  });
+  detailPanelTab.value = "playground";
+};
+
+const openSearchInPlayground = (seed) => {
+  theSettings.setPlaygroundSeed(seed);
+  detailPanelTab.value = "playground";
+};
+
+const isTypingTarget = (el) => {
+  if (!el) return false;
+  const tag = el.tagName?.toLowerCase();
+  return (
+    tag === "input" ||
+    tag === "textarea" ||
+    tag === "select" ||
+    el.isContentEditable
+  );
+};
+
+const onDocumentsKeydown = (e) => {
+  if (e.key === "Escape" && docPanelOpen.value) {
+    docPanelOpen.value = false;
+    return;
+  }
+  if (
+    e.key === "/" &&
+    detailPanelTab.value === "documents" &&
+    !isTypingTarget(e.target)
+  ) {
+    e.preventDefault();
+    const input = document.querySelector(
+      ".ais-SearchBox-input, input[type='search']",
+    );
+    input?.focus?.();
+  }
 };
 
 const onListFieldsChange = (nextFields) => {
@@ -668,8 +764,17 @@ const loadInstance = async () => {
   rebuildSearchClient();
   filtersVisible.value = savedState.filtersVisible ?? true;
   filtersPanelWidth.value = savedState.filtersPanelWidth ?? 380;
-  detailPanelTab.value = savedState.detailPanelTab ?? "documents";
+  const queryTab =
+    typeof route.query.tab === "string" && VALID_TABS.includes(route.query.tab)
+      ? route.query.tab
+      : null;
+  detailPanelTab.value =
+    queryTab || savedState.detailPanelTab || "documents";
   previousQuery.value = savedState.query || "";
+  theSettings.setLastIndexVisit(currentIndex.value, detailPanelTab.value);
+  docPanelOpen.value = false;
+  selectedDocument.value = null;
+  selectedDocumentId.value = "";
 
   // Build image field options from all fields
   imageFieldOptions.value = fdRows.value.map((row) => row["Field Name"]);
@@ -761,9 +866,19 @@ watch(filtersVisible, () => {
   }
 });
 
-watch(detailPanelTab, () => {
+watch(detailPanelTab, (tab) => {
   persistDetailPanelTab();
+  syncTabToRoute(tab);
 });
+
+watch(
+  () => route.query.tab,
+  (tab) => {
+    if (typeof tab === "string" && VALID_TABS.includes(tab) && tab !== detailPanelTab.value) {
+      detailPanelTab.value = tab;
+    }
+  },
+);
 
 watch(
   () => savedSearchState.value.filterDensity,
@@ -803,12 +918,15 @@ onMounted(async () => {
   if (!searchClient.value) {
     rebuildSearchClient();
   }
+  syncTabToRoute(detailPanelTab.value);
+  window.addEventListener("keydown", onDocumentsKeydown);
 
   // Set up watchers for search state after component is mounted
   await nextTick();
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener("keydown", onDocumentsKeydown);
   if (currentIndex.value) {
     persistSearchState();
   }

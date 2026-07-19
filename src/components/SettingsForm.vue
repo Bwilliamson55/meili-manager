@@ -1,129 +1,151 @@
 <template>
-  <PresetSelector @apply-preset="applyPreset" />
+  <div class="settings-form relative pb-20">
+    <PresetSelector @apply-preset="applyPreset" />
 
-  <SettingsBanners
-    :has-unsaved-settings="theSettings.hasUnsavedSettings"
-    :reindexing-fields="reindexingFields"
-  />
+    <SettingsBanners
+      :has-unsaved-settings="theSettings.hasUnsavedSettings"
+      :reindexing-fields="reindexingFields"
+    />
 
-  <!-- Raw JSON Viewer -->
-  <q-expansion-item
-    dense
-    dense-toggle
-    expand-separator
-    icon="code"
-    label="Raw Settings JSON"
-    header-class="text-grey-7"
-    class="q-mb-md"
-  >
-    <q-card flat>
-      <q-card-section>
-        <p class="text-caption text-grey-7 text-center q-mb-md">
-          Real-time view of your complete settings object
-        </p>
-        <pre class="text-caption">{{ iSettingsString }}</pre>
-      </q-card-section>
-    </q-card>
-  </q-expansion-item>
-
-  <div v-if="!fetching">
-    <!-- Tabbed Categories -->
-    <q-tabs
-      v-model="activeTab"
+    <q-expansion-item
       dense
-      active-color="primary"
-      indicator-color="primary"
-      align="justify"
+      dense-toggle
+      expand-separator
+      icon="code"
+      label="Raw Settings JSON"
+      header-class="text-text-muted"
       class="q-mb-md"
     >
-      <q-tab
-        v-for="cat in SETTINGS_CATEGORIES"
-        :key="cat.value"
-        :name="cat.value"
-        :icon="cat.icon"
-        :label="cat.label"
-      />
-    </q-tabs>
+      <q-card flat square bordered class="bg-page">
+        <q-card-section>
+          <p class="text-caption text-text-muted text-center q-mb-md">
+            Real-time view of your complete settings object
+          </p>
+          <pre class="text-caption">{{ iSettingsString }}</pre>
+        </q-card-section>
+      </q-card>
+    </q-expansion-item>
 
-    <q-form @submit="onSubmit" class="q-gutter-md">
-      <q-tab-panels v-model="activeTab" animated>
-        <!-- Search Behavior Tab -->
-        <q-tab-panel name="search">
-          <SearchTab
-            v-model="iSettings"
-            :has-field-changed="hasFieldChanged"
-            @show-searchable-reorder="showSearchableReorder = true"
-          />
-        </q-tab-panel>
-
-        <!-- Relevancy Tab -->
-        <q-tab-panel name="relevancy">
-          <RelevancyTab
-            v-model="iSettings"
-            :has-field-changed="hasFieldChanged"
-            @show-ranking-reorder="showRankingReorder = true"
-          />
-        </q-tab-panel>
-
-        <!-- Performance Tab -->
-        <q-tab-panel name="performance">
-          <PerformanceTab
-            v-model="iSettings"
-            :has-field-changed="hasFieldChanged"
-          />
-        </q-tab-panel>
-        <q-tab-panel name="advanced">
-          <AdvancedTab
-            v-model="iSettings"
-            :has-field-changed="hasFieldChanged"
-          />
-        </q-tab-panel>
-        <q-tab-panel name="ai">
-          <AiTab v-model="iSettings" :has-field-changed="hasFieldChanged" />
-        </q-tab-panel>
-      </q-tab-panels>
-
-      <!-- Submit Section -->
-      <q-separator class="q-my-md" />
-      <div class="flex items-center justify-between">
-        <div class="text-caption text-grey-7">
-          <q-icon name="info" size="xs" class="q-mr-xs" />
-          Changes are not saved until you click Submit
-        </div>
-        <div class="flex gap-2">
-          <q-btn
-            v-if="theSettings.hasUnsavedSettings"
-            flat
-            color="negative"
-            icon="undo"
-            label="Reset to Original"
-            @click="resetToOriginal"
-          >
-            <q-tooltip>Discard all unsaved changes</q-tooltip>
-          </q-btn>
-          <q-btn
-            :loading="iSettingsProcessing.processing"
-            type="submit"
-            color="primary"
-            icon="save"
-            label="Submit Settings"
-          >
-            <template v-slot:loading>
-              <q-spinner-dots />
-              Updating... Task: {{ iSettingsProcessing.taskId }}
-            </template>
-          </q-btn>
-        </div>
+    <div v-if="!fetching">
+      <div class="flex flex-wrap items-center gap-2 mb-3">
+        <span class="text-caption text-text-muted">Jump to</span>
+        <q-btn
+          v-for="cat in SETTINGS_CATEGORIES"
+          :key="`jump-${cat.value}`"
+          flat
+          dense
+          square
+          no-caps
+          size="sm"
+          color="primary"
+          :label="cat.label"
+          @click="activeTab = cat.value"
+        />
       </div>
-    </q-form>
 
-    <ReorderDialogs
-      v-model="iSettings"
-      :show-searchable-reorder="showSearchableReorder"
-      :show-ranking-reorder="showRankingReorder"
-      @update:showSearchableReorder="showSearchableReorder = $event"
-      @update:showRankingReorder="showRankingReorder = $event"
-    />
+      <q-tabs
+        v-model="activeTab"
+        dense
+        active-color="primary"
+        indicator-color="primary"
+        align="left"
+        class="q-mb-md"
+      >
+        <q-tab
+          v-for="cat in SETTINGS_CATEGORIES"
+          :key="cat.value"
+          :name="cat.value"
+          :icon="cat.icon"
+          :label="cat.label"
+          no-caps
+        />
+      </q-tabs>
+
+      <q-form @submit="onSubmit" class="q-gutter-md">
+        <q-tab-panels v-model="activeTab" animated>
+          <q-tab-panel name="search">
+            <SearchTab
+              v-model="iSettings"
+              :has-field-changed="hasFieldChanged"
+              @show-searchable-reorder="showSearchableReorder = true"
+            />
+          </q-tab-panel>
+
+          <q-tab-panel name="relevancy">
+            <RelevancyTab
+              v-model="iSettings"
+              :has-field-changed="hasFieldChanged"
+              @show-ranking-reorder="showRankingReorder = true"
+            />
+          </q-tab-panel>
+
+          <q-tab-panel name="performance">
+            <PerformanceTab
+              v-model="iSettings"
+              :has-field-changed="hasFieldChanged"
+            />
+          </q-tab-panel>
+          <q-tab-panel name="advanced">
+            <AdvancedTab
+              v-model="iSettings"
+              :has-field-changed="hasFieldChanged"
+            />
+          </q-tab-panel>
+          <q-tab-panel name="ai">
+            <AiTab v-model="iSettings" :has-field-changed="hasFieldChanged" />
+          </q-tab-panel>
+        </q-tab-panels>
+
+        <div
+          class="sticky-save-bar flex flex-wrap items-center justify-between gap-2 border border-border bg-page-elevated p-3"
+        >
+          <div class="text-caption text-text-muted">
+            <q-icon name="info" size="xs" class="q-mr-xs" />
+            <span v-if="theSettings.hasUnsavedSettings" class="text-warning">
+              Unsaved changes. Submit to apply.
+            </span>
+            <span v-else>Changes are not saved until you click Submit.</span>
+          </div>
+          <div class="flex gap-2">
+            <q-btn
+              v-if="theSettings.hasUnsavedSettings"
+              flat
+              square
+              no-caps
+              color="negative"
+              icon="undo"
+              label="Reset"
+              @click="resetToOriginal"
+            >
+              <q-tooltip>Discard all unsaved changes</q-tooltip>
+            </q-btn>
+            <q-btn
+              :loading="iSettingsProcessing.processing"
+              type="submit"
+              unelevated
+              square
+              no-caps
+              color="primary"
+              icon="save"
+              label="Submit settings"
+            >
+              <template v-slot:loading>
+                <q-spinner-dots />
+                Updating... Task: {{ iSettingsProcessing.taskId }}
+              </template>
+            </q-btn>
+          </div>
+        </div>
+      </q-form>
+
+      <ReorderDialogs
+        v-model="iSettings"
+        :show-searchable-reorder="showSearchableReorder"
+        :show-ranking-reorder="showRankingReorder"
+        @update:showSearchableReorder="showSearchableReorder = $event"
+        @update:showRankingReorder="showRankingReorder = $event"
+      />
+    </div>
   </div>
 </template>
 
@@ -360,3 +382,11 @@ const onSubmit = async () => {
   }
 };
 </script>
+
+<style scoped>
+.sticky-save-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+</style>

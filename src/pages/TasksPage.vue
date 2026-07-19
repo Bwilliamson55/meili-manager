@@ -1,16 +1,18 @@
 <template>
-  <q-page class="p-6">
+  <q-page class="p-6 bg-page">
     <!-- Header with filters and actions -->
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h1 class="text-2xl font-bold">Tasks</h1>
-        <p class="text-sm text-gray-600">
+        <h1 class="text-2xl font-semibold text-text">Tasks</h1>
+        <p class="text-sm text-text-muted">
           Monitor and manage Meilisearch tasks
         </p>
       </div>
       <div class="flex gap-2">
         <q-btn
           outline
+          square
+          no-caps
           color="primary"
           icon="refresh"
           label="Refresh"
@@ -20,6 +22,8 @@
         <q-btn
           v-if="selectedTasks.length > 0"
           outline
+          square
+          no-caps
           color="negative"
           icon="cancel"
           :label="`Cancel ${selectedTasks.length} task${selectedTasks.length > 1 ? 's' : ''}`"
@@ -30,42 +34,42 @@
 
     <!-- Stats cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <q-card flat bordered>
+      <q-card flat bordered square class="bg-page-elevated">
         <q-card-section class="text-center">
-          <div class="text-3xl font-bold text-blue-500">
+          <div class="text-3xl font-bold text-primary">
             {{ taskStats.total }}
           </div>
-          <div class="text-sm text-gray-600">Total Tasks</div>
+          <div class="text-sm text-text-muted">Total tasks</div>
         </q-card-section>
       </q-card>
-      <q-card flat bordered>
+      <q-card flat bordered square class="bg-page-elevated">
         <q-card-section class="text-center">
-          <div class="text-3xl font-bold text-green-500">
+          <div class="text-3xl font-bold text-secondary">
             {{ taskStats.succeeded }}
           </div>
-          <div class="text-sm text-gray-600">Succeeded</div>
+          <div class="text-sm text-text-muted">Succeeded</div>
         </q-card-section>
       </q-card>
-      <q-card flat bordered>
+      <q-card flat bordered square class="bg-page-elevated">
         <q-card-section class="text-center">
-          <div class="text-3xl font-bold text-orange-500">
+          <div class="text-3xl font-bold text-warning">
             {{ taskStats.processing }}
           </div>
-          <div class="text-sm text-gray-600">Processing</div>
+          <div class="text-sm text-text-muted">Processing</div>
         </q-card-section>
       </q-card>
-      <q-card flat bordered>
+      <q-card flat bordered square class="bg-page-elevated">
         <q-card-section class="text-center">
-          <div class="text-3xl font-bold text-red-500">
+          <div class="text-3xl font-bold text-negative">
             {{ taskStats.failed }}
           </div>
-          <div class="text-sm text-gray-600">Failed</div>
+          <div class="text-sm text-text-muted">Failed</div>
         </q-card-section>
       </q-card>
     </div>
 
     <!-- Filters -->
-    <q-card flat bordered class="mb-4">
+    <q-card flat bordered square class="bg-page-elevated mb-4">
       <q-card-section>
         <div class="flex flex-wrap gap-4 items-end">
           <q-input

@@ -1,283 +1,273 @@
 <template>
-  <q-page class="p-6">
-    <div v-if="confirmed">
-      <!-- Header -->
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h1 class="text-2xl font-bold dark:text-white">Indexes</h1>
-          <p class="text-sm text-gray-600 dark:text-gray-400">
-            {{ indexUrl }}
-          </p>
-          <p
-            v-if="indexesStore.stats.pkgVersion"
-            class="text-xs text-gray-500 dark:text-gray-500 mt-1"
-          >
-            Meilisearch {{ indexesStore.stats.pkgVersion }}
-          </p>
-          <p
-            v-if="indexesStore.stats.lastClusterUpdate"
-            class="text-xs text-gray-500 dark:text-gray-500 mt-0.5"
-          >
-            Stats at
-            {{
-              new Date(indexesStore.stats.lastClusterUpdate).toLocaleString()
-            }}
-          </p>
-        </div>
-        <div class="flex gap-2">
-          <q-btn
-            outline
-            color="primary"
-            icon="refresh"
-            label="Refresh"
-            @click="refresh"
-            :loading="indexesStore.loading"
-          />
-          <q-btn
-            outline
-            color="secondary"
-            icon="download"
-            label="Create Dump"
-            @click="createDump"
-          />
-          <q-btn
-            color="primary"
-            icon="add_box"
-            label="New Index"
-            @click="showCreateDialog = true"
-          />
-        </div>
+  <q-page class="p-6 bg-page">
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-2xl font-semibold text-text">Indexes</h1>
+        <p class="text-sm text-text-muted">{{ indexUrl }}</p>
+        <p
+          v-if="indexesStore.stats.pkgVersion"
+          class="text-xs text-text-muted mt-1"
+        >
+          Meilisearch {{ indexesStore.stats.pkgVersion }}
+        </p>
+        <p
+          v-if="indexesStore.stats.lastClusterUpdate"
+          class="text-xs text-text-muted mt-0.5"
+        >
+          Stats at
+          {{
+            new Date(indexesStore.stats.lastClusterUpdate).toLocaleString()
+          }}
+        </p>
       </div>
-
-      <!-- Stats cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <q-card flat bordered>
-          <q-card-section class="text-center">
-            <div class="text-3xl font-bold text-primary">
-              {{ indexesStore.stats.total }}
-            </div>
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Total Indexes
-            </div>
-          </q-card-section>
-        </q-card>
-
-        <q-card flat bordered>
-          <q-card-section class="text-center">
-            <div class="text-3xl font-bold text-blue-600">
-              {{ indexesStore.stats.totalDocuments.toLocaleString() }}
-            </div>
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Total Documents
-            </div>
-          </q-card-section>
-        </q-card>
-
-        <q-card flat bordered>
-          <q-card-section class="text-center">
-            <div class="text-3xl font-bold text-amber-700">
-              {{ formatBytes(clusterUsedOrTotalBytes) }}
-            </div>
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {{ clusterDiskLabel }}
-            </div>
-            <div
-              v-if="clusterAllocatedCaption"
-              class="text-xs text-gray-500 mt-1"
-            >
-              {{ clusterAllocatedCaption }}
-            </div>
-          </q-card-section>
-        </q-card>
-
-        <q-card flat bordered>
-          <q-card-section class="text-center">
-            <div class="text-3xl font-bold text-green-600">
-              {{ indexesStore.stats.recentlyUpdated }}
-            </div>
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Updated (24h)
-            </div>
-          </q-card-section>
-        </q-card>
+      <div class="flex flex-wrap gap-2">
+        <q-btn
+          v-if="continueTarget"
+          unelevated
+          square
+          no-caps
+          color="primary"
+          icon="play_arrow"
+          :label="`Continue ${continueTarget.uid}`"
+          :to="continueTarget.to"
+        >
+          <q-tooltip
+            >Resume {{ continueTarget.uid }} · {{ continueTarget.tab }}</q-tooltip
+          >
+        </q-btn>
+        <q-btn
+          outline
+          square
+          no-caps
+          color="primary"
+          icon="refresh"
+          label="Refresh"
+          @click="refresh"
+          :loading="indexesStore.loading"
+        />
+        <q-btn
+          outline
+          square
+          no-caps
+          color="secondary"
+          icon="download"
+          label="Create dump"
+          @click="createDump"
+        />
+        <q-btn
+          unelevated
+          square
+          no-caps
+          color="primary"
+          icon="add_box"
+          label="New index"
+          @click="showCreateDialog = true"
+        />
       </div>
+    </div>
 
-      <!-- Search filter -->
-      <q-card flat bordered class="mb-6">
-        <q-card-section class="py-3">
-          <div class="flex items-center gap-3">
-            <q-input
-              v-model="searchFilter"
-              dense
-              outlined
-              placeholder="Search indexes by UID..."
-              clearable
-              class="flex-1"
-            >
-              <template v-slot:prepend>
-                <q-icon name="search" />
-              </template>
-            </q-input>
-            <q-chip square color="grey-2" text-color="dark">
-              {{ filteredIndexes.length }} shown
-            </q-chip>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <q-card flat bordered square class="bg-page-elevated">
+        <q-card-section class="text-center">
+          <div class="text-3xl font-bold text-primary">
+            {{ indexesStore.stats.total }}
+          </div>
+          <div class="text-sm text-text-muted mt-1">Total indexes</div>
+        </q-card-section>
+      </q-card>
+
+      <q-card flat bordered square class="bg-page-elevated">
+        <q-card-section class="text-center">
+          <div class="text-3xl font-bold text-accent">
+            {{ indexesStore.stats.totalDocuments.toLocaleString() }}
+          </div>
+          <div class="text-sm text-text-muted mt-1">Total documents</div>
+        </q-card-section>
+      </q-card>
+
+      <q-card flat bordered square class="bg-page-elevated">
+        <q-card-section class="text-center">
+          <div class="text-3xl font-bold text-warning">
+            {{ formatBytes(clusterUsedOrTotalBytes) }}
+          </div>
+          <div class="text-sm text-text-muted mt-1">
+            {{ clusterDiskLabel }}
+          </div>
+          <div v-if="clusterAllocatedCaption" class="text-xs text-text-muted mt-1">
+            {{ clusterAllocatedCaption }}
           </div>
         </q-card-section>
       </q-card>
 
-      <!-- Indexes list -->
-      <div v-if="filteredIndexes.length > 0">
-        <q-card flat bordered>
-          <q-list separator>
-            <q-item
-              v-for="index in filteredIndexes"
-              :key="index.uid"
-              class="dark:hover:bg-gray-800"
-            >
-              <q-item-section>
-                <q-item-label class="text-lg font-semibold dark:text-white">
-                  {{ index.uid }}
-                </q-item-label>
-                <q-item-label caption class="dark:text-gray-400">
-                  <span class="mr-4">
-                    <q-icon name="event" size="xs" class="mr-1" />
-                    Created: {{ formatDate(index.createdAt) }}
-                  </span>
-                  <span class="mr-4">
-                    <q-icon name="update" size="xs" class="mr-1" />
-                    Updated: {{ formatDate(index.updatedAt) }}
-                  </span>
-                  <span v-if="index.statsLoadError" class="text-negative">
-                    Stats: unavailable ({{ index.statsLoadError }})
-                  </span>
-                  <span v-else-if="typeof index.numberOfDocuments === 'number'" class="mr-4">
-                    <q-icon name="description" size="xs" class="mr-1" />
-                    {{ index.numberOfDocuments.toLocaleString() }} docs
-                  </span>
-                  <span v-if="typeof index.fieldCount === 'number'" class="mr-4">
-                    <q-icon name="view_column" size="xs" class="mr-1" />
-                    {{ index.fieldCount }} fields
-                  </span>
-                  <span
-                    v-if="index.attrCounts && !index.statsLoadError"
-                    class="block sm:inline mt-1 sm:mt-0 text-gray-500"
-                  >
-                    F {{ formatAttr(index.attrCounts.filterable) }} · S
-                    {{ formatAttr(index.attrCounts.searchable) }} · Sort
-                    {{ formatAttr(index.attrCounts.sortable) }}
-                  </span>
-                  <span
-                    v-if="typeof index.rawDocumentDbSize === 'number'"
-                    class="block sm:inline mt-1 sm:mt-0 text-gray-500"
-                  >
-                    Raw {{ formatBytes(index.rawDocumentDbSize) }}
-                  </span>
-                  <span
-                    v-if="typeof index.avgDocumentSize === 'number'"
-                    class="block sm:inline mt-1 sm:mt-0 text-gray-500"
-                  >
-                    · Avg doc {{ formatBytes(index.avgDocumentSize) }}
-                  </span>
-                </q-item-label>
-                <div class="mt-2 flex flex-wrap gap-2 items-center">
-                  <q-chip
-                    v-if="index.primaryKey"
-                    dense
-                    square
-                    color="blue-1"
-                    text-color="blue-9"
-                    icon="vpn_key"
-                  >
-                    PK: {{ index.primaryKey }}
-                  </q-chip>
-                  <q-chip
-                    v-if="index.isIndexing"
-                    dense
-                    square
-                    color="orange-2"
-                    text-color="orange-10"
-                    icon="hourglass_empty"
-                  >
-                    Indexing…
-                  </q-chip>
-                  <q-chip
-                    v-if="(index.numberOfEmbeddedDocuments ?? 0) > 0"
-                    dense
-                    square
-                    color="purple-2"
-                    text-color="purple-10"
-                    icon="scatter_plot"
-                  >
-                    {{ index.numberOfEmbeddedDocuments }} embedded
-                  </q-chip>
-                </div>
-              </q-item-section>
+      <q-card flat bordered square class="bg-page-elevated">
+        <q-card-section class="text-center">
+          <div class="text-3xl font-bold text-secondary">
+            {{ indexesStore.stats.recentlyUpdated }}
+          </div>
+          <div class="text-sm text-text-muted mt-1">Updated (24h)</div>
+        </q-card-section>
+      </q-card>
+    </div>
 
-              <q-item-section side class="flex-row gap-2">
-                <q-btn
-                  flat
-                  color="primary"
-                  :to="`/index-details/${index.uid}`"
-                  label="Details"
-                  icon="visibility"
-                />
-                <q-btn
-                  flat
-                  dense
-                  round
-                  color="negative"
-                  icon="delete"
-                  @click.stop.prevent="delIndex(index.uid)"
+    <q-card flat bordered square class="bg-page-elevated mb-6">
+      <q-card-section class="py-3">
+        <div class="flex items-center gap-3">
+          <q-input
+            v-model="searchFilter"
+            dense
+            outlined
+            square
+            placeholder="Search indexes by UID..."
+            clearable
+            class="flex-1"
+          >
+            <template v-slot:prepend>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+          <q-chip square color="primary" text-color="white" outline>
+            {{ filteredIndexes.length }} shown
+          </q-chip>
+        </div>
+      </q-card-section>
+    </q-card>
+
+    <div v-if="filteredIndexes.length > 0">
+      <q-card flat bordered square class="bg-page-elevated">
+        <q-list separator>
+          <q-item
+            v-for="index in filteredIndexes"
+            :key="index.uid"
+            class="hover:bg-page"
+          >
+            <q-item-section>
+              <q-item-label class="text-lg font-semibold text-text">
+                {{ index.uid }}
+              </q-item-label>
+              <q-item-label caption class="text-text-muted">
+                <span class="mr-4">
+                  <q-icon name="event" size="xs" class="mr-1" />
+                  Created: {{ formatDate(index.createdAt) }}
+                </span>
+                <span class="mr-4">
+                  <q-icon name="update" size="xs" class="mr-1" />
+                  Updated: {{ formatDate(index.updatedAt) }}
+                </span>
+                <span v-if="index.statsLoadError" class="text-negative">
+                  Stats: unavailable ({{ index.statsLoadError }})
+                </span>
+                <span
+                  v-else-if="typeof index.numberOfDocuments === 'number'"
+                  class="mr-4"
                 >
-                  <q-tooltip>Delete Index</q-tooltip>
-                </q-btn>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-card>
-      </div>
+                  <q-icon name="description" size="xs" class="mr-1" />
+                  {{ index.numberOfDocuments.toLocaleString() }} docs
+                </span>
+                <span v-if="typeof index.fieldCount === 'number'" class="mr-4">
+                  <q-icon name="view_column" size="xs" class="mr-1" />
+                  {{ index.fieldCount }} fields
+                </span>
+                <span
+                  v-if="index.attrCounts && !index.statsLoadError"
+                  class="block sm:inline mt-1 sm:mt-0 text-text-muted"
+                >
+                  F {{ formatAttr(index.attrCounts.filterable) }} · S
+                  {{ formatAttr(index.attrCounts.searchable) }} · Sort
+                  {{ formatAttr(index.attrCounts.sortable) }}
+                </span>
+                <span
+                  v-if="typeof index.rawDocumentDbSize === 'number'"
+                  class="block sm:inline mt-1 sm:mt-0 text-text-muted"
+                >
+                  Raw {{ formatBytes(index.rawDocumentDbSize) }}
+                </span>
+                <span
+                  v-if="typeof index.avgDocumentSize === 'number'"
+                  class="block sm:inline mt-1 sm:mt-0 text-text-muted"
+                >
+                  · Avg doc {{ formatBytes(index.avgDocumentSize) }}
+                </span>
+              </q-item-label>
+              <div class="mt-2 flex flex-wrap gap-2 items-center">
+                <q-chip
+                  v-if="index.primaryKey"
+                  dense
+                  square
+                  outline
+                  color="primary"
+                  icon="vpn_key"
+                >
+                  PK: {{ index.primaryKey }}
+                </q-chip>
+                <q-chip
+                  v-if="index.isIndexing"
+                  dense
+                  square
+                  color="warning"
+                  text-color="dark"
+                  icon="hourglass_empty"
+                >
+                  Indexing…
+                </q-chip>
+                <q-chip
+                  v-if="(index.numberOfEmbeddedDocuments ?? 0) > 0"
+                  dense
+                  square
+                  outline
+                  color="accent"
+                  icon="scatter_plot"
+                >
+                  {{ index.numberOfEmbeddedDocuments }} embedded
+                </q-chip>
+              </div>
+            </q-item-section>
 
-      <!-- Empty state -->
-      <div v-else class="text-center py-12">
-        <q-icon
-          name="inbox"
-          size="64px"
-          class="text-gray-400 dark:text-gray-600"
-        />
-        <p class="text-gray-600 dark:text-gray-400 mt-4">
-          {{
-            searchFilter
-              ? "No indexes match your search"
-              : "No indexes yet. Create one to get started!"
-          }}
-        </p>
-      </div>
+            <q-item-section side class="flex-row gap-2">
+              <q-btn
+                flat
+                square
+                no-caps
+                color="primary"
+                :to="`/index-details/${index.uid}`"
+                label="Open"
+                icon="visibility"
+              />
+              <q-btn
+                flat
+                dense
+                square
+                color="negative"
+                icon="delete"
+                @click.stop.prevent="delIndex(index.uid)"
+              >
+                <q-tooltip>Delete index</q-tooltip>
+              </q-btn>
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </q-card>
     </div>
 
-    <!-- Not configured state -->
-    <div v-else class="flex items-center justify-center h-96">
-      <div class="text-center">
-        <q-icon
-          name="settings"
-          size="64px"
-          class="text-gray-400 dark:text-gray-600"
-        />
-        <p class="text-gray-600 dark:text-gray-400 mt-4">
-          Please configure your Meilisearch instance in the sidebar
-        </p>
-      </div>
+    <div v-else class="text-center py-12">
+      <q-icon name="inbox" size="64px" class="text-text-muted" />
+      <p class="text-text-muted mt-4">
+        {{
+          searchFilter
+            ? "No indexes match your search"
+            : "No indexes yet. Create one to get started."
+        }}
+      </p>
     </div>
 
-    <!-- Create Index Dialog -->
     <q-dialog v-model="showCreateDialog" persistent>
-      <q-card class="min-w-[400px]">
+      <q-card square class="min-w-[400px] bg-page-elevated">
         <q-card-section
           class="bg-primary text-white flex justify-between items-center"
         >
-          <div class="text-h6">Create New Index</div>
+          <div class="text-h6">Create new index</div>
           <q-btn
             flat
-            round
+            square
             dense
             icon="close"
             @click="showCreateDialog = false"
@@ -289,22 +279,29 @@
             v-model="newIndexName"
             label="Index UID"
             hint="Unique identifier for the index"
-            filled
+            outlined
+            dense
+            square
             :rules="[(val) => (val && val.length > 0) || 'Required']"
           />
           <q-input
             v-model="newIndexUuid"
-            label="Primary Key (Optional)"
+            label="Primary key (optional)"
             hint="Field name to use as document ID"
-            filled
+            outlined
+            dense
+            square
           />
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Cancel" @click="showCreateDialog = false" />
+          <q-btn flat square no-caps label="Cancel" @click="showCreateDialog = false" />
           <q-btn
+            unelevated
+            square
+            no-caps
             color="primary"
-            label="Create Index"
+            label="Create index"
             @click="newIndex"
             :loading="indexesStore.loading"
           />
@@ -317,7 +314,7 @@
       :scroll-offset="150"
       :offset="[18, 18]"
     >
-      <q-btn fab icon="keyboard_arrow_up" color="accent" />
+      <q-btn fab square icon="keyboard_arrow_up" color="accent" />
     </q-page-scroller>
   </q-page>
 </template>
@@ -340,7 +337,8 @@ const newIndexUuid = ref("");
 const searchFilter = ref("");
 const theSettings = useSettingsStore();
 const indexesStore = useIndexesStore();
-const { indexUrl, confirmed, currentInstance } = storeToRefs(theSettings);
+const { indexUrl, confirmed, currentInstance, lastIndexUid, lastIndexTab } =
+  storeToRefs(theSettings);
 
 const formatDate = (dateString) =>
   new Intl.DateTimeFormat("default", { dateStyle: "long" }).format(
@@ -355,8 +353,28 @@ const formatAttr = (v) => {
   if (typeof v === "number") {
     return String(v);
   }
-  return "—";
+  return "-";
 };
+
+const continueTarget = computed(() => {
+  const uid = lastIndexUid.value;
+  if (!uid) return null;
+  if (
+    indexesStore.indexes.length > 0 &&
+    !indexesStore.indexes.some((idx) => idx.uid === uid)
+  ) {
+    return null;
+  }
+  const tab = lastIndexTab.value || "documents";
+  return {
+    uid,
+    tab,
+    to: {
+      path: `/index-details/${uid}`,
+      query: { tab },
+    },
+  };
+});
 
 /** Prefer used size from GET /stats when the server reports it. */
 const clusterUsedOrTotalBytes = computed(() => {
@@ -389,7 +407,6 @@ const clusterAllocatedCaption = computed(() => {
   return `Allocated ${formatBytes(alloc)}`;
 });
 
-// Filtered indexes based on search
 const filteredIndexes = computed(() => {
   if (!searchFilter.value) return indexesStore.indexes;
 
@@ -438,7 +455,6 @@ const newIndex = async () => {
 
     showSuccess(`Index "${newIndexName.value}" created`);
 
-    // Reset form and close dialog
     newIndexName.value = "";
     newIndexUuid.value = "";
     showCreateDialog.value = false;

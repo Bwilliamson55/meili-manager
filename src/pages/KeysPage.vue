@@ -1,16 +1,18 @@
 <template>
-  <q-page class="p-6">
+  <q-page class="p-6 bg-page">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h1 class="text-2xl font-bold">API Keys</h1>
-        <p class="text-sm text-gray-600 dark:text-gray-400">
+        <h1 class="text-2xl font-semibold text-text">API keys</h1>
+        <p class="text-sm text-text-muted">
           Manage Meilisearch API keys and permissions
         </p>
       </div>
       <div class="flex gap-2">
         <q-btn
           outline
+          square
+          no-caps
           color="primary"
           icon="refresh"
           label="Refresh"
@@ -18,9 +20,12 @@
           :loading="keysStore.loading"
         />
         <q-btn
+          unelevated
+          square
+          no-caps
           color="primary"
           icon="add"
-          label="Create Key"
+          label="Create key"
           @click="showCreateDialog = true"
         />
       </div>
@@ -28,46 +33,46 @@
 
     <!-- Stats cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <q-card flat bordered>
+      <q-card flat bordered square class="bg-page-elevated">
         <q-card-section class="text-center">
-          <div class="text-3xl font-bold text-blue-500">
+          <div class="text-3xl font-bold text-primary">
             {{ keysStore.stats.total }}
           </div>
-          <div class="text-sm text-gray-600 dark:text-gray-400">Total Keys</div>
+          <div class="text-sm text-text-muted">Total keys</div>
         </q-card-section>
       </q-card>
-      <q-card flat bordered>
+      <q-card flat bordered square class="bg-page-elevated">
         <q-card-section class="text-center">
-          <div class="text-3xl font-bold text-orange-500">
+          <div class="text-3xl font-bold text-warning">
             {{ keysStore.stats.expiringSoon }}
           </div>
-          <div class="text-sm text-gray-600 dark:text-gray-400">
-            Expiring Soon
+          <div class="text-sm text-text-muted">
+            Expiring soon
           </div>
         </q-card-section>
       </q-card>
-      <q-card flat bordered>
+      <q-card flat bordered square class="bg-page-elevated">
         <q-card-section class="text-center">
-          <div class="text-3xl font-bold text-red-500">
+          <div class="text-3xl font-bold text-negative">
             {{ keysStore.stats.expired }}
           </div>
-          <div class="text-sm text-gray-600 dark:text-gray-400">Expired</div>
+          <div class="text-sm text-text-muted">Expired</div>
         </q-card-section>
       </q-card>
-      <q-card flat bordered>
+      <q-card flat bordered square class="bg-page-elevated">
         <q-card-section class="text-center">
-          <div class="text-3xl font-bold text-green-500">
+          <div class="text-3xl font-bold text-secondary">
             {{ keysStore.stats.neverExpire }}
           </div>
-          <div class="text-sm text-gray-600 dark:text-gray-400">
-            Never Expire
+          <div class="text-sm text-text-muted">
+            Never expire
           </div>
         </q-card-section>
       </q-card>
     </div>
 
     <!-- Search Filter -->
-    <q-card flat bordered class="mb-4">
+    <q-card flat bordered square class="bg-page-elevated mb-4">
       <q-card-section>
         <q-input
           v-model="searchFilter"

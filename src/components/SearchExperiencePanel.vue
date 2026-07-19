@@ -1,5 +1,5 @@
 <template>
-  <q-card flat bordered class="mb-4">
+  <q-card flat bordered square class="bg-page-elevated mb-4">
     <q-card-section class="p-4">
       <div
         class="flex flex-col md:flex-row md:items-stretch gap-3 md:gap-4 mb-3"
@@ -20,34 +20,42 @@
         dense-toggle
         expand-separator
         icon="tune"
-        label="Advanced Search Controls"
-        header-class="text-caption text-grey-7"
+        label="Advanced search / LLM"
+        header-class="text-caption text-text-muted"
       >
         <q-card flat class="mt-2">
           <q-card-section class="px-0 pb-0">
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
               <div class="md:col-span-3 lg:col-span-4">
-                <q-banner class="bg-indigo-50 text-indigo-9 rounded-md">
+                <q-banner dense class="bg-page text-text border border-border">
                   <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-caption">LLM Demo Presets:</span>
+                    <span class="text-caption text-text-muted"
+                      >LLM demo presets:</span
+                    >
                     <q-btn
                       flat
                       dense
-                      color="indigo-8"
+                      square
+                      no-caps
+                      color="primary"
                       label="Keyword-heavy"
                       @click="$emit('apply-preset', 'keyword')"
                     />
                     <q-btn
                       flat
                       dense
-                      color="indigo-8"
+                      square
+                      no-caps
+                      color="primary"
                       label="Balanced"
                       @click="$emit('apply-preset', 'balanced')"
                     />
                     <q-btn
                       flat
                       dense
-                      color="indigo-8"
+                      square
+                      no-caps
+                      color="primary"
                       label="Semantic-heavy"
                       @click="$emit('apply-preset', 'semantic')"
                     />

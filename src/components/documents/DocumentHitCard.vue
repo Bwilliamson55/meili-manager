@@ -2,15 +2,16 @@
   <q-card
     flat
     bordered
-    class="transition-colors hover:border-primary dark:hover:border-primary"
+    square
+    class="bg-page-elevated cursor-pointer transition-colors hover:border-primary"
+    @click="$emit('select', { item, documentId })"
   >
     <q-card-section class="p-3">
       <div class="flex gap-3">
         <div v-if="imageField && getDocumentFieldValue(item, imageField)" class="flex-shrink-0">
           <q-img
             :src="getDocumentFieldValue(item, imageField)"
-            :alt="documentId"
-            class="rounded"
+            :alt="String(documentId)"
             style="width: 64px; height: 64px; object-fit: cover"
             @error="(e) => (e.target.style.display = 'none')"
           />
@@ -19,7 +20,7 @@
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-1 mb-1">
             <span
-              class="font-semibold text-sm truncate dark:text-white flex-1 min-w-0"
+              class="font-semibold text-sm truncate text-text flex-1 min-w-0"
               :title="String(titleLabel)"
             >
               {{ titleLabel }}
@@ -28,28 +29,33 @@
               v-if="canExpand"
               flat
               dense
+              square
               size="sm"
               :icon="expanded ? 'expand_less' : 'expand_more'"
               :label="expanded ? 'Less' : `+${hiddenFieldCount} more`"
               class="text-caption"
-              @click="expanded = !expanded"
+              @click.stop="expanded = !expanded"
             />
             <q-btn
               flat
               dense
+              square
               size="sm"
               icon="edit"
               color="primary"
               :to="editRoute"
+              @click.stop
             />
             <q-btn
               v-if="showSimilar"
               flat
               dense
+              square
               size="sm"
               icon="hub"
               color="secondary"
               :to="similarRoute"
+              @click.stop
             />
           </div>
 
@@ -59,10 +65,10 @@
             :class="gridClass"
           >
             <div v-for="field in visibleFields" :key="field" class="min-w-0">
-              <span class="text-gray-600 dark:text-gray-400">{{ field }}:</span>
+              <span class="text-text-muted">{{ field }}:</span>
               <span
-                class="ml-1 dark:text-gray-200 break-all"
-                :class="{ 'text-gray-400 italic': fieldDisplay(field).missing }"
+                class="ml-1 text-text break-all"
+                :class="{ 'text-text-muted italic': fieldDisplay(field).missing }"
                 :title="fieldDisplay(field).title"
               >
                 {{ fieldDisplay(field).text }}
@@ -139,6 +145,8 @@ const props = defineProps({
     default: false,
   },
 });
+
+defineEmits(["select"]);
 
 const expanded = ref(false);
 

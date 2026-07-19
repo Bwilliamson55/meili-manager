@@ -24,6 +24,13 @@ export const useSettingsStore = defineStore("settings", {
     darkMode: true,
     // Unsaved settings tracking
     hasUnsavedSettings: false,
+    // Resume last index workspace visit (Indexes home Continue)
+    lastIndexUid: "",
+    lastIndexTab: "documents",
+    // Per-index Playground request drafts
+    indexPlaygroundState: {}, // { indexName: { method, path, body } }
+    // One-shot seed for Playground (Documents bridge); not persisted
+    playgroundSeed: null, // { type: 'search'|'document', indexUid, documentId?, body? }
   }),
   getters: {
     // Create fresh client on-demand (no caching, no reactivity issues)
@@ -287,6 +294,41 @@ export const useSettingsStore = defineStore("settings", {
     markSettingsSaved() {
       this.hasUnsavedSettings = false;
     },
+
+    setLastIndexVisit(indexUid, tab = "documents") {
+      if (!indexUid) return;
+      this.lastIndexUid = indexUid;
+      this.lastIndexTab = tab || "documents";
+      this.currentIndex = indexUid;
+    },
+
+    getIndexPlaygroundState(indexName) {
+      return (
+        this.indexPlaygroundState[indexName] || {
+          method: "POST",
+          path: `/indexes/${indexName}/search`,
+          body: '{\n  "q": "",\n  "limit": 20\n}',
+        }
+      );
+    },
+
+    setIndexPlaygroundState(indexName, state) {
+      if (!indexName) return;
+      this.indexPlaygroundState[indexName] = {
+        ...this.getIndexPlaygroundState(indexName),
+        ...state,
+      };
+    },
+
+    setPlaygroundSeed(seed) {
+      this.playgroundSeed = seed;
+    },
+
+    consumePlaygroundSeed() {
+      const seed = this.playgroundSeed;
+      this.playgroundSeed = null;
+      return seed;
+    },
   },
   persist: {
     paths: [
@@ -297,8 +339,11 @@ export const useSettingsStore = defineStore("settings", {
       "instances",
       "indexDisplaySettings",
       "indexSearchState",
+      "indexPlaygroundState",
+      "lastIndexUid",
+      "lastIndexTab",
       "darkMode",
-      // Don't persist hasUnsavedSettings - should reset on page load
+      // Don't persist hasUnsavedSettings / playgroundSeed
     ],
     // Exclude runtime state: activeClient, clientError, isConnecting, confirmed
   },

@@ -1,31 +1,36 @@
 <template>
-  <q-page padding>
+  <q-page padding class="bg-page">
     <div class="flex flex-col gap-4">
-      <q-card flat bordered>
+      <q-card flat bordered square class="bg-page-elevated">
         <q-card-section>
           <div class="flex items-center justify-between gap-4">
             <q-btn
               flat
+              square
+              no-caps
               icon="arrow_back"
               class="flex-shrink-0"
-              :to="`/index-details/${currentIndex}`"
+              :to="`/index-details/${currentIndex}?tab=documents`"
               >Back</q-btn
             >
-            <p class="flex-1 text-center">
-              Document Details for UID
+            <p class="flex-1 text-center text-text">
+              Document details for UID
               <strong>{{ theDocumentUid ?? "???" }}</strong> in
               <strong>{{ currentIndex ?? "???" }}</strong>
             </p>
             <q-btn
-              flat
+              unelevated
+              square
+              no-caps
+              color="primary"
               icon="save"
               class="flex-shrink-0"
               @click="updateDocument"
               >Save</q-btn
             >
           </div>
-          <q-banner class="bg-primary text-white text-center mt-4">
-            Saving a document with the same UID as another will overwrite it!
+          <q-banner square class="bg-primary text-white text-center mt-4">
+            Saving a document with the same UID as another will overwrite it.
           </q-banner>
           <q-input
             v-model="taskMetadata"

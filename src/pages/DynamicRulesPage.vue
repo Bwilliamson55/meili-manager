@@ -1,9 +1,9 @@
 <template>
-  <q-page class="p-6">
+  <q-page class="p-6 bg-page">
     <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
       <div>
-        <h1 class="text-2xl font-bold">Dynamic search rules</h1>
-        <p class="text-sm text-gray-600 dark:text-gray-400">
+        <h1 class="text-2xl font-semibold text-text">Dynamic search rules</h1>
+        <p class="text-sm text-text-muted">
           Experimental: condition-based pinning via Meilisearch
           <code class="text-xs">dynamicSearchRules</code>
         </p>
@@ -11,6 +11,8 @@
       <div class="flex gap-2 flex-wrap">
         <q-btn
           outline
+          square
+          no-caps
           color="primary"
           icon="refresh"
           label="Refresh"
@@ -18,6 +20,9 @@
           @click="refreshAll"
         />
         <q-btn
+          unelevated
+          square
+          no-caps
           color="primary"
           icon="add"
           label="New rule"
@@ -29,10 +34,10 @@
 
     <q-banner
       v-if="!confirmed"
-      rounded
-      class="bg-red-2 text-red-10 mb-4"
+      square
+      class="bg-negative text-white mb-4"
     >
-      Configure Meilisearch credentials in the sidebar first.
+      Configure Meilisearch credentials on the Instances page first.
     </q-banner>
 
     <q-banner

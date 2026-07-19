@@ -1,16 +1,29 @@
 <template>
   <ais-state-results>
-    <template #default="{ results }">
+    <template #default="{ results, state }">
       <q-expansion-item
         dense
         dense-toggle
         expand-separator
         icon="analytics"
         label="Search Diagnostics"
-        header-class="text-caption text-grey-7"
+        header-class="text-caption text-text-muted"
       >
-        <q-card flat bordered class="bg-gray-50 dark:bg-gray-900">
+        <q-card flat bordered square class="bg-page">
           <q-card-section class="text-caption">
+            <div class="flex flex-wrap gap-2 mb-3">
+              <q-btn
+                outline
+                dense
+                square
+                no-caps
+                size="sm"
+                color="primary"
+                icon="terminal"
+                label="Open in Playground"
+                @click="openInPlayground(state)"
+              />
+            </div>
             <div class="mb-2">
               <strong>Request UID:</strong>
               {{ results?.requestUid || "n/a" }}
@@ -63,7 +76,7 @@
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   headerEnabled: {
     type: Boolean,
     default: false,
@@ -84,7 +97,13 @@ defineProps({
     type: Number,
     default: null,
   },
+  indexUid: {
+    type: String,
+    default: "",
+  },
 });
+
+const emit = defineEmits(["open-playground"]);
 
 const getFirstHitValue = (results, key) => {
   const firstHit = results?.hits?.[0];
@@ -97,5 +116,23 @@ const formatValue = (value) => {
     return JSON.stringify(value);
   }
   return String(value);
+};
+
+const openInPlayground = (state) => {
+  const body = {
+    q: state?.query || "",
+    limit: state?.hitsPerPage || 20,
+  };
+  if (props.hybridEnabled) {
+    body.hybrid = {
+      embedder: props.hybridEmbedder || undefined,
+      semanticRatio: props.hybridSemanticRatio ?? 0.5,
+    };
+  }
+  emit("open-playground", {
+    type: "search",
+    indexUid: props.indexUid,
+    body,
+  });
 };
 </script>
