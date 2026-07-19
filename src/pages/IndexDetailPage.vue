@@ -26,7 +26,7 @@
           </q-chip>
         </div>
 
-        <div class="text-subtitle1 font-semibold mb-2 text-text">
+        <div class="mm-section-title text-subtitle1 mb-2">
           Field distribution
         </div>
         <q-table
@@ -41,7 +41,7 @@
         />
 
         <div class="flex flex-wrap items-end gap-2 mb-3">
-          <div class="text-subtitle1 font-semibold text-text flex-1">
+          <div class="mm-section-title text-subtitle1 flex-1">
             Fields metadata
           </div>
           <q-input
@@ -240,7 +240,7 @@
     <q-dialog v-model="showBatchFetchDialog" maximized>
       <q-card>
         <q-card-section class="flex items-center justify-between">
-          <div class="text-h6">Fetched Documents by ID</div>
+          <div class="mm-section-title text-h6">Fetched Documents by ID</div>
           <q-btn
             flat
             dense

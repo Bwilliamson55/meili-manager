@@ -2,7 +2,7 @@
   <div class="p-4 text-text">
     <!-- Header -->
     <div class="text-center font-bold border-b border-border pb-4 mb-4">
-      <div class="text-lg">Meilisearch Manager Settings</div>
+      <div class="mm-page-title text-lg">Meilisearch Manager Settings</div>
       <div class="text-sm font-normal text-text-muted mt-2">
         Version: {{ version || "N/A" }}
       </div>
@@ -106,7 +106,7 @@
     <!-- Instances List -->
     <q-card flat bordered>
       <q-card-section class="pb-0">
-        <div class="text-lg font-semibold text-text">Your Instances</div>
+        <div class="mm-section-title text-lg">Your Instances</div>
       </q-card-section>
 
       <q-list v-if="instances.length > 0" separator>

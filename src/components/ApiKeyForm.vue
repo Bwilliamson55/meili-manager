@@ -26,7 +26,7 @@
         />
         <div class="flex flex-col md:flex-row justify-evenly gap-4">
           <div class="bg-page p-4 border border-border flex-1">
-            <div class="font-semibold mb-1 text-text">Granted actions</div>
+            <div class="mm-section-title mb-1">Granted actions</div>
             <p class="text-caption text-text-muted mb-2">
               See Meilisearch keys docs for action meanings. Use * for all
               permissions.
@@ -51,7 +51,7 @@
             />
           </div>
           <div class="bg-page p-4 border border-border flex-1">
-            <div class="font-semibold mb-2 text-text">Granted indexes</div>
+            <div class="mm-section-title mb-2">Granted indexes</div>
             <q-select
               outlined
               dense

@@ -22,15 +22,79 @@ body {
   min-width: 0;
 }
 
+/*
+ * Typography hierarchy: titles use full-contrast ink + stronger weight.
+ * text-text-muted stays for helper/meta only (captions, host chips, empty states).
+ * Do not paint all headings text-primary (breaks hierarchy; can fail AA).
+ */
 h1,
 h2,
 h3,
+.text-h1,
+.text-h2,
+.text-h3 {
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
 h4,
 h5,
-h6 {
+h6,
+.text-h4,
+.text-h5,
+.text-h6,
+.text-subtitle1,
+.text-subtitle2 {
   font-family: "IBM Plex Sans", system-ui, sans-serif;
   font-weight: 600;
   color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+/* Page titles (Indexes, Keys, Tasks, …) */
+.mm-page-title {
+  color: var(--color-text);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* Card / panel section titles (Overview tables, Playground columns, …) */
+.mm-section-title {
+  display: block;
+  color: var(--color-text);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  border-left: 3px solid var(--color-primary);
+  padding-left: 0.625rem;
+}
+
+/*
+ * Small section kickers only (Presets, Jump to, Export).
+ * Primary-tinted label accent; not for main h1–h3 titles.
+ */
+.mm-section-kicker {
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Index workspace tabs: inactive readable; active stays primary indicator */
+.mm-index-tabs {
+  color: var(--color-text);
+}
+
+.mm-index-tabs .q-tab {
+  font-weight: 500;
+}
+
+.mm-index-tabs .q-tab--active {
+  font-weight: 600;
 }
 
 .q-card {

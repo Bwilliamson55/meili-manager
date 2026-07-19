@@ -2,7 +2,7 @@
   <q-page class="p-6 bg-page">
     <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
       <div>
-        <h1 class="text-2xl font-semibold text-text">Indexes</h1>
+        <h1 class="mm-page-title text-2xl">Indexes</h1>
         <p class="text-sm text-text-muted">{{ indexUrl }}</p>
         <p
           v-if="indexesStore.stats.pkgVersion"

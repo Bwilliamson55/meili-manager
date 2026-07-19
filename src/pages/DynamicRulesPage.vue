@@ -2,7 +2,7 @@
   <q-page class="p-6 bg-page">
     <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
       <div>
-        <h1 class="text-2xl font-semibold text-text">Dynamic search rules</h1>
+        <h1 class="mm-page-title text-2xl">Dynamic search rules</h1>
         <p class="text-sm text-text-muted">
           Experimental: condition-based pinning via Meilisearch
           <code class="text-xs">dynamicSearchRules</code>

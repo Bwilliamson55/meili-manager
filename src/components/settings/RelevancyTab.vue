@@ -142,7 +142,7 @@
       expand-separator
       icon="inventory_2"
       label="Search Rules Pack (Portable)"
-      header-class="text-text-muted"
+      header-class="text-text font-semibold"
     >
       <q-card flat bordered>
         <q-card-section class="q-gutter-sm">

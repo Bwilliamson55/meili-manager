@@ -3,7 +3,7 @@
     <!-- Header with filters and actions -->
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h1 class="text-2xl font-semibold text-text">Tasks</h1>
+        <h1 class="mm-page-title text-2xl">Tasks</h1>
         <p class="text-sm text-text-muted">
           Monitor and manage Meilisearch tasks
         </p>
@@ -222,7 +222,9 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <!-- Task details -->
                   <div>
-                    <div class="text-subtitle2 mb-2">Task Details</div>
+                    <div class="mm-section-title text-subtitle2 mb-2">
+                      Task Details
+                    </div>
                     <div class="space-y-2 text-sm">
                       <div
                         v-for="item in getTaskDetails(props.row)"
@@ -244,7 +246,9 @@
 
                   <!-- Timestamps -->
                   <div>
-                    <div class="text-subtitle2 mb-2">Timeline</div>
+                    <div class="mm-section-title text-subtitle2 mb-2">
+                      Timeline
+                    </div>
                     <div class="space-y-2 text-sm">
                       <div
                         v-for="item in getTimeline(props.row)"
@@ -289,7 +293,9 @@
 
                   <!-- Details object -->
                   <div class="md:col-span-2">
-                    <div class="text-subtitle2 mb-2">Additional Details</div>
+                    <div class="mm-section-title text-subtitle2 mb-2">
+                      Additional Details
+                    </div>
                     <q-card
                       flat
                       bordered

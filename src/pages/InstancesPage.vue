@@ -1,7 +1,7 @@
 <template>
   <q-page class="p-6 bg-page">
     <div class="mb-6">
-      <h1 class="text-2xl font-semibold text-text">Instances</h1>
+      <h1 class="mm-page-title text-2xl">Instances</h1>
       <p class="text-sm text-text-muted mt-1">
         Save and switch Meilisearch endpoints. Credentials stay in this browser.
       </p>
@@ -13,7 +13,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <q-card flat bordered square class="bg-page-elevated">
         <q-card-section>
-          <div class="text-subtitle1 font-semibold mb-4">Add instance</div>
+          <div class="mm-section-title text-subtitle1 mb-4">Add instance</div>
           <q-form @submit="onSubmit" @reset="onReset" class="space-y-4">
             <q-input
               outlined
@@ -85,7 +85,7 @@
       <q-card flat bordered square class="bg-page-elevated">
         <q-card-section class="pb-0">
           <div class="flex items-center justify-between">
-            <div class="text-subtitle1 font-semibold">Your instances</div>
+            <div class="mm-section-title text-subtitle1">Your instances</div>
             <a
               href="https://docs.meilisearch.com/reference/api/keys.html#actions"
               target="_blank"

@@ -2,7 +2,7 @@
   <q-card flat bordered square class="h-full flex flex-col min-h-0">
     <q-card-section class="px-2 py-2 flex-shrink-0">
       <div class="flex items-center justify-between gap-1">
-        <span class="text-subtitle2 font-semibold text-text">
+        <span class="mm-section-title text-subtitle2">
           Filters
           <span
             v-if="filterableAttributes.length"

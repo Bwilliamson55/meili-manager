@@ -6,7 +6,7 @@
     <div
       class="flex flex-wrap items-center gap-2 flex-shrink-0 border border-border bg-page-elevated p-2"
     >
-      <span class="text-caption text-text-muted mr-1">Presets</span>
+      <span class="mm-section-kicker mr-1">Presets</span>
       <div class="flex flex-wrap items-stretch gap-1">
         <q-btn
           v-for="tpl in templates"
@@ -57,7 +57,7 @@
     <div
       class="flex flex-wrap items-center gap-2 flex-shrink-0 border border-border bg-page-elevated px-2 py-1.5"
     >
-      <span class="text-caption text-text-muted">Export for n8n / curl</span>
+      <span class="mm-section-kicker">Export for n8n / curl</span>
       <div class="flex flex-wrap items-stretch gap-1">
         <q-btn
           outline
@@ -136,7 +136,7 @@
     >
       <q-card flat bordered square class="bg-page-elevated flex flex-col min-h-0">
         <q-card-section class="pb-2">
-          <div class="text-subtitle2 font-semibold mb-1">Request</div>
+          <div class="mm-section-title text-subtitle2 mb-1">Request</div>
           <div class="text-caption text-text-muted mb-3">
             Build method and path, then Send.
           </div>
@@ -167,7 +167,7 @@
         <q-card-section class="pb-2 flex-1 flex flex-col min-h-0">
           <div class="flex items-center justify-between gap-2 mb-2">
             <div>
-              <div class="text-subtitle2 font-semibold">Body</div>
+              <div class="mm-section-title text-subtitle2">Body</div>
               <div class="text-caption text-text-muted">Request body (JSON)</div>
             </div>
             <q-btn
@@ -186,9 +186,7 @@
             </q-btn>
           </div>
           <div v-if="isSearchRequest" class="mb-3">
-            <div class="text-caption text-text-muted font-medium mb-2">
-              Search options
-            </div>
+            <div class="mm-section-kicker mb-2">Search options</div>
             <div class="grid grid-cols-2 gap-2">
               <q-input
                 v-model="searchKnobs.q"
@@ -267,7 +265,7 @@
           <div class="flex items-center justify-between gap-2 mb-2">
             <div class="flex items-center gap-2 min-w-0">
               <div>
-                <div class="text-subtitle2 font-semibold">Response</div>
+                <div class="mm-section-title text-subtitle2">Response</div>
                 <div
                   v-if="responseMeta"
                   class="text-caption text-text-muted truncate"

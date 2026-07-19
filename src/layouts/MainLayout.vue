@@ -179,7 +179,7 @@
           class="bg-page-elevated max-w-xl mx-auto"
         >
           <q-card-section>
-            <div class="text-h6 mb-2">Connect to Meilisearch</div>
+            <div class="mm-page-title text-h6 mb-2">Connect to Meilisearch</div>
             <p class="text-caption text-text-muted mb-4">
               Add an instance with a working URL and API key to use Indexes,
               Keys, Tasks, and Dynamic rules. Credentials stay in this browser

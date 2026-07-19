@@ -13,7 +13,7 @@
         class="flex items-center gap-2 p-3 border-b border-border flex-shrink-0"
       >
         <div class="min-w-0 flex-1">
-          <div class="text-subtitle2 font-semibold truncate">
+          <div class="mm-section-title text-subtitle2 truncate">
             {{ documentId || "Document" }}
           </div>
           <div class="text-caption text-text-muted truncate">

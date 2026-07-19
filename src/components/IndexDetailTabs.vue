@@ -9,7 +9,7 @@
       <q-tabs
         v-model="tabModel"
         dense
-        class="text-text-muted flex-shrink-0"
+        class="mm-index-tabs flex-shrink-0"
         active-color="primary"
         indicator-color="primary"
         align="left"

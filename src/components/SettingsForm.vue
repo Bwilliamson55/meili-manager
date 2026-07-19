@@ -13,7 +13,7 @@
       expand-separator
       icon="code"
       label="Raw Settings JSON"
-      header-class="text-text-muted"
+      header-class="text-text font-semibold"
       class="q-mb-md"
     >
       <q-card flat square bordered class="bg-page">
@@ -28,7 +28,7 @@
 
     <div v-if="!fetching">
       <div class="flex flex-wrap items-center gap-2 mb-3">
-        <span class="text-caption text-text-muted">Jump to</span>
+        <span class="mm-section-kicker">Jump to</span>
         <q-btn
           v-for="cat in SETTINGS_CATEGORIES"
           :key="`jump-${cat.value}`"
@@ -49,7 +49,7 @@
         active-color="primary"
         indicator-color="primary"
         align="left"
-        class="q-mb-md"
+        class="mm-index-tabs q-mb-md"
       >
         <q-tab
           v-for="cat in SETTINGS_CATEGORIES"

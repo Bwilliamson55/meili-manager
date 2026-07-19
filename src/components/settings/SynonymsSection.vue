@@ -2,7 +2,7 @@
   <div>
     <q-separator class="q-my-md" />
     <div class="flex items-center justify-between q-mb-sm">
-      <div class="text-subtitle2">Synonyms</div>
+      <div class="mm-section-title text-subtitle2">Synonyms</div>
       <div class="flex gap-2">
         <q-btn
           flat

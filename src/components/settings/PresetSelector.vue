@@ -2,7 +2,7 @@
   <q-card flat bordered class="q-mb-md">
     <q-card-section>
       <div class="flex items-center justify-between q-mb-sm">
-        <div class="text-subtitle1 font-semibold">Quick Presets</div>
+        <div class="mm-section-title text-subtitle1">Quick Presets</div>
         <q-btn flat dense size="sm" icon="info" @click="showInfo = true">
           <q-tooltip>About presets</q-tooltip>
         </q-btn>

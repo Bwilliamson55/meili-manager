@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h1 class="text-2xl font-semibold text-text">API keys</h1>
+        <h1 class="mm-page-title text-2xl">API keys</h1>
         <p class="text-sm text-text-muted">
           Manage Meilisearch API keys and permissions
         </p>
@@ -104,7 +104,7 @@
             expand-separator
             icon="key"
             label="Raw Keys JSON"
-            header-class="text-text-muted"
+            header-class="text-text font-semibold"
           >
             <q-card bordered>
               <q-card-section>
