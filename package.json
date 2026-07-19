@@ -1,18 +1,22 @@
 {
   "name": "meili-manager",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "A Quasar app to manage multiple Meilisearch instances",
   "productName": "MeiliSearch Manager",
   "author": "bwilliamson55@github.com",
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "quasar dev",
     "build": "quasar build",
     "build-changelog": "node ./generateChangelog.cjs",
     "deploy": "echo \"Build dist/spa and deploy to your static host\"",
     "lint": "eslint --ext .js,.vue ./",
     "format": "prettier --write \"**/*.{js,vue,scss,html,md,json}\" --ignore-path .gitignore",
-    "test": "echo \"No test specified\" && exit 0"
+    "check:themes": "node scripts/check-theme-contrast.mjs",
+    "test": "echo \"No test specified\" && exit 0",
+    "test:e2e": "playwright test",
+    "review:screenshots": "playwright test --grep @visual"
   },
   "dependencies": {
     "@meilisearch/instant-meilisearch": "^0.31.1",
@@ -32,6 +36,7 @@
     "vue3-ts-jsoneditor": "^3.1.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@quasar/app-vite": "2.4.1",
     "@tailwindcss/postcss": "^4.1.16",
     "@tailwindcss/vite": "^4.0.0",

@@ -14,7 +14,7 @@
       </q-card-section>
 
       <q-card-section class="flex flex-col gap-4">
-        <q-banner v-if="!defaultIndexUid" rounded class="bg-amber-2 text-amber-10">
+        <q-banner v-if="!defaultIndexUid" rounded class="bg-page-elevated text-text border border-border">
           This rule has no pin actions with an index; choose an index manually below.
         </q-banner>
 
@@ -59,7 +59,7 @@
           />
         </div>
 
-        <div v-if="searchMeta !== null" class="text-caption text-grey-7">
+        <div v-if="searchMeta !== null" class="text-caption text-text-muted">
           Processing time ms: {{ searchMeta?.processingTimeMs ?? "—" }} · hits:
           {{ hits.length }}
         </div>
@@ -73,11 +73,11 @@
           :columns="columns"
           row-key="position"
         />
-        <div v-else-if="ranOnce && !searching" class="text-grey-7 text-caption">
+        <div v-else-if="ranOnce && !searching" class="text-text-muted text-caption">
           No hits returned.
         </div>
 
-        <q-banner v-if="expectations.length" rounded class="bg-grey-2 text-grey-9">
+        <q-banner v-if="expectations.length" rounded class="bg-page-elevated text-text border border-border">
           <div class="text-weight-medium mb-1">Expected pins (from rule)</div>
           <ul class="q-pl-md q-my-none">
             <li v-for="(ex, i) in expectations" :key="i">

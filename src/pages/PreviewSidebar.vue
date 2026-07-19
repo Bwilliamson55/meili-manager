@@ -110,7 +110,7 @@
     </q-card>
     <div class="text-center text-bold border-bottom my-2">Configuration</div>
     <q-card flat bordered>
-      <q-banner rounded dense class="bg-primary text-white text-bold">
+      <q-banner rounded dense class="bg-primary text-on-primary text-bold">
         Auto filled dropdown values from your index will
         <strong>not work</strong> without the
         <code class="bg-black">settings.get</code>

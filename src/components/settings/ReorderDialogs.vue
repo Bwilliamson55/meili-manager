@@ -4,17 +4,17 @@
     :model-value="showSearchableReorder"
     @update:model-value="emit('update:showSearchableReorder', $event)"
   >
-    <q-card style="min-width: 400px" class="bg-dark">
+    <q-card style="min-width: 400px" class="bg-page-elevated text-text">
       <q-card-section>
         <div class="text-h6">Reorder Searchable Attributes</div>
-        <p class="text-caption text-grey-7">
+        <p class="text-caption text-text-muted">
           <q-icon name="priority_high" size="xs" color="warning" />
           Order matters! Top attributes have higher search priority.
         </p>
       </q-card-section>
 
       <q-card-section class="q-pt-none">
-        <q-banner dense class="bg-info text-white q-mb-md">
+        <q-banner dense class="bg-page text-text border border-border q-mb-md">
           Fields at the top are searched first and matches in them score higher.
           For example: put "title" before "description" if title matches should
           rank higher.
@@ -27,8 +27,7 @@
           <q-item
             v-for="(attr, index) in modelValue.searchableAttributes"
             :key="attr"
-            class="q-mb-xs rounded"
-            :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-2'"
+            class="q-mb-xs bg-page border border-border"
           >
             <q-item-section avatar>
               <q-icon name="drag_indicator" class="handle cursor-move" />
@@ -68,10 +67,10 @@
     :model-value="showRankingReorder"
     @update:model-value="emit('update:showRankingReorder', $event)"
   >
-    <q-card style="min-width: 400px" class="bg-dark">
+    <q-card style="min-width: 400px" class="bg-page-elevated text-text">
       <q-card-section>
         <div class="text-h6">Reorder Ranking Rules</div>
-        <p class="text-caption text-grey-7">
+        <p class="text-caption text-text-muted">
           Drag rules to change priority (top = highest priority)
         </p>
       </q-card-section>
@@ -85,8 +84,7 @@
           <q-item
             v-for="(rule, index) in modelValue.rankingRules"
             :key="rule"
-            class="q-mb-xs rounded"
-            :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-2'"
+            class="q-mb-xs bg-page border border-border"
           >
             <q-item-section avatar>
               <q-icon name="drag_indicator" class="handle cursor-move" />

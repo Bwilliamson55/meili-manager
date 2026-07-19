@@ -32,7 +32,7 @@
                 icon="list"
                 label="Filters"
               >
-                <q-banner class="bg-warning text-black q-mb-md">
+                <q-banner class="bg-warning text-page q-mb-md">
                   Warning - Experimental
                 </q-banner>
                 <q-card

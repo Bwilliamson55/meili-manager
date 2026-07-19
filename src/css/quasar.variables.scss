@@ -1,25 +1,28 @@
-// Quasar SCSS (& Sass) Variables
-// --------------------------------------------------
-// To customize the look and feel of this app, you can override
-// the Sass/SCSS variables found in Quasar's source Sass/SCSS files.
+// Square-only UI: override Quasar defaults
+$generic-border-radius: 0;
+$button-border-radius: 0;
+$button-rounded-border-radius: 0;
+$button-push-border-radius: 0;
 
-// Check documentation for full list of Quasar variables
+// Match app.scss / Google Fonts: IBM Plex Sans
+$typography-font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI",
+  sans-serif;
 
-// Your own variables (that are declared here) and Quasar's own
-// ones will be available out of the box in your .vue/.scss/.sass files
+// Build-time defaults match weeumson-dark (catalog.js). Runtime setCssVar owns live brand.
+$primary: #b85538;
+$secondary: #8a9480;
+$accent: #b8956c;
 
-// It's highly recommended to change the default colors
-// to match your app's branding.
-// Tip: Use the "Theme Builder" on Quasar's documentation website.
+$dark: #232019;
+$dark-page: #1a1714;
 
-$primary: #1976d2;
-$secondary: #26a69a;
-$accent: #9c27b0;
+$positive: #7a9a70;
+$negative: #d46a5c;
+$info: #7a9eb0;
+$warning: #d4a05a;
 
-$dark: #1a1f2e;
-$dark-page: #151824;
-
-$positive: #21ba45;
-$negative: #c10015;
-$info: #31ccec;
-$warning: #f2c037;
+// Readable tooltips (colors overridden at runtime via CSS vars where possible)
+$tooltip-fontsize: 13px;
+$tooltip-color: #ebe6dc;
+$tooltip-background: #232019;
+$tooltip-padding: 8px 12px;

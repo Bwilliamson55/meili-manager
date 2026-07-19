@@ -13,37 +13,50 @@
       class="documents-hits-table flex-1 min-h-0"
       :style="{ maxHeight: tableMaxHeight }"
     >
-      <template #body-cell-actions="cell">
-        <q-td :props="cell" auto-width>
-          <q-btn
-            flat
-            dense
-            round
-            size="sm"
-            icon="edit"
-            color="primary"
-            :to="cell.row.__editRoute"
-          />
-        </q-td>
-      </template>
-      <template
-        v-for="field in tableFields"
-        :key="field"
-        #[`body-cell-${field}`]="cell"
-      >
-        <q-td :props="cell">
-          <span
-            class="text-xs break-all"
-            :class="{ 'text-gray-400 italic': cell.row[`__missing__${field}`] }"
-            :title="cell.row[`__title__${field}`]"
+      <template #body="bodyProps">
+        <q-tr
+          :props="bodyProps"
+          class="cursor-pointer"
+          @click="$emit('select', { item: bodyProps.row.__item, documentId: bodyProps.row.__rowKey })"
+        >
+          <q-td
+            v-for="col in bodyProps.cols"
+            :key="col.name"
+            :props="bodyProps"
           >
-            {{ cell.row[field] }}
-          </span>
-        </q-td>
+            <template v-if="col.name === 'actions'">
+              <q-btn
+                flat
+                dense
+                square
+                size="sm"
+                icon="edit"
+                color="primary"
+                aria-label="Edit document"
+                :to="bodyProps.row.__editRoute"
+                @click.stop
+              >
+                <q-tooltip>Open full editor</q-tooltip>
+              </q-btn>
+            </template>
+            <template v-else>
+              <span
+                class="text-xs break-all"
+                :class="{
+                  'text-text-muted italic':
+                    bodyProps.row[`__missing__${col.name}`],
+                }"
+                :title="bodyProps.row[`__title__${col.name}`]"
+              >
+                {{ bodyProps.row[col.name] }}
+              </span>
+            </template>
+          </q-td>
+        </q-tr>
       </template>
     </q-table>
 
-    <div class="text-caption text-gray-500 dark:text-gray-400 py-2 px-1 text-center flex-shrink-0">
+    <div class="text-caption text-text-muted py-2 px-1 text-center flex-shrink-0">
       {{ pageSummary }}
     </div>
   </div>
@@ -109,6 +122,8 @@ const props = defineProps({
   },
 });
 
+defineEmits(["select"]);
+
 const tableMaxHeight = "calc(100vh - 280px)";
 
 const tableFields = computed(() =>
@@ -146,6 +161,7 @@ const rows = computed(() =>
     const row = {
       __rowKey: id,
       __editRoute: routes.edit,
+      __item: item,
     };
     for (const field of tableFields.value) {
       const display = formatDocumentFieldDisplay(item, field, {
@@ -169,6 +185,6 @@ const pageSummary = computed(() => {
   const end = Math.min(start + props.items.length - 1, total);
   if (total <= 0) return "No matching documents";
   if (props.items.length === 0) return `${total.toLocaleString()} matching documents`;
-  return `Showing ${start.toLocaleString()}–${end.toLocaleString()} of ${total.toLocaleString()} matching documents (search page ${page})`;
+  return `Showing ${start.toLocaleString()}-${end.toLocaleString()} of ${total.toLocaleString()} matching documents (search page ${page})`;
 });
 </script>

@@ -1,9 +1,9 @@
 <template>
-  <q-page class="p-6">
+  <q-page class="p-6 bg-page">
     <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
       <div>
-        <h1 class="text-2xl font-bold">Dynamic search rules</h1>
-        <p class="text-sm text-gray-600 dark:text-gray-400">
+        <h1 class="mm-page-title text-2xl">Dynamic search rules</h1>
+        <p class="text-sm text-text-muted">
           Experimental: condition-based pinning via Meilisearch
           <code class="text-xs">dynamicSearchRules</code>
         </p>
@@ -11,6 +11,8 @@
       <div class="flex gap-2 flex-wrap">
         <q-btn
           outline
+          square
+          no-caps
           color="primary"
           icon="refresh"
           label="Refresh"
@@ -18,27 +20,34 @@
           @click="refreshAll"
         />
         <q-btn
+          unelevated
+          square
+          no-caps
           color="primary"
           icon="add"
           label="New rule"
           :disable="!canMutateRules"
           @click="openCreate"
-        />
+        >
+          <q-tooltip v-if="!canMutateRules">
+            Connect an instance and enable dynamic search rules first
+          </q-tooltip>
+        </q-btn>
       </div>
     </div>
 
     <q-banner
       v-if="!confirmed"
-      rounded
-      class="bg-red-2 text-red-10 mb-4"
+      square
+      class="bg-negative text-on-primary mb-4"
     >
-      Configure Meilisearch credentials in the sidebar first.
+      Configure Meilisearch credentials on the Instances page first.
     </q-banner>
 
     <q-banner
       v-else-if="experimentalFeaturesError"
       rounded
-      class="bg-amber-2 text-amber-10 mb-4"
+      class="bg-page-elevated text-text border border-border mb-4"
     >
       Could not read experimental features:
       {{ experimentalFeaturesError }}. Your server may be older than v1.41 or
@@ -48,33 +57,39 @@
     <q-banner
       v-else-if="dynamicSearchRulesEnabled === false"
       rounded
-      class="bg-amber-2 text-amber-10 mb-4"
+      class="bg-page-elevated text-text border border-border mb-4"
     >
-      <template #avatar><q-icon name="info" color="amber" /></template>
+      <template #avatar><q-icon name="info" color="warning" /></template>
       Dynamic search rules are disabled on this instance. Enable the
       experimental flag to create or apply rules.
       <template #action>
         <q-btn
           flat
           dense
+          square
+          no-caps
           label="Enable dynamicSearchRules"
-          color="amber"
+          color="warning"
           :loading="enablingFeature"
           @click="enableDynamicRules"
-        />
+        >
+          <q-tooltip
+            >Sets the experimental feature flag on this instance</q-tooltip
+          >
+        </q-btn>
       </template>
     </q-banner>
 
     <q-banner
       v-else-if="dynamicSearchRulesEnabled === true"
       rounded
-      class="bg-green-2 text-green-10 mb-4"
+      class="bg-page-elevated text-text border border-border mb-4"
     >
       <template #avatar><q-icon name="check_circle" color="positive" /></template>
       Dynamic search rules are <strong>enabled</strong> for this instance.
     </q-banner>
 
-    <q-banner rounded class="bg-grey-2 text-grey-9 mb-4">
+    <q-banner rounded class="bg-page-elevated text-text border border-border mb-4">
       <strong>Priority:</strong> lower numbers win. Same position → ties broken
       by ascending priority. <strong>Conditions:</strong> all must match (AND).
     </q-banner>
@@ -116,7 +131,9 @@
             :disable="!canLoadRules"
           />
           <q-btn
-            flat
+            outline
+            square
+            no-caps
             color="primary"
             label="Apply filters"
             :disable="!canLoadRules"
@@ -151,9 +168,10 @@
           <q-btn
             dense
             flat
-            round
+            square
             icon="edit"
             color="primary"
+            aria-label="Edit rule"
             :disable="!canMutateRules"
             @click="openEdit(props.row.uid)"
           >
@@ -162,9 +180,10 @@
           <q-btn
             dense
             flat
-            round
+            square
             icon="science"
             color="secondary"
+            aria-label="Test search"
             :disable="!canReadRules || !props.row?.uid"
             @click="openTest(props.row)"
           >
@@ -173,9 +192,10 @@
           <q-btn
             dense
             flat
-            round
+            square
             icon="delete"
             color="negative"
+            aria-label="Delete rule"
             :disable="!canMutateRules"
             @click="confirmDelete(props.row.uid)"
           >

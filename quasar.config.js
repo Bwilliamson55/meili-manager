@@ -27,23 +27,15 @@ export default configure(function (/* ctx */) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli/boot-files
-    boot: ["instant-search"],
+    boot: ["theme", "instant-search"],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: ["tailwind.css", "app.scss"],
 
     // https://github.com/quasarframework/quasar/tree/dev/extras
     extras: [
-      // 'ionicons-v4',
-      // 'mdi-v5',
-      // 'fontawesome-v6',
-      // 'eva-icons',
-      // 'themify',
-      // 'line-awesome',
-      // 'roboto-font-latin-ext', // this or either 'roboto-font', NEVER both!
-
-      "roboto-font", // optional, you are not bound to it
-      "material-icons", // optional, you are not bound to it
+      // IBM Plex Sans is loaded via Google Fonts in app.scss (no roboto-font).
+      "material-icons",
     ],
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build
@@ -87,19 +79,21 @@ export default configure(function (/* ctx */) {
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework
     framework: {
-      config: {},
+      config: {
+        // Build-time defaults match weeumson-dark; runtime applyTheme setCssVar owns live brand.
+        brand: {
+          primary: "#b85538",
+          secondary: "#8a9480",
+          accent: "#b8956c",
+          dark: "#232019",
+          "dark-page": "#1a1714",
+          positive: "#7a9a70",
+          negative: "#d46a5c",
+          info: "#7a9eb0",
+          warning: "#d4a05a",
+        },
+      },
 
-      // iconSet: 'material-icons', // Quasar icon set
-      // lang: 'en-US', // Quasar language pack
-
-      // For special cases outside of where the auto-import strategy can have an impact
-      // (like functional components as one of the examples),
-      // you can manually specify Quasar components/directives to be available everywhere:
-      //
-      // components: [],
-      // directives: [],
-
-      // Quasar plugins
       plugins: ["Notify", "Dark", "Dialog"],
     },
 

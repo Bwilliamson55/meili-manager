@@ -6,8 +6,15 @@ node_modules
 node_modules/
 dist/
 
+# Local env (never commit secrets)
+.env
+.env.*
+
 # Quasar core related directories
 .quasar
+
+# Browser extension scaffold only (not product)
+src-bex/
 
 # Cordova related directories and files
 /src-cordova/node_modules
@@ -31,3 +38,10 @@ yarn-error.log*
 *.njsproj
 *.sln
 .vercel
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+tests/e2e/screenshots/

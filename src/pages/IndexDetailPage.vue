@@ -1,24 +1,32 @@
 <template>
-  <q-page padding class="index-detail-page flex flex-col">
+  <q-page padding class="index-detail-page flex flex-col bg-page">
     <IndexDetailTabs v-model="detailPanelTab" class="flex-1 min-h-0">
       <template #overview-tab>
         <div v-if="iStats && iPk" class="flex flex-wrap gap-2 mb-4">
-          <q-chip icon="numbers" color="info" text-color="white">
+          <q-chip
+            square
+            dense
+            outline
+            icon="numbers"
+            class="chip-context"
+          >
             Count: {{ iStats.numberOfDocuments }}
           </q-chip>
-          <q-chip color="grey-8" text-color="white">
+          <q-chip square dense outline class="chip-context">
             Primary key: {{ iPk }}
           </q-chip>
           <q-chip
+            square
+            dense
+            outline
             :icon="iStats.isIndexing ? 'sync' : 'done'"
-            color="secondary"
-            text-color="white"
+            class="chip-context"
           >
             Indexing: {{ iStats.isIndexing }}
           </q-chip>
         </div>
 
-        <div class="text-subtitle1 font-semibold mb-2 dark:text-white">
+        <div class="mm-section-title text-subtitle1 mb-2">
           Field distribution
         </div>
         <q-table
@@ -33,7 +41,7 @@
         />
 
         <div class="flex flex-wrap items-end gap-2 mb-3">
-          <div class="text-subtitle1 font-semibold dark:text-white flex-1">
+          <div class="mm-section-title text-subtitle1 flex-1">
             Fields metadata
           </div>
           <q-input
@@ -80,6 +88,10 @@
         <SettingsForm @settings-updated="onIndexSettingsUpdated" />
       </template>
 
+      <template #playground-tab>
+        <PlaygroundPanel :index-uid="currentIndex || route.params.uid" />
+      </template>
+
       <template #documents-tab>
         <div class="flex flex-col flex-1 min-h-0 p-3 pt-2">
           <div
@@ -100,6 +112,8 @@
               <q-btn
                 flat
                 dense
+                square
+                no-caps
                 icon="filter_list"
                 :label="filtersVisible ? 'Hide filters' : 'Show filters'"
                 @click="filtersVisible = !filtersVisible"
@@ -110,6 +124,7 @@
                 v-model="batchDocumentIdsInput"
                 dense
                 outlined
+                square
                 clearable
                 class="w-64"
                 label="Fetch by IDs"
@@ -118,20 +133,30 @@
               <q-btn
                 flat
                 dense
+                square
+                no-caps
                 color="secondary"
                 icon="list_alt"
                 label="Fetch"
                 :loading="batchFetchLoading"
                 :disable="!meiliCompat.supportsDocumentsFetchByIds"
                 @click="fetchDocumentsByIds"
-              />
+              >
+                <q-tooltip v-if="!meiliCompat.supportsDocumentsFetchByIds">
+                  Fetch by IDs needs a newer Meilisearch version
+                </q-tooltip>
+              </q-btn>
               <q-btn
-                flat
+                outline
                 dense
+                square
+                no-caps
                 icon="add_circle"
                 label="New"
                 :to="`/documents/${currentIndex}/new`"
-              />
+              >
+                <q-tooltip>Create document in full editor</q-tooltip>
+              </q-btn>
             </div>
           </div>
 
@@ -146,7 +171,9 @@
               :sort-by-items="sortByItems"
               :matching-strategy-options="matchingStrategyOptions"
               :compat="meiliCompat"
+              :available-embedders="availableEmbedders"
               @apply-preset="applyHybridPreset"
+              @clear-preset="clearHybridPreset"
             />
             <q-splitter
               v-if="filtersVisible"
@@ -167,11 +194,19 @@
                 </div>
               </template>
               <template #after>
-                <DocumentsHitsColumn v-bind="hitsColumnProps" />
+                <DocumentsHitsColumn
+                  v-bind="hitsColumnProps"
+                  @select="onHitSelect"
+                />
               </template>
             </q-splitter>
-            <DocumentsHitsColumn v-else v-bind="hitsColumnProps" />
+            <DocumentsHitsColumn
+              v-else
+              v-bind="hitsColumnProps"
+              @select="onHitSelect"
+            />
             <AisSearchDiagnostics
+              :index-uid="currentIndex"
               :header-enabled="savedSearchState.includeSearchMetadataHeader"
               :header-value="savedSearchState.searchMetadataHeaderValue"
               :hybrid-enabled="savedSearchState.enableHybrid"
@@ -179,6 +214,7 @@
               :hybrid-semantic-ratio="
                 normalizeThreshold(savedSearchState.hybridSemanticRatio)
               "
+              @open-playground="openSearchInPlayground"
             />
             <ais-configure v-bind="searchParams" />
             <SearchStatePersistence
@@ -190,11 +226,29 @@
       </template>
     </IndexDetailTabs>
 
+    <DocumentSidePanel
+      v-model="docPanelOpen"
+      :index-uid="currentIndex || route.params.uid"
+      :document-id="selectedDocumentId"
+      :document="selectedDocument"
+      :show-similar="
+        meiliCompat.supportsSimilarEndpoint && hasConfiguredEmbedders
+      "
+      @open-playground="openDocumentInPlayground"
+    />
+
     <q-dialog v-model="showBatchFetchDialog" maximized>
       <q-card>
         <q-card-section class="flex items-center justify-between">
-          <div class="text-h6">Fetched Documents by ID</div>
-          <q-btn flat dense icon="close" v-close-popup />
+          <div class="mm-section-title text-h6">Fetched Documents by ID</div>
+          <q-btn
+            flat
+            dense
+            square
+            icon="close"
+            aria-label="Close"
+            v-close-popup
+          />
         </q-card-section>
         <q-separator />
         <q-card-section>
@@ -239,6 +293,10 @@ import {
   normalizeThreshold,
   getDefaultIndexSearchState,
   buildRefinementListFromFilters,
+  getLlmPresetPatch,
+  getClearedLlmPresetFields,
+  getDefaultEmbedderName,
+  LLM_DEMO_PRESETS,
 } from "src/meili-core/utils/search-utils";
 import {
   getCompatFeatures,
@@ -246,15 +304,17 @@ import {
 } from "src/meili-core/utils/meili-compat";
 import { storeToRefs } from "pinia";
 import { onMounted, ref, watch, nextTick, computed, onBeforeUnmount } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import IndexDetailTabs from "components/IndexDetailTabs.vue";
 import SettingsForm from "components/SettingsForm.vue";
+import PlaygroundPanel from "components/playground/PlaygroundPanel.vue";
 import AisSearchDiagnostics from "components/aisComponents/AisSearchDiagnostics.vue";
 import SearchStatePersistence from "components/SearchStatePersistence.vue";
 import SearchExperiencePanel from "components/SearchExperiencePanel.vue";
 import DocumentsFiltersPanel from "components/documents/DocumentsFiltersPanel.vue";
 import DocumentsHitsColumn from "components/documents/DocumentsHitsColumn.vue";
 import DocumentsDisplayMenu from "components/documents/DocumentsDisplayMenu.vue";
+import DocumentSidePanel from "components/documents/DocumentSidePanel.vue";
 import ListFieldsOrderDialog from "components/documents/ListFieldsOrderDialog.vue";
 import {
   resolveListFields,
@@ -266,6 +326,8 @@ import {
 import { showError, showSuccess } from "src/utils/notifications";
 
 const route = useRoute();
+const router = useRouter();
+const VALID_TABS = ["documents", "settings", "playground", "overview"];
 
 const theSettings = useSettingsStore();
 const indexesStore = useIndexesStore();
@@ -325,6 +387,9 @@ const fieldsColumns = [
 ];
 const displaySettings = ref(mergeDisplaySettings());
 const detailPanelTab = ref("documents");
+const docPanelOpen = ref(false);
+const selectedDocument = ref(null);
+const selectedDocumentId = ref("");
 const imageFieldOptions = ref([]);
 const listFieldOptions = ref([]);
 const listColumnOptions = [
@@ -443,6 +508,7 @@ const sanitizeSearchStateForCompat = () => {
     savedSearchState.value.enableHybrid = false;
     savedSearchState.value.hybridEmbedder = "";
     savedSearchState.value.hybridSemanticRatio = null;
+    savedSearchState.value.activeLlmPreset = null;
   }
 };
 
@@ -456,6 +522,7 @@ const persistSearchState = () => {
 };
 
 const persistSearchStateAndRebuild = () => {
+  resolveHybridEmbedderOrDisable();
   persistSearchState();
   rebuildSearchClient();
 };
@@ -478,6 +545,64 @@ const persistDetailPanelTab = () => {
     ...theSettings.getIndexSearchState(currentIndex.value),
     detailPanelTab: detailPanelTab.value,
   });
+  theSettings.setLastIndexVisit(currentIndex.value, detailPanelTab.value);
+};
+
+const syncTabToRoute = (tab) => {
+  const nextTab = VALID_TABS.includes(tab) ? tab : "documents";
+  if (route.query.tab === nextTab) return;
+  router.replace({
+    query: { ...route.query, tab: nextTab },
+  });
+};
+
+const onHitSelect = ({ item, documentId }) => {
+  selectedDocument.value = item;
+  selectedDocumentId.value = documentId;
+  docPanelOpen.value = true;
+};
+
+const openDocumentInPlayground = (documentId) => {
+  theSettings.setPlaygroundSeed({
+    type: "document",
+    indexUid: currentIndex.value,
+    documentId,
+  });
+  detailPanelTab.value = "playground";
+};
+
+const openSearchInPlayground = (seed) => {
+  theSettings.setPlaygroundSeed(seed);
+  detailPanelTab.value = "playground";
+};
+
+const isTypingTarget = (el) => {
+  if (!el) return false;
+  const tag = el.tagName?.toLowerCase();
+  return (
+    tag === "input" ||
+    tag === "textarea" ||
+    tag === "select" ||
+    el.isContentEditable
+  );
+};
+
+const onDocumentsKeydown = (e) => {
+  if (e.key === "Escape" && docPanelOpen.value) {
+    docPanelOpen.value = false;
+    return;
+  }
+  if (
+    e.key === "/" &&
+    detailPanelTab.value === "documents" &&
+    !isTypingTarget(e.target)
+  ) {
+    e.preventDefault();
+    const input = document.querySelector(
+      ".ais-SearchBox-input, input[type='search']",
+    );
+    input?.focus?.();
+  }
 };
 
 const onListFieldsChange = (nextFields) => {
@@ -518,14 +643,42 @@ const onFilterDensityChange = (density) => {
   persistSearchState();
 };
 
-const hasConfiguredEmbedders = computed(() => {
+const availableEmbedders = computed(() => {
   const embedders = iSettings.value?.embedders;
-  return !!(
-    embedders &&
-    typeof embedders === "object" &&
-    Object.keys(embedders).length > 0
-  );
+  if (!embedders || typeof embedders !== "object") return [];
+  return Object.keys(embedders).filter(Boolean);
 });
+
+const hasConfiguredEmbedders = computed(
+  () => availableEmbedders.value.length > 0,
+);
+
+/**
+ * When hybrid is on, ensure a non-empty embedder (prefer existing, else first
+ * index embedder). If none exist, disable hybrid and optionally notify.
+ */
+const resolveHybridEmbedderOrDisable = ({ notify = true } = {}) => {
+  if (!savedSearchState.value.enableHybrid) return true;
+  const existing = savedSearchState.value.hybridEmbedder?.trim();
+  if (existing) {
+    savedSearchState.value.hybridEmbedder = existing;
+    return true;
+  }
+  const fallback = getDefaultEmbedderName(iSettings.value?.embedders);
+  if (fallback) {
+    savedSearchState.value.hybridEmbedder = fallback;
+    return true;
+  }
+  savedSearchState.value.enableHybrid = false;
+  savedSearchState.value.hybridSemanticRatio = null;
+  savedSearchState.value.activeLlmPreset = null;
+  if (notify) {
+    showError(
+      "Hybrid needs an embedder configured on the index. Configure embedders under Settings (AI) first.",
+    );
+  }
+  return false;
+};
 
 const resolvedListFields = computed(() =>
   resolveListFields({
@@ -665,11 +818,23 @@ const loadInstance = async () => {
   const savedState = theSettings.getIndexSearchState(currentIndex.value);
   savedSearchState.value = { ...getDefaultIndexSearchState(), ...savedState };
   sanitizeSearchStateForCompat();
+  // Quiet: avoid Notify spam on every index load when hybrid was saved without embedder.
+  resolveHybridEmbedderOrDisable({ notify: false });
+  persistSearchState();
   rebuildSearchClient();
   filtersVisible.value = savedState.filtersVisible ?? true;
   filtersPanelWidth.value = savedState.filtersPanelWidth ?? 380;
-  detailPanelTab.value = savedState.detailPanelTab ?? "documents";
+  const queryTab =
+    typeof route.query.tab === "string" && VALID_TABS.includes(route.query.tab)
+      ? route.query.tab
+      : null;
+  detailPanelTab.value =
+    queryTab || savedState.detailPanelTab || "documents";
   previousQuery.value = savedState.query || "";
+  theSettings.setLastIndexVisit(currentIndex.value, detailPanelTab.value);
+  docPanelOpen.value = false;
+  selectedDocument.value = null;
+  selectedDocumentId.value = "";
 
   // Build image field options from all fields
   imageFieldOptions.value = fdRows.value.map((row) => row["Field Name"]);
@@ -716,26 +881,36 @@ const fetchDocumentsByIds = async () => {
 const applyHybridPreset = (preset) => {
   if (!meiliCompat.value.supportsHybrid) {
     showError(
-      `Hybrid presets require a newer server version (current: ${meiliCompat.value.versionString}).`,
+      `Hybrid presets require Meilisearch newer than 1.11 (current: ${meiliCompat.value.versionString}).`,
     );
     return;
   }
-  const presets = {
-    keyword: { enableHybrid: true, hybridSemanticRatio: 0.2 },
-    balanced: { enableHybrid: true, hybridSemanticRatio: 0.5 },
-    semantic: { enableHybrid: true, hybridSemanticRatio: 0.8 },
-  };
-  const next = presets[preset];
+  const next = getLlmPresetPatch(preset);
   if (!next) return;
-  savedSearchState.value = {
-    ...savedSearchState.value,
-    ...next,
-    showRankingScore: true,
-    showRankingScoreDetails: true,
-    showPerformanceDetails: true,
-  };
+  const embedder =
+    savedSearchState.value.hybridEmbedder?.trim() ||
+    getDefaultEmbedderName(iSettings.value?.embedders);
+  if (!embedder) {
+    showError(
+      "Hybrid needs an embedder configured on the index. Configure embedders under Settings (AI) first.",
+    );
+    return;
+  }
+  // Mutate in place so panel v-models keep the same object and update immediately.
+  Object.assign(savedSearchState.value, next, {
+    hybridEmbedder: embedder,
+  });
   persistSearchStateAndRebuild();
-  showSuccess(`Applied ${preset} LLM demo preset.`);
+  const label = LLM_DEMO_PRESETS[preset]?.label || preset;
+  showSuccess(
+    `Applied ${label}: hybrid on, embedder "${embedder}", semantic ratio ${next.hybridSemanticRatio}.`,
+  );
+};
+
+const clearHybridPreset = () => {
+  Object.assign(savedSearchState.value, getClearedLlmPresetFields());
+  persistSearchStateAndRebuild();
+  showSuccess("Cleared LLM demo preset and restored hybrid defaults.");
 };
 
 // Handle search state changes from persistence component
@@ -761,9 +936,19 @@ watch(filtersVisible, () => {
   }
 });
 
-watch(detailPanelTab, () => {
+watch(detailPanelTab, (tab) => {
   persistDetailPanelTab();
+  syncTabToRoute(tab);
 });
+
+watch(
+  () => route.query.tab,
+  (tab) => {
+    if (typeof tab === "string" && VALID_TABS.includes(tab) && tab !== detailPanelTab.value) {
+      detailPanelTab.value = tab;
+    }
+  },
+);
 
 watch(
   () => savedSearchState.value.filterDensity,
@@ -803,12 +988,15 @@ onMounted(async () => {
   if (!searchClient.value) {
     rebuildSearchClient();
   }
+  syncTabToRoute(detailPanelTab.value);
+  window.addEventListener("keydown", onDocumentsKeydown);
 
   // Set up watchers for search state after component is mounted
   await nextTick();
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener("keydown", onDocumentsKeydown);
   if (currentIndex.value) {
     persistSearchState();
   }
@@ -828,9 +1016,26 @@ watch(
     enableHybrid: savedSearchState.value.enableHybrid,
     hybridEmbedder: savedSearchState.value.hybridEmbedder,
     hybridSemanticRatio: savedSearchState.value.hybridSemanticRatio,
+    activeLlmPreset: savedSearchState.value.activeLlmPreset,
     filterDensity: savedSearchState.value.filterDensity,
   }),
   () => {
+    // Keep preset highlight in sync when hybrid fields are edited manually.
+    const key = savedSearchState.value.activeLlmPreset;
+    if (key && LLM_DEMO_PRESETS[key]) {
+      const expected = LLM_DEMO_PRESETS[key];
+      if (
+        !savedSearchState.value.enableHybrid ||
+        Number(savedSearchState.value.hybridSemanticRatio) !==
+          expected.hybridSemanticRatio
+      ) {
+        // Avoid re-entering this watcher via activeLlmPreset itself.
+        if (savedSearchState.value.activeLlmPreset !== null) {
+          savedSearchState.value.activeLlmPreset = null;
+          return;
+        }
+      }
+    }
     persistSearchStateAndRebuild();
   },
   { deep: true },

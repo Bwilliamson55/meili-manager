@@ -1,4 +1,217 @@
-// app global css in SCSS form
+/* House font: IBM Plex Sans (OFL). Matches Weeumson docs shell tokens. */
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap");
 
 // Algolia InstantSearch reset styles
 @import "instantsearch.css/themes/reset.css";
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-page);
+  color: var(--color-text);
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+}
+
+.q-layout,
+.q-page-container,
+.q-page {
+  max-width: 100%;
+  min-width: 0;
+}
+
+/*
+ * Typography hierarchy: titles use full-contrast ink + stronger weight.
+ * text-text-muted stays for helper/meta only (captions, host chips, empty states).
+ * Do not paint all headings text-primary (breaks hierarchy; can fail AA).
+ */
+h1,
+h2,
+h3,
+.text-h1,
+.text-h2,
+.text-h3 {
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+h4,
+h5,
+h6,
+.text-h4,
+.text-h5,
+.text-h6,
+.text-subtitle1,
+.text-subtitle2 {
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+/* Page titles (Indexes, Keys, Tasks, …) */
+.mm-page-title {
+  color: var(--color-text);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* Card / panel section titles (Overview tables, Playground columns, …) */
+.mm-section-title {
+  display: block;
+  color: var(--color-text);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  border-left: 3px solid var(--color-primary);
+  padding-left: 0.625rem;
+}
+
+/*
+ * Small section kickers only (Presets, Jump to, Export).
+ * Primary-tinted label accent; not for main h1–h3 titles.
+ */
+.mm-section-kicker {
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Index workspace tabs: inactive readable; active stays primary indicator */
+.mm-index-tabs {
+  color: var(--color-text);
+}
+
+.mm-index-tabs .q-tab {
+  font-weight: 500;
+}
+
+.mm-index-tabs .q-tab--active {
+  font-weight: 600;
+}
+
+.q-card {
+  background: var(--color-page-elevated);
+}
+
+.q-drawer {
+  background: var(--color-page-elevated);
+}
+
+.q-header {
+  background: var(--color-page-elevated);
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/*
+ * Quasar defaults q-footer to primary (bright yellow under high-contrast).
+ * Force a thin credit strip: elevated surface + muted ink, never brand fill.
+ */
+.q-footer {
+  background: var(--color-page-elevated) !important;
+  color: var(--color-text-muted) !important;
+  border-top: 1px solid var(--color-border);
+}
+
+.q-footer a {
+  color: var(--color-text);
+}
+
+.q-tooltip {
+  max-width: min(20rem, 95vw);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  line-height: 1.35;
+}
+
+/*
+ * Quasar filled brand surfaces default to white label text. Catalog onPrimary
+ * is the accessible ink (black on high-contrast yellow; white on terracotta).
+ */
+.q-btn.bg-primary:not(.q-btn--outline):not(.q-btn--flat) {
+  color: var(--color-on-primary) !important;
+}
+
+.q-btn.bg-primary:not(.q-btn--outline):not(.q-btn--flat) .q-icon,
+.q-btn.bg-primary:not(.q-btn--outline):not(.q-btn--flat) .q-spinner {
+  color: inherit;
+}
+
+.q-chip.bg-primary {
+  color: var(--color-on-primary);
+}
+
+.q-banner.bg-primary,
+.bg-primary.text-on-primary,
+.text-on-primary {
+  color: var(--color-on-primary) !important;
+}
+
+/* Warning fill: page ink reads on amber/yellow warning tokens across themes. */
+.q-banner.bg-warning {
+  color: var(--color-page) !important;
+}
+
+.q-card.q-card--bordered {
+  border-color: var(--color-border);
+}
+
+/* Placeholders / muted field chrome must clear AA on dark and HC surfaces. */
+.q-field__native::placeholder,
+.q-placeholder,
+textarea::placeholder,
+input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+/*
+ * Outline context chips (instance/host). Primary-as-text fails AA on dark
+ * elevated chrome; use token ink + border instead.
+ */
+.q-chip.q-chip--outline.chip-context {
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+/* High Contrast: thicker chrome + clearer field labels/outlines. */
+[data-theme="high-contrast"] {
+  .q-header,
+  .q-footer,
+  .q-drawer,
+  .q-card,
+  .q-banner,
+  .q-field__control {
+    border-width: 2px;
+  }
+
+  .q-field__label,
+  .q-field__native,
+  .q-field__prefix,
+  .q-field__suffix,
+  .q-field__marginal {
+    color: var(--color-text);
+  }
+
+  .q-field--outlined .q-field__control:before {
+    border-color: var(--color-border);
+  }
+
+  .q-btn--outline {
+    border-width: 2px;
+  }
+
+  .text-primary,
+  .q-btn--outline.text-primary,
+  .q-btn.q-btn--outline.bg-primary {
+    color: var(--color-primary) !important;
+  }
+}

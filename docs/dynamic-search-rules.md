@@ -5,7 +5,7 @@ This app exposes Meilisearch **Dynamic Search Rules** when the server supports t
 ## UI entry
 
 - Header tab **Dynamic rules** → route `/dynamic-rules`.
-- Requires saved Meilisearch URL + API key in the sidebar (same as other pages).
+- Requires saved Meilisearch URL + API key on the Instances page (same as other pages).
 
 ## Capabilities surfaced
 

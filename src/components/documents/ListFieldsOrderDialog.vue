@@ -9,7 +9,7 @@
       <q-card-section class="pt-2">
         <div
           v-if="orderedFields.length === 0"
-          class="text-caption text-grey-7"
+          class="text-caption text-text-muted"
         >
           No fields selected. Add fields from the List fields picker first.
         </div>

@@ -1,16 +1,18 @@
 <template>
-  <q-page class="p-6">
+  <q-page class="p-6 bg-page">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h1 class="text-2xl font-bold">API Keys</h1>
-        <p class="text-sm text-gray-600 dark:text-gray-400">
+        <h1 class="mm-page-title text-2xl">API keys</h1>
+        <p class="text-sm text-text-muted">
           Manage Meilisearch API keys and permissions
         </p>
       </div>
       <div class="flex gap-2">
         <q-btn
           outline
+          square
+          no-caps
           color="primary"
           icon="refresh"
           label="Refresh"
@@ -18,9 +20,12 @@
           :loading="keysStore.loading"
         />
         <q-btn
+          unelevated
+          square
+          no-caps
           color="primary"
           icon="add"
-          label="Create Key"
+          label="Create key"
           @click="showCreateDialog = true"
         />
       </div>
@@ -28,52 +33,52 @@
 
     <!-- Stats cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <q-card flat bordered>
+      <q-card flat bordered square class="bg-page-elevated">
         <q-card-section class="text-center">
-          <div class="text-3xl font-bold text-blue-500">
+          <div class="text-3xl font-bold text-primary">
             {{ keysStore.stats.total }}
           </div>
-          <div class="text-sm text-gray-600 dark:text-gray-400">Total Keys</div>
+          <div class="text-sm text-text-muted">Total keys</div>
         </q-card-section>
       </q-card>
-      <q-card flat bordered>
+      <q-card flat bordered square class="bg-page-elevated">
         <q-card-section class="text-center">
-          <div class="text-3xl font-bold text-orange-500">
+          <div class="text-3xl font-bold text-warning">
             {{ keysStore.stats.expiringSoon }}
           </div>
-          <div class="text-sm text-gray-600 dark:text-gray-400">
-            Expiring Soon
-          </div>
+          <div class="text-sm text-text-muted">Expiring soon</div>
+          <div class="text-xs text-text-muted mt-1">Within 30 days</div>
         </q-card-section>
       </q-card>
-      <q-card flat bordered>
+      <q-card flat bordered square class="bg-page-elevated">
         <q-card-section class="text-center">
-          <div class="text-3xl font-bold text-red-500">
+          <div class="text-3xl font-bold text-negative">
             {{ keysStore.stats.expired }}
           </div>
-          <div class="text-sm text-gray-600 dark:text-gray-400">Expired</div>
+          <div class="text-sm text-text-muted">Expired</div>
         </q-card-section>
       </q-card>
-      <q-card flat bordered>
+      <q-card flat bordered square class="bg-page-elevated">
         <q-card-section class="text-center">
-          <div class="text-3xl font-bold text-green-500">
+          <div class="text-3xl font-bold text-secondary">
             {{ keysStore.stats.neverExpire }}
           </div>
-          <div class="text-sm text-gray-600 dark:text-gray-400">
-            Never Expire
+          <div class="text-sm text-text-muted">
+            Never expire
           </div>
         </q-card-section>
       </q-card>
     </div>
 
     <!-- Search Filter -->
-    <q-card flat bordered class="mb-4">
+    <q-card flat bordered square class="bg-page-elevated mb-4">
       <q-card-section>
         <q-input
           v-model="searchFilter"
           label="Search keys"
           outlined
           dense
+          square
           clearable
           placeholder="Search by name, description, or UID"
         >
@@ -88,7 +93,7 @@
       <q-card flat bordered>
         <q-card-section>
           <div class="text-center mb-4">
-            <p class="text-lg font-semibold dark:text-gray-200">
+            <p class="text-lg font-semibold text-text">
               {{ filteredKeys.length }} Key{{
                 filteredKeys.length !== 1 ? "s" : ""
               }}
@@ -99,16 +104,16 @@
             expand-separator
             icon="key"
             label="Raw Keys JSON"
-            header-class="text-blue"
+            header-class="text-text font-semibold"
           >
             <q-card bordered>
               <q-card-section>
-                <p class="text-center mb-4 dark:text-gray-300">
+                <p class="text-center mb-4 text-text-muted">
                   The following is a real time look at your keys objects in
                   full.
                 </p>
                 <pre
-                  class="text-xs overflow-auto bg-gray-900 dark:bg-gray-950 text-white p-4 rounded"
+                  class="text-xs overflow-auto bg-page text-text border border-border p-4"
                   >{{ JSON.stringify(iKeys, null, 2) }}</pre
                 >
               </q-card-section>
@@ -132,7 +137,7 @@
                   <q-icon name="key" size="sm" />
                   <div>
                     <div class="font-semibold">{{ key.name }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                    <div class="text-xs text-text-muted">
                       UID: {{ key.uid }}
                     </div>
                   </div>
@@ -145,7 +150,7 @@
               </div>
             </template>
             <q-card class="p-6" flat bordered>
-              <p class="text-center font-bold mb-4 dark:text-gray-200">
+              <p class="text-center font-bold mb-4 text-text">
                 {{ key.name }}
               </p>
               <q-form @submit="onSubmit(key.uid)" class="space-y-4">
@@ -171,22 +176,32 @@
                 />
 
                 <div class="flex justify-between">
-                  <q-btn label="Save" type="submit" color="primary" />
+                  <q-btn
+                    unelevated
+                    square
+                    no-caps
+                    label="Save"
+                    type="submit"
+                    color="primary"
+                  />
                   <q-btn
                     size="14px"
                     flat
-                    bordered
-                    color="red"
+                    square
+                    no-caps
+                    color="negative"
                     icon="delete"
                     label="Delete"
                     @click="delKey(key.uid)"
-                  />
+                  >
+                    <q-tooltip>Delete API key permanently</q-tooltip>
+                  </q-btn>
                 </div>
               </q-form>
 
               <q-separator class="my-6" />
               <div class="text-center mb-4">
-                <p class="font-semibold dark:text-gray-300">
+                <p class="font-semibold text-text-muted">
                   The following key details can only be set at the time of
                   creation
                 </p>
@@ -228,28 +243,28 @@
                 class="mb-4"
               />
               <div class="flex flex-col md:flex-row justify-evenly gap-4 mb-4">
-                <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded flex-1">
-                  <div class="font-semibold mb-2 dark:text-gray-200">
+                <div class="bg-page p-4 border border-border flex-1">
+                  <div class="font-semibold mb-2 text-text">
                     Granted Actions:
                   </div>
-                  <ul class="list-disc list-inside dark:text-gray-300">
+                  <ul class="list-disc list-inside text-text-muted">
                     <template v-for="action in key.actions" :key="action">
                       <li>{{ action }}</li>
                     </template>
                   </ul>
                 </div>
-                <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded flex-1">
-                  <div class="font-semibold mb-2 dark:text-gray-200">
+                <div class="bg-page p-4 border border-border flex-1">
+                  <div class="font-semibold mb-2 text-text">
                     Granted Indexes:
                   </div>
-                  <ul class="list-disc list-inside dark:text-gray-300">
+                  <ul class="list-disc list-inside text-text-muted">
                     <template v-for="idx in key.indexes" :key="idx">
                       <li>{{ idx }}</li>
                     </template>
                   </ul>
                 </div>
               </div>
-              <div class="text-center space-y-2 dark:text-gray-300">
+              <div class="text-center space-y-2 text-text-muted">
                 <p>
                   <strong>Created At:</strong> {{ formatDate(key.createdAt) }}
                 </p>
@@ -271,21 +286,28 @@
         :scroll-offset="150"
         :offset="[18, 18]"
       >
-        <q-btn fab icon="keyboard_arrow_up" color="accent" />
+        <q-btn
+          fab
+          square
+          icon="keyboard_arrow_up"
+          color="accent"
+          aria-label="Scroll to top"
+        />
       </q-page-scroller>
 
       <!-- Create Key Dialog -->
       <q-dialog v-model="showCreateDialog" persistent>
         <q-card class="min-w-[500px]">
           <q-card-section
-            class="bg-primary text-white flex justify-between items-center"
+            class="bg-primary text-on-primary flex justify-between items-center"
           >
             <div class="text-h6">Create New API Key</div>
             <q-btn
               flat
-              round
+              square
               dense
               icon="close"
+              aria-label="Close"
               @click="showCreateDialog = false"
             />
           </q-card-section>

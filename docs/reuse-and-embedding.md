@@ -7,7 +7,7 @@ This guide focuses on making `meili-manager` easy to fork, partially embed, or p
 ## 1) Full Fork (quickest)
 
 - Fork the repo and keep app structure intact.
-- Rebrand app shell and sidebar labels first.
+- Rebrand app shell and drawer nav labels first.
 - Keep `src/meili-core/stores/settings-store.js` unchanged initially to avoid auth/session regressions.
 
 Best when you want a standalone admin app quickly.

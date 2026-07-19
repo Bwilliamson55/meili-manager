@@ -2,11 +2,11 @@
   <div>
     <q-separator class="q-my-md" />
     <div class="flex items-center justify-between q-mb-sm">
-      <div class="text-subtitle2">
+      <div class="mm-section-title text-subtitle2">
         Typo Tolerance
         <q-badge
           v-if="hasFieldChanged('typoTolerance')"
-          color="orange"
+          color="warning"
           text-color="white"
           label="Modified"
           class="q-ml-xs"

@@ -24,7 +24,7 @@
 
         <q-banner
           v-if="metadata.reindexes"
-          class="bg-warning text-black q-mt-md"
+          class="bg-warning text-page q-mt-md"
           dense
         >
           <template #avatar>
@@ -35,7 +35,7 @@
 
         <q-banner
           v-if="performanceImpact"
-          :class="`bg-${impactColor} text-white q-mt-md`"
+          :class="`bg-${impactColor} text-on-primary q-mt-md`"
           dense
         >
           <template #avatar>

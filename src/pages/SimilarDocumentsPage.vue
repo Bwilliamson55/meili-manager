@@ -10,7 +10,7 @@
         />
         <div class="text-center">
           <div class="text-h6">Similar Documents</div>
-          <div class="text-caption text-grey-7">
+          <div class="text-caption text-text-muted">
             Source: <strong>{{ route.params.documentUid }}</strong>
           </div>
         </div>

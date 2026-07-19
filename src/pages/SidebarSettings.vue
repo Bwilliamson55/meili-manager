@@ -1,14 +1,12 @@
 <template>
-  <div class="p-4">
+  <div class="p-4 text-text">
     <!-- Header -->
-    <div
-      class="text-center font-bold border-b border-gray-300 dark:border-gray-700 pb-4 mb-4 dark:text-white"
-    >
-      <div class="text-lg">Meilisearch Manager Settings</div>
-      <div class="text-sm font-normal text-gray-600 dark:text-gray-400 mt-2">
+    <div class="text-center font-bold border-b border-border pb-4 mb-4">
+      <div class="mm-page-title text-lg">Meilisearch Manager Settings</div>
+      <div class="text-sm font-normal text-text-muted mt-2">
         Version: {{ version || "N/A" }}
       </div>
-      <div class="text-sm font-normal text-gray-600 dark:text-gray-400">
+      <div class="text-sm font-normal text-text-muted">
         Instance:
         {{ activeInstance?.indexUrl ?? "none" }}
       </div>
@@ -17,7 +15,9 @@
     <!-- Add Instance Form -->
     <q-form @submit="onSubmit" @reset="onReset" class="space-y-4 mb-6">
       <q-input
-        filled
+        outlined
+        dense
+        square
         v-model="formLabel"
         label="The Label for this instance"
         hint="eg. 'Dev instance readonly'"
@@ -25,7 +25,9 @@
         :rules="[(val) => (val && val.length > 0) || 'Please type something']"
       />
       <q-input
-        filled
+        outlined
+        dense
+        square
         v-model="formUrl"
         label="The MeiliSearch index URL"
         hint="https://myEngine.com"
@@ -35,7 +37,9 @@
       <q-input
         v-model="formKey"
         label="The MeiliSearch index API Key"
-        filled
+        outlined
+        dense
+        square
         :type="isPwd ? 'password' : 'text'"
         :rules="[(val) => (val && val.length > 0) || 'Please type something']"
       >
@@ -43,18 +47,30 @@
           <q-icon
             :name="isPwd ? 'visibility_off' : 'visibility'"
             class="cursor-pointer"
+            :aria-label="isPwd ? 'Show API key' : 'Hide API key'"
             @click="isPwd = !isPwd"
           />
         </template>
       </q-input>
       <div>
         <q-btn
+          unelevated
+          square
+          no-caps
           label="Add Instance"
           type="submit"
           color="primary"
           :loading="isConnecting"
         />
-        <q-btn label="Reset" type="reset" color="primary" flat class="ml-2" />
+        <q-btn
+          flat
+          square
+          no-caps
+          label="Reset"
+          type="reset"
+          color="primary"
+          class="ml-2"
+        />
       </div>
     </q-form>
 
@@ -66,7 +82,7 @@
         href="https://docs.meilisearch.com/reference/api/keys.html#actions"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-primary hover:underline text-sm dark:text-blue-400"
+        class="text-primary hover:underline text-sm"
       >
         <q-icon name="help_outline" size="xs" class="mr-1" />
         Permissions Documentation
@@ -74,17 +90,14 @@
     </div>
 
     <!-- Current Context Info -->
-    <div
-      v-if="currentIndex"
-      class="p-3 bg-gray-100 dark:bg-gray-800 rounded mb-4"
-    >
-      <div class="text-sm space-y-1 dark:text-gray-300">
+    <div v-if="currentIndex" class="p-3 bg-page border border-border mb-4">
+      <div class="text-sm space-y-1 text-text-muted">
         <div>
-          <span class="font-semibold">Current index:</span>
+          <span class="font-semibold text-text">Current index:</span>
           <span class="ml-2">{{ currentIndex ?? "" }}</span>
         </div>
         <div>
-          <span class="font-semibold">Current instance:</span>
+          <span class="font-semibold text-text">Current instance:</span>
           <span class="ml-2">{{ activeInstance?.label ?? "" }}</span>
         </div>
       </div>
@@ -93,7 +106,7 @@
     <!-- Instances List -->
     <q-card flat bordered>
       <q-card-section class="pb-0">
-        <div class="text-lg font-semibold dark:text-white">Your Instances</div>
+        <div class="mm-section-title text-lg">Your Instances</div>
       </q-card-section>
 
       <q-list v-if="instances.length > 0" separator>
@@ -102,16 +115,16 @@
           :key="key"
           clickable
           v-ripple
-          class="cursor-pointer dark:hover:bg-gray-800"
+          class="cursor-pointer hover:bg-page"
           :class="{
-            'bg-blue-50 dark:bg-blue-900': isActiveInstance(key),
+            'bg-page text-primary': isActiveInstance(key),
           }"
         >
           <q-item-section @click="selectInstance(key)">
-            <q-item-label class="font-semibold dark:text-white">
+            <q-item-label class="font-semibold text-text">
               {{ value?.label ?? "" }}
             </q-item-label>
-            <q-item-label caption class="dark:text-gray-400">
+            <q-item-label caption class="text-text-muted">
               {{ value?.indexUrl ?? "" }}
             </q-item-label>
           </q-item-section>
@@ -121,23 +134,25 @@
               size="sm"
               flat
               dense
-              round
+              square
               icon="key"
+              class="text-text-muted"
+              aria-label="Copy API key"
               @click="copyKey(key)"
-              class="dark:text-gray-300"
             >
-              <q-tooltip>Copy API Key</q-tooltip>
+              <q-tooltip>Copy API key</q-tooltip>
             </q-btn>
             <q-btn
               size="sm"
               flat
               dense
-              round
+              square
               icon="delete"
               color="negative"
+              aria-label="Delete instance"
               @click="deleteInstance(key)"
             >
-              <q-tooltip>Delete Instance</q-tooltip>
+              <q-tooltip>Delete instance</q-tooltip>
             </q-btn>
           </q-item-section>
         </q-item>
@@ -145,14 +160,8 @@
 
       <!-- Empty state -->
       <div v-else class="text-center py-8">
-        <q-icon
-          name="cloud_off"
-          size="48px"
-          class="text-gray-400 dark:text-gray-600"
-        />
-        <p class="text-gray-600 dark:text-gray-400 mt-2 text-sm">
-          No instances configured yet
-        </p>
+        <q-icon name="cloud_off" size="48px" class="text-text-muted" />
+        <p class="text-text-muted mt-2 text-sm">No instances configured yet</p>
       </div>
     </q-card>
   </div>

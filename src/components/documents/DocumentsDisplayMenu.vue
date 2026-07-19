@@ -2,6 +2,8 @@
   <q-btn-dropdown
     flat
     dense
+    square
+    no-caps
     color="primary"
     icon="tune"
     label="List display"

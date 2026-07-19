@@ -17,7 +17,7 @@
       </q-card-section>
 
       <q-card-section class="flex flex-col gap-4">
-        <q-banner rounded class="bg-grey-2 text-grey-9">
+        <q-banner rounded class="bg-page-elevated text-text border border-border">
           Conditions are combined with <strong>AND</strong>. Lower
           <strong>priority</strong> wins when rules conflict. If different
           documents pin to the same position, ascending priority breaks ties.
@@ -62,7 +62,7 @@
           <div
             v-for="(row, idx) in conditionRows"
             :key="`c-${idx}`"
-            class="flex flex-wrap gap-2 items-end mb-2 p-3 rounded border border-gray-200 dark:border-gray-700"
+            class="flex flex-wrap gap-2 items-end mb-2 p-3 border border-border"
           >
             <q-select
               v-model="row.scope"
@@ -134,7 +134,7 @@
         <q-banner
           v-if="pinPositionDuplicateHint"
           rounded
-          class="bg-amber-2 text-amber-10"
+          class="bg-page-elevated text-text border border-border"
         >
           {{ pinPositionDuplicateHint }}
         </q-banner>
@@ -144,7 +144,7 @@
           <div
             v-for="(row, idx) in pinRows"
             :key="`p-${idx}`"
-            class="flex flex-wrap gap-2 items-end mb-2 p-3 rounded border border-gray-200 dark:border-gray-700"
+            class="flex flex-wrap gap-2 items-end mb-2 p-3 border border-border"
           >
             <q-select
               v-model="row.indexUid"

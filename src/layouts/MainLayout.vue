@@ -1,99 +1,302 @@
 <template>
-  <q-layout view="hHh lpR lFf">
-    <q-header elevated class="bg-primary text-white">
-      <q-toolbar>
-        <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
-        <q-toolbar-title>
-          <q-btn dense flat to="/">
-            <img style="max-width: 35px" src="~assets/meili-logo.svg" />
-            &nbsp;Meilisearch Manager</q-btn
-          >
-        </q-toolbar-title>
+  <q-layout view="hHh lpR lFf" class="bg-page">
+    <q-header elevated class="bg-page-elevated text-text">
+      <q-toolbar class="min-w-0">
         <q-btn
-          dense
           flat
-          round
-          :icon="darkMode ? 'light_mode' : 'dark_mode'"
-          @click="toggleDarkMode"
+          dense
+          square
+          icon="menu"
+          aria-label="Toggle navigation"
+          @click="toggleLeftDrawer"
         >
-          <q-tooltip>Toggle dark mode</q-tooltip>
+          <q-tooltip>Toggle navigation</q-tooltip>
         </q-btn>
-        <q-tabs>
-          <!-- Preview mode hidden (alpha feature) -->
-          <!-- <q-route-tab
-            to="/preview"
-            exact
-            name="preview"
-            label="Preview"
-            class="bg-grey-7 text-white"
-          /> -->
-          <q-route-tab to="/keys" exact name="keys" label="Keys" />
-          <q-route-tab
-            to="/dynamic-rules"
-            exact
-            name="dynamic-rules"
-            label="Dynamic rules"
-          />
-          <q-route-tab to="/tasks" exact name="tasks" label="Tasks" />
-        </q-tabs>
+
+        <q-toolbar-title class="min-w-0 flex-1">
+          <q-btn
+            flat
+            dense
+            no-caps
+            square
+            to="/"
+            class="q-px-sm"
+            aria-label="Home"
+          >
+            <img
+              class="h-7 w-7 shrink-0"
+              src="~assets/meili-logo.svg"
+              alt=""
+              aria-hidden="true"
+            />
+            <span class="ml-2 truncate text-body1 text-weight-medium">{{
+              brandLabel
+            }}</span>
+          </q-btn>
+        </q-toolbar-title>
+
+        <q-chip
+          v-if="activeInstance && $q.screen.gt.xs"
+          dense
+          square
+          outline
+          class="q-mr-sm max-w-xs chip-context"
+        >
+          <span class="truncate">
+            {{ activeInstance.label }}
+            <span class="text-caption text-text-muted"> · {{ shortHost }}</span>
+            <span v-if="routeIndexUid" class="text-caption text-text-muted">
+              · {{ routeIndexUid }}</span
+            >
+          </span>
+          <q-tooltip>
+            {{ activeInstance.label }} · {{ activeInstance.indexUrl
+            }}{{ routeIndexUid ? ` · ${routeIndexUid}` : "" }}
+          </q-tooltip>
+        </q-chip>
+        <q-chip
+          v-else-if="!activeInstance && $q.screen.gt.xs"
+          dense
+          square
+          outline
+          color="warning"
+          class="q-mr-sm"
+          clickable
+          to="/instances"
+          label="Not connected"
+        >
+          <q-tooltip>No instance connected. Open Instances to add one.</q-tooltip>
+        </q-chip>
+
+        <q-btn
+          flat
+          dense
+          square
+          no-caps
+          icon="swap_horiz"
+          :label="$q.screen.gt.xs ? 'Instance' : undefined"
+          to="/instances"
+          class="q-mr-xs"
+          aria-label="Manage instances"
+        >
+          <q-tooltip>Manage instances</q-tooltip>
+        </q-btn>
+
+        <q-btn flat dense square icon="palette" aria-label="Theme">
+          <q-tooltip>Theme</q-tooltip>
+          <q-menu square anchor="bottom right" self="top right">
+            <q-list style="min-width: 220px" class="bg-page-elevated text-text">
+              <q-item-label header class="text-caption text-text-muted">
+                Theme
+              </q-item-label>
+              <q-item
+                v-for="theme in themeOptions"
+                :key="theme.id"
+                clickable
+                v-ripple
+                :active="theme.id === themeId"
+                :aria-current="theme.id === themeId ? 'true' : undefined"
+                active-class="bg-page text-text"
+                @click="selectTheme(theme.id)"
+              >
+                <q-item-section avatar>
+                  <div class="flex gap-0.5" aria-hidden="true">
+                    <span
+                      v-for="(swatch, idx) in theme.swatches"
+                      :key="idx"
+                      class="inline-block h-3.5 w-3.5 border border-border"
+                      :style="{ background: swatch }"
+                    />
+                  </div>
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label class="text-text">{{ theme.label }}</q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                  <q-icon
+                    v-if="theme.id === themeId"
+                    name="check"
+                    color="primary"
+                    size="sm"
+                  />
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
       </q-toolbar>
     </q-header>
 
     <q-drawer
       v-model="leftDrawerOpen"
-      side="left"
-      behavior="mobile"
-      :width="350"
+      show-if-above
       bordered
+      :mini="miniDrawer && $q.screen.gt.sm"
+      :width="240"
+      :mini-width="64"
+      class="bg-page-elevated"
     >
-      <!-- drawer content -->
-      <router-view name="side" />
+      <q-list padding class="text-text">
+        <q-item-label header class="text-caption text-text-muted">
+          Navigate
+        </q-item-label>
+
+        <q-item
+          v-for="link in navLinks"
+          :key="link.to"
+          clickable
+          v-ripple
+          :to="link.to"
+          exact
+          active-class="text-primary bg-page"
+        >
+          <q-item-section avatar>
+            <q-icon :name="link.icon" />
+          </q-item-section>
+          <q-item-section>{{ link.label }}</q-item-section>
+        </q-item>
+
+        <q-separator class="q-my-md" />
+
+        <q-item clickable v-ripple @click="miniDrawer = !miniDrawer">
+          <q-item-section avatar>
+            <q-icon
+              :name="miniDrawer ? 'chevron_right' : 'chevron_left'"
+            />
+          </q-item-section>
+          <q-item-section>{{ miniDrawer ? "Expand" : "Collapse" }}</q-item-section>
+        </q-item>
+      </q-list>
     </q-drawer>
 
     <q-page-container>
-      <div v-if="!confirmed">
-        <q-banner class="text-white text-center bg-red">
-          You need to enter and save working credentials in the menu.
-        </q-banner>
+      <div v-if="!confirmed" class="p-6">
+        <q-card
+          v-if="!isInstancesRoute"
+          flat
+          bordered
+          square
+          class="bg-page-elevated max-w-xl mx-auto"
+        >
+          <q-card-section>
+            <div class="mm-page-title text-h6 mb-2">Connect to Meilisearch</div>
+            <p class="text-caption text-text-muted mb-4">
+              Add an instance with a working URL and API key to use Indexes,
+              Keys, Tasks, and Dynamic rules. Credentials stay in this browser
+              only.
+            </p>
+            <q-btn
+              unelevated
+              square
+              no-caps
+              color="primary"
+              icon="cloud"
+              label="Open Instances"
+              to="/instances"
+            />
+          </q-card-section>
+        </q-card>
+        <router-view v-if="isInstancesRoute" />
       </div>
-      <router-view v-else name="main" />
+      <router-view v-else />
     </q-page-container>
 
-    <q-footer elevated class="bg-grey-8 text-white">
-      <q-toolbar>
-        <q-toolbar-title>
-          <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
-        </q-toolbar-title>
-      </q-toolbar>
+    <q-footer class="bg-page-elevated text-text-muted border-t border-border">
+      <div class="px-3 py-1 text-center text-caption leading-tight">
+        Built by
+        <a
+          href="https://weeumson.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-text font-normal underline"
+          >Weeumson Software</a
+        >
+      </div>
     </q-footer>
   </q-layout>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { useQuasar } from "quasar";
 import { useSettingsStore } from "src/meili-core/stores/settings-store";
 import { storeToRefs } from "pinia";
-import { useQuasar } from "quasar";
+import { getThemeSwatches, themes } from "src/themes/catalog";
+import { applyTheme } from "src/themes/applyTheme";
 
 const $q = useQuasar();
+const route = useRoute();
 const theSettings = useSettingsStore();
-const { confirmed, darkMode } = storeToRefs(theSettings);
-const leftDrawerOpen = ref(false);
+const { confirmed, themeId, instances, currentInstance, currentIndex } =
+  storeToRefs(theSettings);
+
+// Overlay drawer starts closed on narrow viewports; desktop keeps it open.
+const leftDrawerOpen = ref($q.screen.gt.sm);
+const miniDrawer = ref(false);
+
+const themeOptions = Object.values(themes).map((theme) => ({
+  id: theme.id,
+  label: theme.label,
+  swatches: getThemeSwatches(theme),
+}));
+
+const navLinks = [
+  { to: "/", label: "Indexes", icon: "storage" },
+  { to: "/instances", label: "Instances", icon: "cloud" },
+  { to: "/keys", label: "Keys", icon: "vpn_key" },
+  { to: "/tasks", label: "Tasks", icon: "checklist" },
+  { to: "/dynamic-rules", label: "Dynamic rules", icon: "rule" },
+];
+
+const activeInstance = computed(() => {
+  if (
+    currentInstance.value === null ||
+    currentInstance.value === undefined ||
+    !instances.value?.length
+  ) {
+    return null;
+  }
+  return instances.value[currentInstance.value] ?? null;
+});
+
+const shortHost = computed(() => {
+  const url = activeInstance.value?.indexUrl;
+  if (!url) return "";
+  try {
+    return new URL(url).host;
+  } catch {
+    return url;
+  }
+});
+
+const routeIndexUid = computed(() => {
+  return (
+    route.params.uid ||
+    route.params.indexUid ||
+    (route.path.startsWith("/index-details/") ? currentIndex.value : "") ||
+    ""
+  );
+});
+
+const isInstancesRoute = computed(() => route.path === "/instances");
+
+const brandLabel = computed(() =>
+  $q.screen.gt.xs ? "Meilisearch Manager" : "Meili Manager",
+);
 
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value;
 };
 
-const toggleDarkMode = () => {
-  theSettings.darkMode = !theSettings.darkMode;
+const selectTheme = (id) => {
+  theSettings.setThemeId(id);
 };
 
-// Initialize dark mode from store on mount
-$q.dark.set(darkMode.value);
+applyTheme(themeId.value);
 
-// Watch for dark mode changes and update Quasar
-watch(darkMode, (newVal) => {
-  $q.dark.set(newVal);
+watch(themeId, (id) => {
+  applyTheme(id);
 });
 
 onMounted(async () => {

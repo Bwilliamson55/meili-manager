@@ -15,20 +15,21 @@
 
 ### Key Data Flow
 
-1. **Instance Management**: `settings-store.js` holds `instances[]` array with `{label, indexUrl, indexKey}` objects persisted via `pinia-plugin-persistedstate`.
-2. **Centralized MeiliSearch Client**: Store provides `getMeiliClient()` action that returns validated, cached client. Components call `await theSettings.getMeiliClient()` instead of creating clients directly.
-3. **Instance Switching**: Store actions `switchInstance(index)`, `addInstance(label, url, key)`, `removeInstance(index)` handle validation and state updates.
-4. **Preview Mode**: Separate `preview-store.js` for shareable dashboard configs. Uses `jose` for tokenizing settings (future sharing feature). Preview has its own instance/index selection independent of main app.
-5. **Named Router Views**: `MainLayout.vue` uses dual `<router-view>` slots (`name="main"` and `name="side"`) for page content + sidebar. See `routes.js` for `components: { main: PageVue, side: SidebarVue }` pattern.
+1. **Instance Management**: `settings-store.js` holds `instances[]` with `{label, indexUrl, indexKey}` persisted via `pinia-plugin-persistedstate`. UI: `/instances`.
+2. **Centralized MeiliSearch Client**: Store `client` getter + `getIndexClient(name)`, `rawRequest`, and Playground `executePlaygroundRequest`. Do not construct Meilisearch clients in pages.
+3. **Instance Switching**: `switchInstance(index)`, `addInstance(label, url, key)`, `removeInstance(index)` validate and update credentials.
+4. **Index workspace**: `/index-details/:uid?tab=` with Documents | Settings | Playground | Overview. Resume via `lastIndexUid` / `lastIndexTab`.
+5. **Preview Mode**: `preview-store.js` remains; Preview routes are disabled in `routes.js`. Do not revive unless asked.
+6. **Shell**: `MainLayout.vue` persistent left drawer + context header chip. Single default `<router-view>` (no named main/side views).
 
 ### Critical Files
 
-- `src/meili-core/stores/settings-store.js`: Centralized client management. State: instances, `indexSearchState`, `indexDisplaySettings`, `indexSettingsCache`. Actions: `getMeiliClient()`, `getIndexClient(name)`, `switchInstance(index)`, `addInstance()`, `removeInstance()`, `getIndexDisplaySettings()`, `setIndexDisplaySettings()`, `getIndexSettingsCache()`, `setIndexSettingsCache()`.
-- `src/meili-core/utils/display-settings.js`: Headless list-field resolution, compact/detailed/table display defaults, document id/title formatting (used by `src/components/documents/*`).
-- `src/meili-core/stores/preview-store.js`: Preview configs with `previewSettings` object (pagination, filters, sortable/image/heading attributes). Actions: `savePreviewSettings()`, `loadPreviewSettings()`, `tokenizePreviewSettings()`.
-- `src/boot/instant-search.js`: Registers Vue InstantSearch globally (used in `IndexDetailPage.vue` and `PreviewPage.vue` for live search UI).
-- `src/pages/IndexDetailPage.vue`: Index detail with Documents / Overview / Settings tabs; Documents tab uses `DocumentsFiltersPanel`, `DocumentsHitsColumn`, `DocumentsDisplayMenu`, and `SearchExperiencePanel`.
-- `quasar.config.js`: Boot files order matters. Current: `['instant-search']`. Uses ES modules (`import`/`export`).
+- `src/meili-core/stores/settings-store.js`: Credentials, `indexSearchState`, `indexDisplaySettings`, `indexPlaygroundState`, last visit, playground seed. Actions: `getIndexClient`, `rawRequest`, `switchInstance`, `setLastIndexVisit`, playground get/set/seed helpers.
+- `src/meili-core/utils/playground-request.js`: curl/HTTP/n8n (pasteable HTTP Request workflow snippet) export helpers + raw fetch Send.
+- `src/meili-core/utils/display-settings.js`: List-field resolution and document id/title helpers.
+- `src/pages/IndexDetailPage.vue`: Workspace tabs, document side panel, Playground bridge.
+- `src/components/playground/PlaygroundPanel.vue` / `documents/DocumentSidePanel.vue`: Playground and JSON inspector.
+- `quasar.config.js`: Boot `['instant-search']`; brand tokens; no `roboto-font` (IBM Plex via `app.scss`).
 
 ## Developer Workflows
 
@@ -101,7 +102,7 @@ showPrompt("Enter name", "What's your name?", (value) => {
 - **Forms**: `<q-form @submit="onSubmit">` with `q-input`/`q-select` and inline `:rules` arrays
 - **Dialogs**: `q-dialog` with `v-model` + `persistent` prop for confirmations
 - **Tables**: `q-table` with `:rows`, `:columns`, `row-key`
-- **Drawers**: `q-drawer` with `behavior="mobile"` for responsive sidebars
+- **Drawers**: persistent left nav (`show-if-above`); document inspector uses right overlay drawer
 - **Icons**: Material icons only: `<q-icon name="delete">` (not FontAwesome)
 
 ### Tailwind Utilities

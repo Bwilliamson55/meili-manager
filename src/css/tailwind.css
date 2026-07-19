@@ -3,3 +3,47 @@
 /* Tailwind v4 content configuration */
 @source "../**/*.{vue,js,ts,jsx,tsx}";
 @source "../../index.html";
+
+@custom-variant dark (&:where(.body--dark, .body--dark *, .dark, .dark *));
+
+/*
+ * First-paint fallbacks = weeumson-dark (catalog.js).
+ * applyTheme() overwrites these on documentElement at boot.
+ */
+:root {
+  --color-page: #1a1714;
+  --color-page-elevated: #232019;
+  --color-border: #7a7268;
+  --color-text: #ebe6dc;
+  --color-text-muted: #d4cbc0;
+  --color-primary: #b85538;
+  --color-secondary: #8a9480;
+  --color-accent: #b8956c;
+  --color-focus-ring: #d4a574;
+  --color-on-primary: #ffffff;
+  --color-positive: #7a9a70;
+  --color-negative: #d46a5c;
+  --color-info: #7a9eb0;
+  --color-warning: #d4a05a;
+}
+
+/* Map utilities (bg-page, text-text-muted, …) to runtime CSS vars */
+@theme {
+  --font-display: "IBM Plex Sans", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+
+  --color-page: var(--color-page);
+  --color-page-elevated: var(--color-page-elevated);
+  --color-border: var(--color-border);
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+  --color-focus-ring: var(--color-focus-ring);
+  --color-on-primary: var(--color-on-primary);
+  --color-positive: var(--color-positive);
+  --color-negative: var(--color-negative);
+  --color-info: var(--color-info);
+  --color-warning: var(--color-warning);
+}

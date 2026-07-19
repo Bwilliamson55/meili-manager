@@ -1,16 +1,18 @@
 <template>
-  <q-page class="p-6">
+  <q-page class="p-6 bg-page">
     <!-- Header with filters and actions -->
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h1 class="text-2xl font-bold">Tasks</h1>
-        <p class="text-sm text-gray-600">
+        <h1 class="mm-page-title text-2xl">Tasks</h1>
+        <p class="text-sm text-text-muted">
           Monitor and manage Meilisearch tasks
         </p>
       </div>
       <div class="flex gap-2">
         <q-btn
           outline
+          square
+          no-caps
           color="primary"
           icon="refresh"
           label="Refresh"
@@ -20,6 +22,8 @@
         <q-btn
           v-if="selectedTasks.length > 0"
           outline
+          square
+          no-caps
           color="negative"
           icon="cancel"
           :label="`Cancel ${selectedTasks.length} task${selectedTasks.length > 1 ? 's' : ''}`"
@@ -30,42 +34,42 @@
 
     <!-- Stats cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <q-card flat bordered>
+      <q-card flat bordered square class="bg-page-elevated">
         <q-card-section class="text-center">
-          <div class="text-3xl font-bold text-blue-500">
+          <div class="text-3xl font-bold text-primary">
             {{ taskStats.total }}
           </div>
-          <div class="text-sm text-gray-600">Total Tasks</div>
+          <div class="text-sm text-text-muted">Total tasks</div>
         </q-card-section>
       </q-card>
-      <q-card flat bordered>
+      <q-card flat bordered square class="bg-page-elevated">
         <q-card-section class="text-center">
-          <div class="text-3xl font-bold text-green-500">
+          <div class="text-3xl font-bold text-secondary">
             {{ taskStats.succeeded }}
           </div>
-          <div class="text-sm text-gray-600">Succeeded</div>
+          <div class="text-sm text-text-muted">Succeeded</div>
         </q-card-section>
       </q-card>
-      <q-card flat bordered>
+      <q-card flat bordered square class="bg-page-elevated">
         <q-card-section class="text-center">
-          <div class="text-3xl font-bold text-orange-500">
+          <div class="text-3xl font-bold text-warning">
             {{ taskStats.processing }}
           </div>
-          <div class="text-sm text-gray-600">Processing</div>
+          <div class="text-sm text-text-muted">Processing</div>
         </q-card-section>
       </q-card>
-      <q-card flat bordered>
+      <q-card flat bordered square class="bg-page-elevated">
         <q-card-section class="text-center">
-          <div class="text-3xl font-bold text-red-500">
+          <div class="text-3xl font-bold text-negative">
             {{ taskStats.failed }}
           </div>
-          <div class="text-sm text-gray-600">Failed</div>
+          <div class="text-sm text-text-muted">Failed</div>
         </q-card-section>
       </q-card>
     </div>
 
     <!-- Filters -->
-    <q-card flat bordered class="mb-4">
+    <q-card flat bordered square class="bg-page-elevated mb-4">
       <q-card-section>
         <div class="flex flex-wrap gap-4 items-end">
           <q-input
@@ -73,8 +77,10 @@
             label="Search"
             outlined
             dense
+            square
             class="flex-1 min-w-[200px]"
             clearable
+            placeholder="UID, type, index, or status"
           >
             <template #prepend>
               <q-icon name="search" />
@@ -174,7 +180,7 @@
               }}</span>
             </q-td>
             <q-td key="enqueuedAt" :props="props">
-              <div class="text-xs text-gray-600">
+              <div class="text-xs text-text-muted">
                 {{ formatDate(props.row.enqueuedAt) }}
               </div>
             </q-td>
@@ -183,9 +189,10 @@
                 <q-btn
                   flat
                   dense
-                  round
+                  square
                   size="sm"
                   icon="visibility"
+                  aria-label="View task details"
                   @click="toggleExpand(props)"
                 >
                   <q-tooltip>View details</q-tooltip>
@@ -197,10 +204,11 @@
                   "
                   flat
                   dense
-                  round
+                  square
                   size="sm"
                   icon="cancel"
                   color="negative"
+                  aria-label="Cancel task"
                   @click="cancelTask(props.row.uid)"
                 >
                   <q-tooltip>Cancel task</q-tooltip>
@@ -210,18 +218,20 @@
           </q-tr>
           <q-tr v-if="props.expand" :props="props">
             <q-td colspan="100%">
-              <div class="p-4 bg-gray-50 dark:bg-gray-800">
+              <div class="p-4 bg-page">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <!-- Task details -->
                   <div>
-                    <div class="text-subtitle2 mb-2">Task Details</div>
+                    <div class="mm-section-title text-subtitle2 mb-2">
+                      Task Details
+                    </div>
                     <div class="space-y-2 text-sm">
                       <div
                         v-for="item in getTaskDetails(props.row)"
                         :key="item.label"
                         class="flex justify-between"
                       >
-                        <span class="text-gray-600 dark:text-gray-400">{{
+                        <span class="text-text-muted">{{
                           item.label
                         }}</span>
                         <component
@@ -236,14 +246,16 @@
 
                   <!-- Timestamps -->
                   <div>
-                    <div class="text-subtitle2 mb-2">Timeline</div>
+                    <div class="mm-section-title text-subtitle2 mb-2">
+                      Timeline
+                    </div>
                     <div class="space-y-2 text-sm">
                       <div
                         v-for="item in getTimeline(props.row)"
                         :key="item.label"
                         class="flex justify-between"
                       >
-                        <span class="text-gray-600 dark:text-gray-400">{{
+                        <span class="text-text-muted">{{
                           item.label
                         }}</span>
                         <span>{{ item.value }}</span>
@@ -253,8 +265,8 @@
 
                   <!-- Error details if present -->
                   <div v-if="props.row.error" class="md:col-span-2">
-                    <div class="text-subtitle2 mb-2 text-red-600">Error</div>
-                    <q-banner dense class="bg-red-100 text-red-900">
+                    <div class="text-subtitle2 mb-2 text-negative">Error</div>
+                    <q-banner dense class="bg-negative text-on-primary">
                       <div class="space-y-1 text-sm">
                         <div>
                           <strong>Code:</strong> {{ props.row.error.code }}
@@ -271,7 +283,7 @@
                           <a
                             :href="props.row.error.link"
                             target="_blank"
-                            class="text-blue-600 underline"
+                            class="underline text-on-primary"
                             >{{ props.row.error.link }}</a
                           >
                         </div>
@@ -281,11 +293,13 @@
 
                   <!-- Details object -->
                   <div class="md:col-span-2">
-                    <div class="text-subtitle2 mb-2">Additional Details</div>
+                    <div class="mm-section-title text-subtitle2 mb-2">
+                      Additional Details
+                    </div>
                     <q-card
                       flat
                       bordered
-                      class="bg-gray-900 dark:bg-gray-950 text-white"
+                      class="bg-page text-text"
                     >
                       <q-card-section>
                         <pre class="text-xs overflow-auto">{{
@@ -303,8 +317,8 @@
         <template v-slot:no-data>
           <div class="text-center p-8">
             <q-icon name="info" size="xl" color="grey-5" class="mb-4" />
-            <div class="text-h6 text-grey-7">No tasks found</div>
-            <div class="text-caption text-grey-6">
+            <div class="text-h6 text-text-muted">No tasks found</div>
+            <div class="text-caption text-text-muted">
               Tasks will appear here once operations are performed
             </div>
           </div>

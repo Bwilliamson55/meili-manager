@@ -1,12 +1,12 @@
 <template>
-  <q-card flat bordered class="h-full flex flex-col min-h-0">
+  <q-card flat bordered square class="h-full flex flex-col min-h-0">
     <q-card-section class="px-2 py-2 flex-shrink-0">
       <div class="flex items-center justify-between gap-1">
-        <span class="text-subtitle2 font-semibold dark:text-white">
+        <span class="mm-section-title text-subtitle2">
           Filters
           <span
             v-if="filterableAttributes.length"
-            class="text-caption text-gray-500 dark:text-gray-400 ml-1"
+            class="text-caption text-text-muted ml-1"
           >
             ({{ visibleAttributeCount }}/{{ filterableAttributes.length }})
           </span>
@@ -16,22 +16,29 @@
           <q-btn
             flat
             dense
+            square
             size="sm"
             icon="close"
-            class="dark:text-gray-300"
+            class="text-text-muted"
+            aria-label="Close filters panel"
             @click="$emit('close')"
-          />
+          >
+            <q-tooltip>Close filters panel</q-tooltip>
+          </q-btn>
         </div>
       </div>
 
       <q-input
-        v-model="attributeSearch"
+        :model-value="attributeSearch"
         dense
         outlined
+        square
         clearable
         debounce="150"
-        placeholder="Search attributes or values…"
+        label="Search filter attributes"
+        placeholder="Attributes or values…"
         class="mt-2"
+        @update:model-value="onAttributeSearchUpdate"
       >
         <template #prepend>
           <q-icon name="search" size="xs" />
@@ -69,8 +76,11 @@
           toggle-color="primary"
           class="text-caption"
           :options="densityOptions"
+          aria-label="Filter density"
           @update:model-value="onDensityChange"
-        />
+        >
+          <q-tooltip>Dense or comfortable facet spacing</q-tooltip>
+        </q-btn-toggle>
         <div class="inline-flex items-center gap-0.5">
           <q-toggle
             v-model="hideZeroCounts"
@@ -110,14 +120,14 @@
 
           <div
             v-if="filterableAttributes.length && !filteredAttributes.length"
-            class="text-caption text-gray-600 dark:text-gray-400 p-3"
+            class="text-caption text-text-muted p-3"
           >
             No attributes match "{{ attributeSearch }}".
           </div>
 
           <div
             v-else-if="!filterableAttributes.length"
-            class="text-caption text-gray-600 dark:text-gray-400 p-3"
+            class="text-caption text-text-muted p-3"
           >
             No filterable attributes on this index. Add them in the Settings tab,
             click Submit Settings, and the facets will appear here.
@@ -161,6 +171,10 @@ const densityOptions = [
   { label: "Comfy", value: "comfortable" },
 ];
 
+const onAttributeSearchUpdate = (value) => {
+  attributeSearch.value = value ?? "";
+};
+
 const onDensityChange = (value) => {
   if (value === "compact" || value === "comfortable") {
     emit("update:filterDensity", value);
@@ -168,7 +182,7 @@ const onDensityChange = (value) => {
 };
 
 const filteredAttributes = computed(() => {
-  const query = attributeSearch.value.trim().toLowerCase();
+  const query = (attributeSearch.value ?? "").trim().toLowerCase();
   if (!query) return props.filterableAttributes;
   return props.filterableAttributes.filter((attribute) =>
     attribute.toLowerCase().includes(query),
@@ -211,7 +225,7 @@ watch(
 );
 
 watch(filteredAttributes, (attributes) => {
-  if (!attributeSearch.value.trim() || attributes.length !== 1) return;
+  if (!(attributeSearch.value ?? "").trim() || attributes.length !== 1) return;
   const attribute = attributes[0];
   const expanded = new Set(expandedAttributes.value);
   expanded.add(attribute);

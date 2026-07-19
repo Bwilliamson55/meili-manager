@@ -1,103 +1,119 @@
 # Meili-Manager
 
-A Quasar application for managing multiple Meilisearch instances across development, staging, and production environments.
+Open-source Quasar (Vue 3) app for managing multiple Meilisearch instances across development, staging, and production.
 
-**Version**: 2.0.0
+**Version**: 2.1.0  
 **Demo**: [https://meili-manager.weeumson.com/#/](https://meili-manager.weeumson.com/#/)
+
+Credentials never leave the browser: instance URLs and API keys are stored in `localStorage` via Pinia persisted state. Do not commit secrets.
 
 ## Docs
 
-- Reuse/fork/embed playbook: `docs/reuse-and-embedding.md`
-- Headless core (copy-paste): `src/meili-core/README.md`
-- Release readiness summary: `docs/release-readiness-1.42.md`
-- Dual-version QA checklist: `docs/qa-checklist-1.11-1.42.md`
-- GitHub release draft: `RELEASE_DRAFT_1.42.md`
+- Workspace UX (index-first, Playground, side panel): [`docs/workspace-ux.md`](docs/workspace-ux.md)
+- Themes (picker, catalog, contrast): [`docs/themes.md`](docs/themes.md)
+- Reuse/fork/embed playbook: [`docs/reuse-and-embedding.md`](docs/reuse-and-embedding.md)
+- Headless core (copy-paste): [`src/meili-core/README.md`](src/meili-core/README.md)
+- Dynamic search rules: [`docs/dynamic-search-rules.md`](docs/dynamic-search-rules.md)
+- Release readiness summary: [`docs/release-readiness-1.42.md`](docs/release-readiness-1.42.md)
+- Dual-version QA checklist: [`docs/qa-checklist-1.11-1.42.md`](docs/qa-checklist-1.11-1.42.md)
+- GitHub release draft: [`RELEASE_DRAFT_1.42.md`](RELEASE_DRAFT_1.42.md)
+- Playwright shell screenshots (mobile/desktop review): [`docs/e2e-screenshots.md`](docs/e2e-screenshots.md)
 
-## Quick Start
-
-## Install the dependencies
+## Quick start
 
 ```bash
 npm install
-npm install -g @quasar/cli
+npm run lint
+npm run check:themes
+npm run dev
 ```
 
-### Development
+`npm run dev` runs `quasar dev` (also fine via `npx quasar`). Dev server defaults to the Quasar/Vite port (usually `http://localhost:9000/`). Hash routing is used so the SPA works on static hosts such as `meili-manager.weeumson.com`.
+
+### Screenshot review (Playwright)
+
+One-time: `npx playwright install chromium`. Then with the app on `:9000` (or let Playwright start `npm run dev`):
 
 ```bash
-quasar dev
+npm run test:e2e
+# or
+npm run review:screenshots
 ```
 
-### Production Build
+PNGs land in `tests/e2e/screenshots/` (gitignored). No Meili API keys required; specs capture the unconnected shell. Details: [`docs/e2e-screenshots.md`](docs/e2e-screenshots.md).
+
+### Production build
 
 ```bash
-quasar build
+npx quasar build
 ```
 
 Output: `dist/spa/`
 
 ### Changelog
 
-Generate changelog from git history:
-
 ```bash
 npm run build-changelog
 ```
 
-Generates `changelog.json` with versioned entries grouped by ISO week. The changelog is automatically generated and deployed with each release to GitHub Pages.
+Generates `changelog.json` with versioned entries grouped by ISO week.
 
-### Code Quality
+### Code quality
 
 ```bash
 npm run lint
+npm run check:themes
 npm run format
 ```
 
-## Core Features
+## Core features
 
-### Broad Version Compatibility
+### Broad version compatibility
 
 The UI is tuned for backward-compatible operation across legacy and modern Meilisearch servers. Current target support is:
 
 - `1.11.x` (legacy-safe behavior with feature gating)
 - `1.42.x` (full modern CE capabilities exposed in UI)
 
-### Multi-Instance Management
+### Multi-instance management
 
-Save and switch between multiple Meilisearch instances (development, staging, production). Credentials are persisted locally with automatic connection validation.
+Save and switch instances on the **Instances** page (drawer nav). Credentials are validated on add/switch and persisted locally.
 
-### Index Operations
+### Index-first workspace
 
-- List, create, edit, and delete indexes
-- View statistics and field distribution
-- Configure all index settings through an intuitive interface
-- Interactive search with Vue InstantSearch widgets
+Open an index to work in peer tabs: **Documents** | **Settings** | **Playground** | Overview.
 
-### Document Management
+- Indexes home: cluster stats, dense list, **Continue** for last index/tab
+- Documents: InstantSearch browser; click a hit for a JSON side panel (copy, edit toggle, Open in Playground, full editor)
+- Settings: category jump + sticky unsaved/Submit bar (explicit save only)
+- Playground: raw HTTP builder with redacted curl / HTTP / canvas-pasteable n8n HTTP Request JSON (with-key secondary copies)
 
-- Browse and search documents with resizable facet filters, compact/detailed/table views, and per-index display preferences
-- Edit documents using a full-featured JSON editor
-- Add new documents with validation
+See [`docs/workspace-ux.md`](docs/workspace-ux.md).
 
-### API Key Management
+### API keys and tasks
 
 - Create and manage API keys with granular permissions
-- Update and delete existing keys
-- View all keys with detailed information
+- Monitor recent tasks (sortable/searchable table, cancel selected when supported)
 
-### Task Monitoring
+### Dynamic search rules
 
-- View the latest 1000 tasks in real-time
-- Sort and search through task history
-- View detailed error information for failed tasks
+Experimental condition-based pinning UI when the server exposes the feature. See [`docs/dynamic-search-rules.md`](docs/dynamic-search-rules.md).
 
-### Preview Mode (Experimental)
+### Preview mode (disabled)
 
-- Create custom search previews with configurable UI
-- Save multiple preview configurations
-- Independent instance/index selection per preview
+Preview routes remain in the tree but are disabled in the router. Do not revive them unless you are intentionally working that alpha surface.
 
-## Key Dependencies
+## Theme
+
+Named presets from a single catalog (`src/themes/catalog.js`): Weeumson Dark (default), Weeumson Light, Slate Dark, Slate Light, High Contrast. Header palette picker; WCAG AA checked via `npm run check:themes`. See [`docs/themes.md`](docs/themes.md).
+
+- IBM Plex Sans
+- Runtime CSS vars + Quasar `setCssVar` from the catalog (no per-theme CSS palettes)
+- Build-time Quasar brand defaults match Weeumson Dark
+
+UI priority: Quasar props → Tailwind utilities → Quasar utility classes → scoped CSS last.
+
+## Key dependencies
 
 - **meilisearch** - JavaScript client for Meilisearch API
 - **@meilisearch/instant-meilisearch** - Adapter for Vue InstantSearch
@@ -110,89 +126,87 @@ Save and switch between multiple Meilisearch instances (development, staging, pr
 
 ## Architecture
 
-### Centralized Client Management
+### Headless core
 
-All Meilisearch client creation goes through `src/meili-core/stores/settings-store.js`, providing:
+Business logic lives in `src/meili-core/` (stores, services, pure utils). The Quasar pages are one UI on top of that core. Forkers can copy `meili-core` into another Vue app. See [`src/meili-core/README.md`](src/meili-core/README.md).
+
+### Client management
+
+All Meilisearch client creation goes through `src/meili-core/stores/settings-store.js`:
 
 - Automatic connection validation
-- Consistent on-demand client creation via store getter
-- Consistent error handling across all components
-- Safe instance switching with validation
+- On-demand client via store getter
+- `rawRequest` / Playground helpers for HTTP that matches n8n/Postman exports
+- Per-index search, display, and Playground drafts
 
-### Named Router Views
+### Routing
 
-The application uses dual router views for flexible layouts:
+Hash history SPA under `MainLayout`:
 
-- `main` - Primary page content
-- `side` - Contextual sidebar content
+- `/` Indexes
+- `/instances` Credentials and instance switcher
+- `/keys`, `/tasks`, `/dynamic-rules`
+- `/index-details/:uid?tab=documents|settings|playground|overview`
+- `/documents/:indexUid/:documentUid` full editor escape hatch
+- `/similar/:indexUid/:documentUid` when embedders/similar are available
 
-This allows pages to control both the main view and sidebar independently.
+### State management
 
-### State Management
+- **settings-store.js** - Instance credentials, last index/tab, per-index search/display/playground state, settings cache
+- **indexes-store / keys-store / tasks-store / dynamic-rules-store** - Domain lists and mutations
+- **preview-store.js** - Preview configurations (UI currently disabled)
 
-- **settings-store.js** (`src/meili-core/stores/`) — Instance credentials, active client, per-index search/display settings, and settings cache
-- **preview-store.js** — Preview configurations with tokenization support
-
-Document list field resolution and display defaults live in `src/meili-core/utils/display-settings.js` (headless; reusable by other UIs). See [`src/meili-core/README.md`](src/meili-core/README.md).
+Document list field resolution lives in `src/meili-core/utils/display-settings.js`.
 
 ---
 
 ## Deployment
 
-### Static Hosting
+### Static hosting
 
-- Build Command: `quasar build`
-- Output Directory: `dist/spa`
+- Build command: `npx quasar build` (or `npm run build`)
+- Output directory: `dist/spa`
 
-The application builds as a static SPA and can be hosted on any static file server (Nginx, Caddy, GitHub Pages, etc.).
+Host on any static file server (Nginx, Caddy, GitHub Pages, DigitalOcean Static Site, etc.). Hash routes avoid server rewrite requirements.
 
-### Native Applications
+### Native applications
 
-Quasar supports building for:
-
-- **Mobile**: iOS/Android via Cordova or Capacitor
-- **Desktop**: Windows/macOS/Linux via Electron
-
-See [Quasar documentation](https://quasar.dev) for platform-specific build instructions.
+Quasar supports Cordova/Capacitor and Electron builds. See [Quasar documentation](https://quasar.dev). Browser extension scaffolding exists under `src-bex/` but is not the primary product path.
 
 ## Customization
 
-Fork this repository and adapt to your needs. The codebase uses Vue 3 Composition API with Quasar components and Tailwind utilities.
+Fork this repository and adapt to your needs. Vue 3 Composition API, Quasar components, Tailwind utilities.
 
-Key customization points:
+Key points:
 
-- `src/meili-core/stores/settings-store.js` - Modify client management logic
-- `src/pages/` - Add new pages or modify existing ones
-- `src/components/` - Reusable components
-- `src/utils/notifications.js` - Centralized notification patterns
-- `generateChangelog.cjs` - Customize changelog generation logic
-
-**Styling**: Uses Tailwind CSS v4 for utility-first styling. All components use Tailwind utilities (e.g., `p-4`, `mt-2`) while retaining Quasar's Q\* components for complex UI elements.
+- `src/meili-core/` - Keep store/API contracts stable when embedding
+- `src/pages/` / `src/components/` - App shell and workspace UI
+- `src/utils/notifications.js` - Notify/Dialog helpers
+- `generateChangelog.cjs` - Changelog generation
 
 ---
 
-## Getting Started
+## Getting started
 
-### Adding Your First Instance
+### Adding your first instance
 
-1. Open the sidebar (hamburger menu, top-left or bottom-left)
-2. Enter instance details:
-   - **Label**: Descriptive name (e.g., "Production")
-   - **URL**: Meilisearch endpoint (https://example.com or http://localhost:7700)
-   - **API Key**: Master key or admin key with sufficient permissions
+1. Open **Instances** from the left drawer (or the connect panel if you are not connected yet)
+2. Enter:
+   - **Label**: Descriptive name (e.g. Production)
+   - **URL**: Meilisearch endpoint (`https://example.com` or `http://localhost:7700`)
+   - **API key**: Master or admin key with sufficient permissions
+3. Click **Add instance**
 
-3. Click "Add Instance"
+The connection is validated before the instance is saved.
 
-The connection is validated before the instance is saved. If validation fails, check your URL and API key.
+### Required permissions
 
-### Required Permissions
-
-Minimum permissions for basic functionality:
+Minimum for basic read paths:
 
 - `indexes.get`
 - `documents.get`
 
-For full functionality (creating indexes, managing keys, etc.), use a master key or admin key. Create more restrictive keys once configuration is complete.
+For full functionality (creating indexes, managing keys, settings writes), use a master key or admin key. Create more restrictive keys once configuration is complete.
 
 ### Endpoints/Methods used
 
@@ -200,13 +214,9 @@ For full functionality (creating indexes, managing keys, etc.), use a master key
 
 ---
 
-## Home page / Index list page
+## Indexes home
 
-### Data shown in the list
-
-Here you will see a list of your indexes with their created and updated time stamps, a button to examine each, and a button to delete each.
-
-The delete icon will give a warning that needs confirmation before it sends the delete call.
+List of indexes with created/updated timestamps, document counts, attribute counts when available, **Open** into the workspace, and delete with confirmation. **Continue** resumes the last index and tab.
 
 ### Endpoints/Methods used
 
@@ -216,51 +226,33 @@ The delete icon will give a warning that needs confirmation before it sends the 
 
 ---
 
-## Index detail page
+## Index detail workspace
 
-The index detail page uses three tabs: **Documents** (default), **Overview**, and **Settings**. Tab choice is persisted per index in local search state.
+Tabs: **Documents** (default), **Settings**, **Playground**, **Overview**. Tab choice syncs to `?tab=` and is persisted per index.
 
-### Overview tab
+### Overview
 
-- Count of records in the index
-- Primary key of the index if set
-- Indexing true/false
+- Document count, primary key, indexing flag
 - Field distribution table
-- Paginated fields metadata table (when the server exposes `/fields`)
+- Paginated fields metadata when the server exposes `/fields`
 
-### Settings tab
+### Settings
 
-Review and update all index settings. The settings object is displayed in full (and in real time) if you expand the **Raw Settings JSON** section at the top. This is a read-only view, but may be easier to understand at first than the full form.
+Review and update index settings. Expand **Raw Settings JSON** for a live object dump. Use section jump into Search / Relevancy / Performance / Advanced / AI. Changes stay local until **Submit**.
 
-Please follow the link there for the settings documentation — each field has its own purpose that needs to be understood.
+### Documents
 
-While the form is stored in your local memory, it is not pushed to your Meilisearch instance until you press **Submit**, for safety. Submitting also refreshes the in-memory settings cache used by the Documents tab filters.
+InstantSearch browser:
 
-### Documents tab
+- Query, sort, filters (advanced / LLM controls collapsed by default)
+- Display menu: compact / detailed / table, list fields, thumbnails
+- Click a hit to open the JSON side panel; full editor via **Open full editor** or `/documents/...`
+- Fetch by IDs when supported; **New** creates via the full editor route
+- Diagnostics: **Open in Playground** with an effective search body when available
 
-Full-height document browser with Vue InstantSearch:
+### Playground
 
-- **Search toolbar** — query, sort, hybrid/diagnostic options (version-gated), and saved search state
-- **Display menu** — compact / detailed / table view, optional thumbnail field, custom list fields and column count, reset to index defaults
-- **Resizable filters panel** — facet refinements for `filterableAttributes` (hidden/shown via toolbar; width persisted per index)
-- **Fetch by IDs** — batch document lookup when the server supports it
-- **New** — create an example document (not the recommended bulk-ingest path)
-
-#### View modes
-
-| Mode | Behavior |
-|------|----------|
-| **Compact** (default) | Shows a short preview (~4 fields) per card with expand for the rest; uses index `displayedAttributes` or field distribution when unset |
-| **Detailed** | Shows all resolved list fields on each card; when `displayedAttributes` is `["*"]` and no custom list is set, every field on the document is shown |
-| **Table** | Dense `q-table` with primary key plus up to 8 list columns and an edit action |
-
-List field source order: custom `listFields` → index `displayedAttributes` → field distribution (wildcard `*` uses distribution keys in compact/table, all keys per hit in detailed).
-
-#### Result cards / table rows
-
-Each hit shows a title from `name`, `title`, `label`, or the primary key; optional thumbnail; field values (objects as JSON strings); **Edit** to open the JSON editor; **Similar** when embedders are configured and the server supports similar search.
-
-Settings changes on the Settings tab update facet widgets on Documents without a full page reload.
+Craft `GET`/`POST`/… requests scoped to the current index, Send, inspect status/timing/JSON, copy redacted curl (default) or with-key / HTTP / n8n workflow JSON (paste onto the n8n canvas). Seed from Documents hit or diagnostics. See [`docs/workspace-ux.md`](docs/workspace-ux.md).
 
 ### Endpoints/Methods used
 
@@ -270,19 +262,16 @@ Settings changes on the Settings tab update facet widgets on Documents without a
 - [fetchPrimaryKey](https://github.com/meilisearch/meilisearch-js#get-primary-key-of-an-index)
 - [updateSettings](https://github.com/meilisearch/meilisearch-js#update-settings)
 - [waitForTask](https://github.com/meilisearch/meilisearch-js#using-the-index)
+- Raw `fetch` via Playground / `rawRequest` for HTTP parity with exports
 
 ---
 
 ## Document detail page
 
-### Overview
-
-The document detail page uses a clean text-mode JSON editor with syntax highlighting and validation. Edit documents as raw JSON with real-time error checking.
+Full-page JSON editor escape hatch (text mode). Prefer the Documents side panel for quick inspection.
 
 ### Endpoints/Methods used
 
-- [index](https://github.com/meilisearch/meilisearch-js#using-the-index-object-1)
-- [fetchPrimaryKey](https://github.com/meilisearch/meilisearch-js#get-primary-key-of-an-index)
 - [getDocument](https://github.com/meilisearch/meilisearch-js#get-one-document)
 - [addDocuments](https://github.com/meilisearch/meilisearch-js#add-or-replace-multiple-documents)
 - [waitForTask](https://github.com/meilisearch/meilisearch-js#using-the-index)
@@ -291,15 +280,9 @@ The document detail page uses a clean text-mode JSON editor with syntax highligh
 
 ## Keys page
 
-### Overview
+Review keys, create with actions/indexes, update and delete. Prefer a scoped admin key over long-term master key use in the UI.
 
-Similar to the settings tab, you can review the entire response of the `getKeys` endpoint by clicking the "Raw Keys JSON" button.
-
-Below that is the "New Key Form" - all fields are required. The list of available actions is static, while the list of indexes is dynamic based on your key's permissions to use the getIndexes endpoints. Wildcards are not allowed here, but can be used via direct api calls.
-
-**_Please review [the Keys documentation](https://docs.meilisearch.com/reference/api/keys.html) to fully understand the available settings._**
-
-The first thing you should do with your master key is create an admin key with the minimum priveleges necessary!
+**Please review [the Keys documentation](https://docs.meilisearch.com/reference/api/keys.html).**
 
 ### Endpoints/Methods used
 
@@ -307,17 +290,12 @@ The first thing you should do with your master key is create an admin key with t
 - [updateKey](https://github.com/meilisearch/meilisearch-js#update-a-key)
 - [deleteKey](https://github.com/meilisearch/meilisearch-js#delete-a-key)
 - [createKey](https://github.com/meilisearch/meilisearch-js#create-a-key)
-- [getRawIndexes](https://github.com/meilisearch/meilisearch-js#get-all-indexes)
 
 ---
 
 ## Tasks page
 
-### Overview
-
-The tasks page shows you a paginated, sortable, searchable table of all of the tasks as of the page loading. This table is limited to the most recent 1000 tasks.
-
-This page is a good way to review if an index is busy, or if a particular task failed/succeeded.
+Paginated, sortable, searchable table of recent tasks (capped around the most recent 1000). Useful to see whether an index is busy or a task failed.
 
 ### Endpoints/Methods used
 
@@ -325,30 +303,10 @@ This page is a good way to review if an index is busy, or if a particular task f
 
 ---
 
-## Preview Mode
+## License
 
-A more detail oriented preview with the eventual goal of being sharable.
-Save as many preview configurations as you like and switch the index/instance powering them independently.
+MIT. See [`LICENSE`](LICENSE).
 
-Settings currently available:
+## Contributing
 
-- Name (For load/save key locally)
-- Pagination
-- Pagination Size
-- Show Refinements
-- Show Clear refinements
-- Attribute based options:
-  - **_You can manually enter options by typing and pressing enter_**
-    - **eg `attributeName.subProperty` is valid assuming subProperty exists**
-  - Sortable Attributes
-    - Auto generate asc and desc sort options based on attributes entered here
-  - Facet/Filter Attributes
-    - Auto generate filters based on attributes
-      - Currently just `refinement-list` but the goal is to have more options per attribute for other filter types
-  - Image Attributes
-    - Treat the entered attributes as src/href for image(s) for each result
-  - Heading Attributes
-    - Show the attributes content above the content as H6's for each result
-      - More control over this is on the road map
-  - Description Attributes
-    - Show the attributes content below the heading for each result
+Issues and PRs are welcome. Keep changes focused; prefer extending `meili-core` carefully over breaking store contracts. Run `npm run lint` before opening a PR. Manual acceptance ideas against a real index are listed in [`docs/workspace-ux.md`](docs/workspace-ux.md) and the UX overhaul plan checklist (Continue, side panel Esc/copy, settings Submit, Playground redacted curl, drawer Instances/Keys/Tasks/Rules).

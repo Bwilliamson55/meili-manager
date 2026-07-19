@@ -58,7 +58,10 @@ export const buildCompatibleSearchParams = (state, compat) => {
     params.rankingScoreThreshold = normalizeThreshold(state.rankingScoreThreshold);
   }
   if (compat.supportsHybrid) {
-    params.hybrid = buildHybridConfig(state);
+    const hybrid = buildHybridConfig(state);
+    if (hybrid) {
+      params.hybrid = hybrid;
+    }
   }
 
   return params;

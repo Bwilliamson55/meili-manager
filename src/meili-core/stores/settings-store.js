@@ -7,6 +7,23 @@ import {
   getIndexSettingsWithStats,
 } from "../utils/meili-client";
 
+/** Known theme ids (labels/tokens live in src/themes/catalog.js). */
+const THEME_IDS = [
+  "weeumson-dark",
+  "weeumson-light",
+  "slate-dark",
+  "slate-light",
+  "high-contrast",
+];
+const DEFAULT_THEME_ID = "weeumson-dark";
+const LIGHT_THEME_IDS = new Set(["weeumson-light", "slate-light"]);
+
+function migrateThemeId(data) {
+  if (data?.themeId && THEME_IDS.includes(data.themeId)) return data.themeId;
+  if (data?.darkMode === false) return "weeumson-light";
+  return DEFAULT_THEME_ID;
+}
+
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
     indexUrl: "https://#",
@@ -21,9 +38,16 @@ export const useSettingsStore = defineStore("settings", {
     indexSearchState: {}, // { indexName: { query: '', filters: {}, sort: '', page: 0, filtersVisible: true, ...search options } }
     // Latest Meilisearch index settings fetched or saved in-session
     indexSettingsCache: {}, // { indexName: { filterableAttributes: [], ... } }
-    darkMode: true,
+    themeId: DEFAULT_THEME_ID,
     // Unsaved settings tracking
     hasUnsavedSettings: false,
+    // Resume last index workspace visit (Indexes home Continue)
+    lastIndexUid: "",
+    lastIndexTab: "documents",
+    // Per-index Playground request drafts
+    indexPlaygroundState: {}, // { indexName: { method, path, body } }
+    // One-shot seed for Playground (Documents bridge); not persisted
+    playgroundSeed: null, // { type: 'search'|'document', indexUid, documentId?, body? }
   }),
   getters: {
     // Create fresh client on-demand (no caching, no reactivity issues)
@@ -41,8 +65,14 @@ export const useSettingsStore = defineStore("settings", {
         apiKey: state.indexKey,
       });
     },
+    /** Derived from themeId (legacy darkMode consumers). */
+    darkMode: (state) => !LIGHT_THEME_IDS.has(state.themeId),
   },
   actions: {
+    setThemeId(themeId) {
+      this.themeId = THEME_IDS.includes(themeId) ? themeId : DEFAULT_THEME_ID;
+    },
+
     // Validate connection (separate from client creation)
     async validateConnection() {
       try {
@@ -287,9 +317,44 @@ export const useSettingsStore = defineStore("settings", {
     markSettingsSaved() {
       this.hasUnsavedSettings = false;
     },
+
+    setLastIndexVisit(indexUid, tab = "documents") {
+      if (!indexUid) return;
+      this.lastIndexUid = indexUid;
+      this.lastIndexTab = tab || "documents";
+      this.currentIndex = indexUid;
+    },
+
+    getIndexPlaygroundState(indexName) {
+      return (
+        this.indexPlaygroundState[indexName] || {
+          method: "POST",
+          path: `/indexes/${indexName}/search`,
+          body: '{\n  "q": "",\n  "limit": 20\n}',
+        }
+      );
+    },
+
+    setIndexPlaygroundState(indexName, state) {
+      if (!indexName) return;
+      this.indexPlaygroundState[indexName] = {
+        ...this.getIndexPlaygroundState(indexName),
+        ...state,
+      };
+    },
+
+    setPlaygroundSeed(seed) {
+      this.playgroundSeed = seed;
+    },
+
+    consumePlaygroundSeed() {
+      const seed = this.playgroundSeed;
+      this.playgroundSeed = null;
+      return seed;
+    },
   },
   persist: {
-    paths: [
+    pick: [
       "indexUrl",
       "indexKey",
       "currentIndex",
@@ -297,9 +362,21 @@ export const useSettingsStore = defineStore("settings", {
       "instances",
       "indexDisplaySettings",
       "indexSearchState",
-      "darkMode",
-      // Don't persist hasUnsavedSettings - should reset on page load
+      "indexPlaygroundState",
+      "lastIndexUid",
+      "lastIndexTab",
+      "themeId",
+      // Don't persist hasUnsavedSettings / playgroundSeed
     ],
+    serializer: {
+      serialize: JSON.stringify,
+      deserialize: (value) => {
+        const data = JSON.parse(value);
+        data.themeId = migrateThemeId(data);
+        delete data.darkMode;
+        return data;
+      },
+    },
     // Exclude runtime state: activeClient, clientError, isConnecting, confirmed
   },
 });

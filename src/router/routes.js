@@ -1,13 +1,11 @@
 import IndexPageVue from "pages/IndexPage.vue";
-import SidebarSettingsVue from "pages/SidebarSettings.vue";
+import InstancesPageVue from "pages/InstancesPage.vue";
 import TasksPageVue from "src/pages/TasksPage.vue";
 import IndexDetailPage from "src/pages/IndexDetailPage.vue";
 import KeysPageVue from "src/pages/KeysPage.vue";
 import DocumentDetailPage from "src/pages/DocumentDetailPage.vue";
 import SimilarDocumentsPage from "src/pages/SimilarDocumentsPage.vue";
 import DynamicRulesPage from "src/pages/DynamicRulesPage.vue";
-import PreviewPageVue from "src/pages/PreviewPage.vue";
-import PreviewSidebarVue from "src/pages/PreviewSidebar.vue";
 
 const routes = [
   {
@@ -16,74 +14,42 @@ const routes = [
     children: [
       {
         path: "",
-        components: {
-          main: IndexPageVue,
-          side: SidebarSettingsVue,
-        },
+        component: IndexPageVue,
       },
       {
-        path: "/tasks",
-        components: {
-          main: TasksPageVue,
-          side: SidebarSettingsVue,
-        },
+        path: "instances",
+        component: InstancesPageVue,
       },
       {
-        path: "/keys",
-        components: {
-          main: KeysPageVue,
-          side: SidebarSettingsVue,
-        },
+        path: "tasks",
+        component: TasksPageVue,
       },
       {
-        path: "/dynamic-rules",
-        components: {
-          main: DynamicRulesPage,
-          side: SidebarSettingsVue,
-        },
+        path: "keys",
+        component: KeysPageVue,
       },
       {
-        path: "/index-details/:uid",
-        components: {
-          main: IndexDetailPage,
-          side: SidebarSettingsVue,
-        },
-        props: ["uid"],
+        path: "dynamic-rules",
+        component: DynamicRulesPage,
       },
       {
-        path: "/documents/:indexUid/:documentUid",
-        components: {
-          main: DocumentDetailPage,
-          side: SidebarSettingsVue,
-        },
-        props: ["indexUid", "documentUid"],
+        path: "index-details/:uid",
+        component: IndexDetailPage,
+        props: true,
       },
       {
-        path: "/similar/:indexUid/:documentUid",
-        components: {
-          main: SimilarDocumentsPage,
-          side: SidebarSettingsVue,
-        },
-        props: ["indexUid", "documentUid"],
+        path: "documents/:indexUid/:documentUid",
+        component: DocumentDetailPage,
+        props: true,
+      },
+      {
+        path: "similar/:indexUid/:documentUid",
+        component: SimilarDocumentsPage,
+        props: true,
       },
     ],
   },
   // Preview mode disabled (alpha feature)
-  // {
-  //   path: "/",
-  //   component: () => import("layouts/PreviewLayout.vue"),
-  //   children: [
-  //     {
-  //       path: "/preview",
-  //       components: {
-  //         main: PreviewPageVue,
-  //         side: PreviewSidebarVue,
-  //       },
-  //     },
-  //   ],
-  // },
-  // Always leave this as last one,
-  // but you can also remove it
   {
     path: "/:catchAll(.*)*",
     component: () => import("pages/ErrorNotFound.vue"),
