@@ -1,5 +1,5 @@
 <template>
-  <q-page class="p-6">
+  <q-page class="p-6 bg-page">
     <div class="mb-6">
       <h1 class="text-2xl font-semibold text-text">Instances</h1>
       <p class="text-sm text-text-muted mt-1">
@@ -54,6 +54,7 @@
                 <q-icon
                   :name="isPwd ? 'visibility_off' : 'visibility'"
                   class="cursor-pointer"
+                  :aria-label="isPwd ? 'Show API key' : 'Hide API key'"
                   @click="isPwd = !isPwd"
                 />
               </template>
@@ -122,6 +123,7 @@
                 dense
                 square
                 icon="key"
+                aria-label="Copy API key"
                 @click="copyKey(key)"
               >
                 <q-tooltip>Copy API key</q-tooltip>
@@ -133,6 +135,7 @@
                 square
                 icon="delete"
                 color="negative"
+                aria-label="Delete instance"
                 @click="deleteInstance(key)"
               >
                 <q-tooltip>Delete instance</q-tooltip>

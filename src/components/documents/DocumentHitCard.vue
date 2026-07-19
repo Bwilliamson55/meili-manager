@@ -43,9 +43,12 @@
               size="sm"
               icon="edit"
               color="primary"
+              aria-label="Edit document"
               :to="editRoute"
               @click.stop
-            />
+            >
+              <q-tooltip>Open full editor</q-tooltip>
+            </q-btn>
             <q-btn
               v-if="showSimilar"
               flat
@@ -54,9 +57,12 @@
               size="sm"
               icon="hub"
               color="secondary"
+              aria-label="Find similar documents"
               :to="similarRoute"
               @click.stop
-            />
+            >
+              <q-tooltip>Similar documents (embeddings)</q-tooltip>
+            </q-btn>
           </div>
 
           <div

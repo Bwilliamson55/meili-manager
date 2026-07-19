@@ -53,7 +53,9 @@
           icon="download"
           label="Create dump"
           @click="createDump"
-        />
+        >
+          <q-tooltip>Queue a full database dump (async task)</q-tooltip>
+        </q-btn>
         <q-btn
           unelevated
           square
@@ -118,6 +120,7 @@
             outlined
             square
             placeholder="Search indexes by UID..."
+            aria-label="Search indexes by UID"
             clearable
             class="flex-1"
           >
@@ -174,6 +177,10 @@
                   F {{ formatAttr(index.attrCounts.filterable) }} · S
                   {{ formatAttr(index.attrCounts.searchable) }} · Sort
                   {{ formatAttr(index.attrCounts.sortable) }}
+                  <q-tooltip
+                    >Filterable, searchable, and sortable attribute
+                    counts</q-tooltip
+                  >
                 </span>
                 <span
                   v-if="typeof index.rawDocumentDbSize === 'number'"
@@ -238,6 +245,7 @@
                 square
                 color="negative"
                 icon="delete"
+                aria-label="Delete index"
                 @click.stop.prevent="delIndex(index.uid)"
               >
                 <q-tooltip>Delete index</q-tooltip>
@@ -270,6 +278,7 @@
             square
             dense
             icon="close"
+            aria-label="Close"
             @click="showCreateDialog = false"
           />
         </q-card-section>
@@ -314,7 +323,13 @@
       :scroll-offset="150"
       :offset="[18, 18]"
     >
-      <q-btn fab square icon="keyboard_arrow_up" color="accent" />
+      <q-btn
+        fab
+        square
+        icon="keyboard_arrow_up"
+        color="accent"
+        aria-label="Scroll to top"
+      />
     </q-page-scroller>
   </q-page>
 </template>

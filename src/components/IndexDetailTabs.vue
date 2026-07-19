@@ -14,6 +14,7 @@
         indicator-color="primary"
         align="left"
         narrow-indicator
+        aria-label="Index sections"
       >
         <q-tab name="documents" label="Documents" icon="description" no-caps />
         <q-tab name="settings" label="Settings" icon="settings" no-caps />

@@ -46,9 +46,8 @@
           <div class="text-3xl font-bold text-warning">
             {{ keysStore.stats.expiringSoon }}
           </div>
-          <div class="text-sm text-text-muted">
-            Expiring soon
-          </div>
+          <div class="text-sm text-text-muted">Expiring soon</div>
+          <div class="text-xs text-text-muted mt-1">Within 30 days</div>
         </q-card-section>
       </q-card>
       <q-card flat bordered square class="bg-page-elevated">
@@ -79,6 +78,7 @@
           label="Search keys"
           outlined
           dense
+          square
           clearable
           placeholder="Search by name, description, or UID"
         >
@@ -104,7 +104,7 @@
             expand-separator
             icon="key"
             label="Raw Keys JSON"
-            header-class="text-blue"
+            header-class="text-text-muted"
           >
             <q-card bordered>
               <q-card-section>
@@ -176,16 +176,26 @@
                 />
 
                 <div class="flex justify-between">
-                  <q-btn label="Save" type="submit" color="primary" />
+                  <q-btn
+                    unelevated
+                    square
+                    no-caps
+                    label="Save"
+                    type="submit"
+                    color="primary"
+                  />
                   <q-btn
                     size="14px"
                     flat
-                    bordered
-                    color="red"
+                    square
+                    no-caps
+                    color="negative"
                     icon="delete"
                     label="Delete"
                     @click="delKey(key.uid)"
-                  />
+                  >
+                    <q-tooltip>Delete API key permanently</q-tooltip>
+                  </q-btn>
                 </div>
               </q-form>
 
@@ -276,7 +286,13 @@
         :scroll-offset="150"
         :offset="[18, 18]"
       >
-        <q-btn fab icon="keyboard_arrow_up" color="accent" />
+        <q-btn
+          fab
+          square
+          icon="keyboard_arrow_up"
+          color="accent"
+          aria-label="Scroll to top"
+        />
       </q-page-scroller>
 
       <!-- Create Key Dialog -->
@@ -288,9 +304,10 @@
             <div class="text-h6">Create New API Key</div>
             <q-btn
               flat
-              round
+              square
               dense
               icon="close"
+              aria-label="Close"
               @click="showCreateDialog = false"
             />
           </q-card-section>

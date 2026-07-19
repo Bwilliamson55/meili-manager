@@ -1,5 +1,5 @@
 <template>
-  <q-card flat bordered class="h-full flex flex-col min-h-0">
+  <q-card flat bordered square class="h-full flex flex-col min-h-0">
     <q-card-section class="px-2 py-2 flex-shrink-0">
       <div class="flex items-center justify-between gap-1">
         <span class="text-subtitle2 font-semibold text-text">
@@ -16,11 +16,15 @@
           <q-btn
             flat
             dense
+            square
             size="sm"
             icon="close"
             class="text-text-muted"
+            aria-label="Close filters panel"
             @click="$emit('close')"
-          />
+          >
+            <q-tooltip>Close filters panel</q-tooltip>
+          </q-btn>
         </div>
       </div>
 
@@ -28,9 +32,11 @@
         v-model="attributeSearch"
         dense
         outlined
+        square
         clearable
         debounce="150"
-        placeholder="Search attributes or values…"
+        label="Search filter attributes"
+        placeholder="Attributes or values…"
         class="mt-2"
       >
         <template #prepend>
@@ -69,8 +75,11 @@
           toggle-color="primary"
           class="text-caption"
           :options="densityOptions"
+          aria-label="Filter density"
           @update:model-value="onDensityChange"
-        />
+        >
+          <q-tooltip>Dense or comfortable facet spacing</q-tooltip>
+        </q-btn-toggle>
         <div class="inline-flex items-center gap-0.5">
           <q-toggle
             v-model="hideZeroCounts"

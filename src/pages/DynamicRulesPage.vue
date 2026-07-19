@@ -28,7 +28,11 @@
           label="New rule"
           :disable="!canMutateRules"
           @click="openCreate"
-        />
+        >
+          <q-tooltip v-if="!canMutateRules">
+            Connect an instance and enable dynamic search rules first
+          </q-tooltip>
+        </q-btn>
       </div>
     </div>
 
@@ -62,11 +66,17 @@
         <q-btn
           flat
           dense
+          square
+          no-caps
           label="Enable dynamicSearchRules"
           color="warning"
           :loading="enablingFeature"
           @click="enableDynamicRules"
-        />
+        >
+          <q-tooltip
+            >Sets the experimental feature flag on this instance</q-tooltip
+          >
+        </q-btn>
       </template>
     </q-banner>
 
@@ -121,7 +131,9 @@
             :disable="!canLoadRules"
           />
           <q-btn
-            flat
+            outline
+            square
+            no-caps
             color="primary"
             label="Apply filters"
             :disable="!canLoadRules"
@@ -156,9 +168,10 @@
           <q-btn
             dense
             flat
-            round
+            square
             icon="edit"
             color="primary"
+            aria-label="Edit rule"
             :disable="!canMutateRules"
             @click="openEdit(props.row.uid)"
           >
@@ -167,9 +180,10 @@
           <q-btn
             dense
             flat
-            round
+            square
             icon="science"
             color="secondary"
+            aria-label="Test search"
             :disable="!canReadRules || !props.row?.uid"
             @click="openTest(props.row)"
           >
@@ -178,9 +192,10 @@
           <q-btn
             dense
             flat
-            round
+            square
             icon="delete"
             color="negative"
+            aria-label="Delete rule"
             :disable="!canMutateRules"
             @click="confirmDelete(props.row.uid)"
           >

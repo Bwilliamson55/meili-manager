@@ -25,7 +25,9 @@
           "
           :label="tpl.label"
           @click="applyTemplate(tpl)"
-        />
+        >
+          <q-tooltip>{{ templateHint(tpl) }}</q-tooltip>
+        </q-btn>
       </div>
       <q-space />
       <q-toggle
@@ -34,7 +36,9 @@
         dense
         color="warning"
         label="I confirm write / delete"
-      />
+      >
+        <q-tooltip>Required before send on write or delete requests</q-tooltip>
+      </q-toggle>
       <q-btn
         unelevated
         square
@@ -46,7 +50,7 @@
         :disable="needsWriteConfirm && !writeConfirmed"
         @click="sendRequest"
       >
-        <q-tooltip>Ctrl/Cmd+Enter</q-tooltip>
+        <q-tooltip>Send request (Ctrl/Cmd+Enter)</q-tooltip>
       </q-btn>
     </div>
 
@@ -65,7 +69,9 @@
           class="border-border"
           label="Copy curl"
           @click="copyExport('curl', true)"
-        />
+        >
+          <q-tooltip>Copy curl with API key redacted</q-tooltip>
+        </q-btn>
         <q-btn
           outline
           dense
@@ -76,7 +82,9 @@
           class="border-border"
           label="curl + key"
           @click="copyExport('curl', false)"
-        />
+        >
+          <q-tooltip>Includes API key. Share carefully.</q-tooltip>
+        </q-btn>
         <q-btn
           outline
           dense
@@ -87,7 +95,9 @@
           class="border-border"
           label="Copy HTTP"
           @click="copyExport('http', true)"
-        />
+        >
+          <q-tooltip>Copy HTTP request with API key redacted</q-tooltip>
+        </q-btn>
         <q-btn
           outline
           dense
@@ -98,7 +108,9 @@
           class="border-border"
           label="Copy n8n JSON"
           @click="copyExport('n8n', true)"
-        />
+        >
+          <q-tooltip>Copy n8n node JSON with API key redacted</q-tooltip>
+        </q-btn>
         <q-btn
           outline
           dense
@@ -109,7 +121,9 @@
           class="border-border"
           label="n8n + key"
           @click="copyExport('n8n', false)"
-        />
+        >
+          <q-tooltip>Includes API key. Share carefully.</q-tooltip>
+        </q-btn>
       </div>
     </div>
 
@@ -172,6 +186,7 @@
               dense
               square
               label="q"
+              hint="Search query"
               @update:model-value="syncKnobsToBody"
             />
             <q-input
@@ -180,6 +195,7 @@
               dense
               square
               label="filter"
+              hint="Filter expression"
               @update:model-value="syncKnobsToBody"
             />
             <q-input
@@ -297,6 +313,18 @@ const props = defineProps({
 const theSettings = useSettingsStore();
 const templates = PLAYGROUND_TEMPLATES;
 const methodOptions = ["GET", "POST", "PUT", "PATCH", "DELETE"];
+
+const TEMPLATE_HINTS = {
+  search: "POST search this index",
+  "get-document": "GET one document by id",
+  "get-settings": "GET index settings",
+  "get-stats": "GET index stats",
+  "add-documents": "POST documents (write)",
+  "delete-document": "DELETE one document by id",
+};
+
+const templateHint = (tpl) =>
+  TEMPLATE_HINTS[tpl.id] || `${tpl.method} ${tpl.label}`;
 
 const method = ref("POST");
 const path = ref("");

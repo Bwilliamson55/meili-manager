@@ -15,7 +15,9 @@
     <!-- Add Instance Form -->
     <q-form @submit="onSubmit" @reset="onReset" class="space-y-4 mb-6">
       <q-input
-        filled
+        outlined
+        dense
+        square
         v-model="formLabel"
         label="The Label for this instance"
         hint="eg. 'Dev instance readonly'"
@@ -23,7 +25,9 @@
         :rules="[(val) => (val && val.length > 0) || 'Please type something']"
       />
       <q-input
-        filled
+        outlined
+        dense
+        square
         v-model="formUrl"
         label="The MeiliSearch index URL"
         hint="https://myEngine.com"
@@ -33,7 +37,9 @@
       <q-input
         v-model="formKey"
         label="The MeiliSearch index API Key"
-        filled
+        outlined
+        dense
+        square
         :type="isPwd ? 'password' : 'text'"
         :rules="[(val) => (val && val.length > 0) || 'Please type something']"
       >
@@ -41,18 +47,30 @@
           <q-icon
             :name="isPwd ? 'visibility_off' : 'visibility'"
             class="cursor-pointer"
+            :aria-label="isPwd ? 'Show API key' : 'Hide API key'"
             @click="isPwd = !isPwd"
           />
         </template>
       </q-input>
       <div>
         <q-btn
+          unelevated
+          square
+          no-caps
           label="Add Instance"
           type="submit"
           color="primary"
           :loading="isConnecting"
         />
-        <q-btn label="Reset" type="reset" color="primary" flat class="ml-2" />
+        <q-btn
+          flat
+          square
+          no-caps
+          label="Reset"
+          type="reset"
+          color="primary"
+          class="ml-2"
+        />
       </div>
     </q-form>
 
@@ -116,23 +134,25 @@
               size="sm"
               flat
               dense
-              round
+              square
               icon="key"
               class="text-text-muted"
+              aria-label="Copy API key"
               @click="copyKey(key)"
             >
-              <q-tooltip>Copy API Key</q-tooltip>
+              <q-tooltip>Copy API key</q-tooltip>
             </q-btn>
             <q-btn
               size="sm"
               flat
               dense
-              round
+              square
               icon="delete"
               color="negative"
+              aria-label="Delete instance"
               @click="deleteInstance(key)"
             >
-              <q-tooltip>Delete Instance</q-tooltip>
+              <q-tooltip>Delete instance</q-tooltip>
             </q-btn>
           </q-item-section>
         </q-item>

@@ -14,11 +14,20 @@
         </q-btn>
 
         <q-toolbar-title class="min-w-0 flex-1">
-          <q-btn flat dense no-caps square to="/" class="q-px-sm">
+          <q-btn
+            flat
+            dense
+            no-caps
+            square
+            to="/"
+            class="q-px-sm"
+            aria-label="Home"
+          >
             <img
               class="h-7 w-7 shrink-0"
               src="~assets/meili-logo.svg"
               alt=""
+              aria-hidden="true"
             />
             <span class="ml-2 truncate text-body1 text-weight-medium">{{
               brandLabel
@@ -53,8 +62,12 @@
           outline
           color="warning"
           class="q-mr-sm"
+          clickable
+          to="/instances"
           label="Not connected"
-        />
+        >
+          <q-tooltip>No instance connected. Open Instances to add one.</q-tooltip>
+        </q-chip>
 
         <q-btn
           flat
@@ -83,6 +96,7 @@
                 clickable
                 v-ripple
                 :active="theme.id === themeId"
+                :aria-current="theme.id === themeId ? 'true' : undefined"
                 active-class="bg-page text-primary"
                 @click="selectTheme(theme.id)"
               >

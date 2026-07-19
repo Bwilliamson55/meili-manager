@@ -77,8 +77,10 @@
             label="Search"
             outlined
             dense
+            square
             class="flex-1 min-w-[200px]"
             clearable
+            placeholder="UID, type, index, or status"
           >
             <template #prepend>
               <q-icon name="search" />
@@ -187,9 +189,10 @@
                 <q-btn
                   flat
                   dense
-                  round
+                  square
                   size="sm"
                   icon="visibility"
+                  aria-label="View task details"
                   @click="toggleExpand(props)"
                 >
                   <q-tooltip>View details</q-tooltip>
@@ -201,10 +204,11 @@
                   "
                   flat
                   dense
-                  round
+                  square
                   size="sm"
                   icon="cancel"
                   color="negative"
+                  aria-label="Cancel task"
                   @click="cancelTask(props.row.uid)"
                 >
                   <q-tooltip>Cancel task</q-tooltip>

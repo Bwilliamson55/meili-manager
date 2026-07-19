@@ -20,7 +20,14 @@
             {{ indexUid }}
           </div>
         </div>
-        <q-btn flat dense square icon="close" @click="close">
+        <q-btn
+          flat
+          dense
+          square
+          icon="close"
+          aria-label="Close document panel"
+          @click="close"
+        >
           <q-tooltip>Close (Esc)</q-tooltip>
         </q-btn>
       </div>
@@ -46,7 +53,9 @@
           :icon="editable ? 'visibility' : 'edit'"
           :label="editable ? 'View only' : 'Edit'"
           @click="editable = !editable"
-        />
+        >
+          <q-tooltip>Toggle JSON edit mode</q-tooltip>
+        </q-btn>
         <q-btn
           flat
           dense

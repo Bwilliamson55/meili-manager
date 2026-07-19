@@ -1,33 +1,43 @@
 <template>
   <div class="flex flex-wrap gap-2 p-2">
-    <q-card class="w-full p-6" flat>
-      <p class="text-center font-bold mb-4">
+    <q-card class="w-full p-6" flat square>
+      <p class="text-center font-bold mb-4 text-text">
         {{ newKeyObj.name }}
       </p>
       <q-form @submit="onSubmit" @reset="onReset" class="space-y-4">
         <q-input
-          filled
+          outlined
+          dense
+          square
           v-model="newKeyObj.name"
-          label="The Keys name"
+          label="Key name"
           hint="Something descriptive"
           lazy-rules
           :rules="[(val) => (val && val.length > 0) || 'Please type something']"
         />
         <q-input
-          filled
+          outlined
+          dense
+          square
           v-model="newKeyObj.description"
-          label="The Keys Description"
+          label="Description"
           hint="Something descriptive"
           lazy-rules
         />
         <div class="flex flex-col md:flex-row justify-evenly gap-4">
           <div class="bg-page p-4 border border-border flex-1">
-            <div class="font-semibold mb-2 text-text">Granted Actions:</div>
+            <div class="font-semibold mb-1 text-text">Granted actions</div>
+            <p class="text-caption text-text-muted mb-2">
+              See Meilisearch keys docs for action meanings. Use * for all
+              permissions.
+            </p>
             <q-select
-              filled
+              outlined
+              dense
+              square
               v-model="newKeyObj.actions"
-              label="Searchable Actions"
-              hint="A list of strings. Press enter to add values you type."
+              label="Actions"
+              hint="Press enter to add values you type"
               use-input
               use-chips
               multiple
@@ -41,12 +51,14 @@
             />
           </div>
           <div class="bg-page p-4 border border-border flex-1">
-            <div class="font-semibold mb-2 text-text">Granted Indexes:</div>
+            <div class="font-semibold mb-2 text-text">Granted indexes</div>
             <q-select
-              filled
+              outlined
+              dense
+              square
               v-model="newKeyObj.indexes"
-              label="Searchable Indexes"
-              hint="A list of strings. Press enter to add values you type."
+              label="Indexes"
+              hint="Press enter to add values you type"
               use-input
               use-chips
               multiple
@@ -61,15 +73,21 @@
         </div>
         <div class="flex flex-col md:flex-row justify-evenly gap-4">
           <q-input
-            filled
+            outlined
+            dense
+            square
             v-model="newKeyObj.expiresAt"
-            label="Expires At"
-            hint="Required but can be null"
+            label="Expires at"
+            hint="Leave empty for no expiration"
             clearable
             class="flex-1"
           >
             <template v-slot:prepend>
-              <q-icon name="event" class="cursor-pointer">
+              <q-icon
+                name="event"
+                class="cursor-pointer"
+                aria-label="Pick expiration date"
+              >
                 <q-popup-proxy
                   cover
                   transition-show="scale"
@@ -80,7 +98,14 @@
                     mask="YYYY-MM-DD HH:mm:ss"
                   >
                     <div class="flex items-center justify-end">
-                      <q-btn v-close-popup label="Close" color="primary" flat />
+                      <q-btn
+                        v-close-popup
+                        label="Close"
+                        color="primary"
+                        flat
+                        square
+                        no-caps
+                      />
                     </div>
                   </q-date>
                 </q-popup-proxy>
@@ -88,7 +113,11 @@
             </template>
 
             <template v-slot:append>
-              <q-icon name="access_time" class="cursor-pointer">
+              <q-icon
+                name="access_time"
+                class="cursor-pointer"
+                aria-label="Pick expiration time"
+              >
                 <q-popup-proxy
                   cover
                   transition-show="scale"
@@ -100,7 +129,14 @@
                     format24h
                   >
                     <div class="flex items-center justify-end">
-                      <q-btn v-close-popup label="Close" color="primary" flat />
+                      <q-btn
+                        v-close-popup
+                        label="Close"
+                        color="primary"
+                        flat
+                        square
+                        no-caps
+                      />
                     </div>
                   </q-time>
                 </q-popup-proxy>
@@ -109,7 +145,14 @@
           </q-input>
         </div>
         <div>
-          <q-btn label="Save" type="submit" color="primary" />
+          <q-btn
+            unelevated
+            square
+            no-caps
+            label="Create key"
+            type="submit"
+            color="primary"
+          />
         </div>
       </q-form>
     </q-card>

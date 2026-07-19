@@ -129,6 +129,7 @@
               icon="save"
               label="Submit settings"
             >
+              <q-tooltip>Save to Meilisearch (async task)</q-tooltip>
               <template v-slot:loading>
                 <q-spinner-dots />
                 Updating... Task: {{ iSettingsProcessing.taskId }}

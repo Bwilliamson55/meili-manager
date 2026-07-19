@@ -133,7 +133,11 @@
                 :loading="batchFetchLoading"
                 :disable="!meiliCompat.supportsDocumentsFetchByIds"
                 @click="fetchDocumentsByIds"
-              />
+              >
+                <q-tooltip v-if="!meiliCompat.supportsDocumentsFetchByIds">
+                  Fetch by IDs needs a newer Meilisearch version
+                </q-tooltip>
+              </q-btn>
               <q-btn
                 outline
                 dense
@@ -142,7 +146,9 @@
                 icon="add_circle"
                 label="New"
                 :to="`/documents/${currentIndex}/new`"
-              />
+              >
+                <q-tooltip>Create document in full editor</q-tooltip>
+              </q-btn>
             </div>
           </div>
 
@@ -225,7 +231,14 @@
       <q-card>
         <q-card-section class="flex items-center justify-between">
           <div class="text-h6">Fetched Documents by ID</div>
-          <q-btn flat dense icon="close" v-close-popup />
+          <q-btn
+            flat
+            dense
+            square
+            icon="close"
+            aria-label="Close"
+            v-close-popup
+          />
         </q-card-section>
         <q-separator />
         <q-card-section>

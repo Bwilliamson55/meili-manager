@@ -32,9 +32,12 @@
                 size="sm"
                 icon="edit"
                 color="primary"
+                aria-label="Edit document"
                 :to="bodyProps.row.__editRoute"
                 @click.stop
-              />
+              >
+                <q-tooltip>Open full editor</q-tooltip>
+              </q-btn>
             </template>
             <template v-else>
               <span
