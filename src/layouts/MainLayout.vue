@@ -40,13 +40,12 @@
           dense
           square
           outline
-          color="primary"
-          class="q-mr-sm max-w-xs"
+          class="q-mr-sm max-w-xs chip-context"
         >
           <span class="truncate">
             {{ activeInstance.label }}
-            <span class="text-caption opacity-80"> · {{ shortHost }}</span>
-            <span v-if="routeIndexUid" class="text-caption opacity-80">
+            <span class="text-caption text-text-muted"> · {{ shortHost }}</span>
+            <span v-if="routeIndexUid" class="text-caption text-text-muted">
               · {{ routeIndexUid }}</span
             >
           </span>
@@ -97,27 +96,21 @@
                 v-ripple
                 :active="theme.id === themeId"
                 :aria-current="theme.id === themeId ? 'true' : undefined"
-                active-class="bg-page text-primary"
+                active-class="bg-page text-text"
                 @click="selectTheme(theme.id)"
               >
                 <q-item-section avatar>
                   <div class="flex gap-0.5" aria-hidden="true">
                     <span
-                      class="inline-block h-4 w-4 border border-border"
-                      :style="{ background: theme.swatches.page }"
-                    />
-                    <span
-                      class="inline-block h-4 w-4 border border-border"
-                      :style="{ background: theme.swatches.primary }"
-                    />
-                    <span
-                      class="inline-block h-4 w-4 border border-border"
-                      :style="{ background: theme.swatches.elevated }"
+                      v-for="(swatch, idx) in theme.swatches"
+                      :key="idx"
+                      class="inline-block h-3.5 w-3.5 border border-border"
+                      :style="{ background: swatch }"
                     />
                   </div>
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label>{{ theme.label }}</q-item-label>
+                  <q-item-label class="text-text">{{ theme.label }}</q-item-label>
                 </q-item-section>
                 <q-item-section side>
                   <q-icon
@@ -232,7 +225,7 @@ import { useRoute } from "vue-router";
 import { useQuasar } from "quasar";
 import { useSettingsStore } from "src/meili-core/stores/settings-store";
 import { storeToRefs } from "pinia";
-import { themes } from "src/themes/catalog";
+import { getThemeSwatches, themes } from "src/themes/catalog";
 import { applyTheme } from "src/themes/applyTheme";
 
 const $q = useQuasar();
@@ -248,11 +241,7 @@ const miniDrawer = ref(false);
 const themeOptions = Object.values(themes).map((theme) => ({
   id: theme.id,
   label: theme.label,
-  swatches: {
-    page: theme.tokens.page,
-    primary: theme.tokens.primary,
-    elevated: theme.tokens.pageElevated,
-  },
+  swatches: getThemeSwatches(theme),
 }));
 
 const navLinks = [

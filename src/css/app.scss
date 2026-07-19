@@ -71,6 +71,15 @@ h6 {
   color: var(--color-on-primary);
 }
 
+/*
+ * Outline context chips (instance/host). Primary-as-text fails AA on dark
+ * elevated chrome; use token ink + border instead.
+ */
+.q-chip.q-chip--outline.chip-context {
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
 /* High Contrast: thicker chrome + clearer field labels/outlines. */
 [data-theme="high-contrast"] {
   .q-header,

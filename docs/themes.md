@@ -24,6 +24,8 @@ Required keys (`TOKEN_KEYS`): `page`, `pageElevated`, `border`, `text`, `textMut
 
 Runtime CSS vars: `--color-page`, `--color-page-elevated`, and so on. Vue uses token utilities only (`bg-page`, `text-text-muted`, `border-border`, `text-on-primary`).
 
+Picker swatches (via `getThemeSwatches` / `SWATCH_TOKEN_KEYS`): `page`, `pageElevated`, `primary`, `text`.
+
 ## Portable unit (for later Weeumson PWAs)
 
 Copy **`catalog.js` + `applyTheme.js` + `TOKEN_KEYS`**. Each app can keep fonts and extra tokens local. Do not maintain duplicate hex palettes in CSS.

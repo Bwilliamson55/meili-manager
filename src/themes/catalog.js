@@ -33,6 +33,16 @@ export const QUASAR_BRAND_KEYS = [
   "warning",
 ];
 
+/**
+ * Theme picker swatch order (catalog tokens only):
+ * page → pageElevated → primary → text
+ */
+export const SWATCH_TOKEN_KEYS = ["page", "pageElevated", "primary", "text"];
+
+export function getThemeSwatches(theme) {
+  return SWATCH_TOKEN_KEYS.map((key) => theme.tokens[key]);
+}
+
 export const themes = {
   "weeumson-dark": {
     id: "weeumson-dark",
@@ -44,7 +54,8 @@ export const themes = {
       pageElevated: "#232019",
       border: "#7a7268",
       text: "#ebe6dc",
-      textMuted: "#b8b0a4",
+      // Light enough for field labels on elevated cards (AA + readable taupe).
+      textMuted: "#d4cbc0",
       primary: "#b85538",
       secondary: "#8a9480",
       accent: "#b8956c",
