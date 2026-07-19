@@ -91,23 +91,87 @@ export function serializeHttp(req) {
 }
 
 /**
+ * Build a canvas-pasteable n8n workflow snippet with one HTTP Request node.
+ * Shape matches n8n 1.x paste import (`nodes` + `connections` + `meta.instanceId`).
+ * Parameter names follow `n8n-nodes-base.httpRequest` V3/4.x (typeVersion 4.2).
+ *
  * @param {{ method: string, url: string, headers: Record<string,string>, body?: string }} req
  * @returns {string}
  */
 export function serializeN8nJson(req) {
-  const payload = {
-    method: req.method,
+  const method = String(req.method || "GET").toUpperCase();
+  const needsBody = ["POST", "PUT", "PATCH"].includes(method);
+  const headers = req.headers || {};
+  const authHeader =
+    headers.Authorization || headers.authorization || "Bearer REDACTED";
+
+  /** @type {Record<string, unknown>} */
+  const parameters = {
+    method,
     url: req.url,
-    headers: req.headers || {},
+    authentication: "none",
+    sendHeaders: true,
+    headerParameters: {
+      parameters: [
+        {
+          name: "Authorization",
+          value: authHeader,
+        },
+      ],
+    },
+    // HTTP Request Options.timeout (ms). Meili search/docs can be slow; 30s is
+    // defensive without the 300s runtime fallback used when timeout is omitted.
+    options: {
+      timeout: 30000,
+    },
   };
-  if (req.body && ["POST", "PUT", "PATCH"].includes(req.method)) {
-    try {
-      payload.body = JSON.parse(req.body);
-    } catch {
-      payload.body = req.body;
+
+  if (needsBody && req.body !== undefined && req.body !== null && req.body !== "") {
+    parameters.sendBody = true;
+    parameters.contentType = "json";
+    parameters.specifyBody = "json";
+    // jsonBody is an n8n "json" string field; keep pretty JSON when parseable.
+    if (typeof req.body === "string") {
+      try {
+        parameters.jsonBody = JSON.stringify(JSON.parse(req.body), null, 2);
+      } catch {
+        parameters.jsonBody = req.body;
+      }
+    } else {
+      parameters.jsonBody = JSON.stringify(req.body, null, 2);
     }
   }
-  return JSON.stringify(payload, null, 2);
+
+  const nodeId =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `meili-http-${Date.now()}`;
+
+  const node = {
+    parameters,
+    id: nodeId,
+    name: "Meilisearch Request",
+    type: "n8n-nodes-base.httpRequest",
+    typeVersion: 4.2,
+    position: [0, 0],
+    // Node Settings (not parameters.options): light retry for transient failures.
+    retryOnFail: true,
+    maxTries: 3,
+    waitBetweenTries: 1000,
+  };
+
+  return JSON.stringify(
+    {
+      nodes: [node],
+      connections: {},
+      pinData: {},
+      meta: {
+        instanceId: "meili-manager-playground",
+      },
+    },
+    null,
+    2,
+  );
 }
 
 /**

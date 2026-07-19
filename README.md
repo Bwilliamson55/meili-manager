@@ -86,7 +86,7 @@ Open an index to work in peer tabs: **Documents** | **Settings** | **Playground*
 - Indexes home: cluster stats, dense list, **Continue** for last index/tab
 - Documents: InstantSearch browser; click a hit for a JSON side panel (copy, edit toggle, Open in Playground, full editor)
 - Settings: category jump + sticky unsaved/Submit bar (explicit save only)
-- Playground: raw HTTP builder with redacted curl / HTTP / n8n JSON exports (with-key secondary copies)
+- Playground: raw HTTP builder with redacted curl / HTTP / canvas-pasteable n8n HTTP Request JSON (with-key secondary copies)
 
 See [`docs/workspace-ux.md`](docs/workspace-ux.md).
 
@@ -252,7 +252,7 @@ InstantSearch browser:
 
 ### Playground
 
-Craft `GET`/`POST`/… requests scoped to the current index, Send, inspect status/timing/JSON, copy redacted curl (default) or with-key / HTTP / n8n JSON. Seed from Documents hit or diagnostics. See [`docs/workspace-ux.md`](docs/workspace-ux.md).
+Craft `GET`/`POST`/… requests scoped to the current index, Send, inspect status/timing/JSON, copy redacted curl (default) or with-key / HTTP / n8n workflow JSON (paste onto the n8n canvas). Seed from Documents hit or diagnostics. See [`docs/workspace-ux.md`](docs/workspace-ux.md).
 
 ### Endpoints/Methods used
 

@@ -25,7 +25,7 @@
 ### Critical Files
 
 - `src/meili-core/stores/settings-store.js`: Credentials, `indexSearchState`, `indexDisplaySettings`, `indexPlaygroundState`, last visit, playground seed. Actions: `getIndexClient`, `rawRequest`, `switchInstance`, `setLastIndexVisit`, playground get/set/seed helpers.
-- `src/meili-core/utils/playground-request.js`: curl/HTTP/n8n export helpers + raw fetch Send.
+- `src/meili-core/utils/playground-request.js`: curl/HTTP/n8n (pasteable HTTP Request workflow snippet) export helpers + raw fetch Send.
 - `src/meili-core/utils/display-settings.js`: List-field resolution and document id/title helpers.
 - `src/pages/IndexDetailPage.vue`: Workspace tabs, document side panel, Playground bridge.
 - `src/components/playground/PlaygroundPanel.vue` / `documents/DocumentSidePanel.vue`: Playground and JSON inspector.

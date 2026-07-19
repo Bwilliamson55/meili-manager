@@ -109,7 +109,10 @@
           label="Copy n8n JSON"
           @click="copyExport('n8n', true)"
         >
-          <q-tooltip>Copy n8n node JSON with API key redacted</q-tooltip>
+          <q-tooltip>
+            Paste into n8n canvas (Ctrl/Cmd+V). HTTP Request node; Bearer
+            redacted.
+          </q-tooltip>
         </q-btn>
         <q-btn
           outline
@@ -122,7 +125,9 @@
           label="n8n + key"
           @click="copyExport('n8n', false)"
         >
-          <q-tooltip>Includes API key. Share carefully.</q-tooltip>
+          <q-tooltip>
+            Paste into n8n canvas. Includes API key. Share carefully.
+          </q-tooltip>
         </q-btn>
       </div>
     </div>

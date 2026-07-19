@@ -42,6 +42,7 @@ Peer tabs (query `?tab=` is shareable):
 
 - Builds live calls against the active instance (raw `fetch`, not InstantSearch).
 - Export strip is available before Send: redacted Bearer curl by default; secondary copies include the key for local n8n/Postman.
+- **Copy n8n JSON** / **n8n + key** copy a canvas-pasteable workflow snippet (one `n8n-nodes-base.httpRequest` node, typeVersion 4.2). Paste with Ctrl/Cmd+V on the n8n canvas. Redacted uses `Bearer REDACTED`; **n8n + key** embeds the real key in the Authorization header. Node defaults: `options.timeout` 30000 ms, `retryOnFail` with `maxTries` 3 and `waitBetweenTries` 1000 ms. JSON body uses `contentType: json` + `specifyBody: json` + string `jsonBody` (Meili search/documents). Content-Type is left to the HTTP Request node; only Authorization is set as a header.
 - Documents diagnostics and hit panel can seed search or get-document requests.
 - Destructive methods require an explicit confirm toggle before Send.
 - Shortcut: `Ctrl/Cmd+Enter` sends.
