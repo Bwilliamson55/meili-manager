@@ -15,13 +15,13 @@
           square
           no-caps
           size="sm"
-          color="primary"
           :unelevated="activeTemplateId === tpl.id"
           :outline="activeTemplateId !== tpl.id"
+          :color="activeTemplateId === tpl.id ? 'primary' : undefined"
           :class="
             activeTemplateId === tpl.id
               ? 'bg-primary text-on-primary'
-              : 'border-border'
+              : 'border-border text-text'
           "
           :label="tpl.label"
           @click="applyTemplate(tpl)"
@@ -55,9 +55,9 @@
     </div>
 
     <div
-      class="flex flex-wrap items-center gap-2 flex-shrink-0 border border-border bg-page-elevated p-2"
+      class="flex flex-wrap items-center gap-2 flex-shrink-0 border border-border bg-page-elevated px-2 py-1.5"
     >
-      <span class="text-caption text-text-muted">Export</span>
+      <span class="text-caption text-text-muted">Export for n8n / curl</span>
       <div class="flex flex-wrap items-stretch gap-1">
         <q-btn
           outline
@@ -65,8 +65,7 @@
           square
           no-caps
           size="sm"
-          color="primary"
-          class="border-border"
+          class="border-border text-text"
           label="Copy curl"
           @click="copyExport('curl', true)"
         >
@@ -78,12 +77,14 @@
           square
           no-caps
           size="sm"
-          color="primary"
-          class="border-border"
+          class="border-border text-text"
           label="curl + key"
           @click="copyExport('curl', false)"
         >
-          <q-tooltip>Includes API key. Share carefully.</q-tooltip>
+          <q-tooltip>
+            curl including the API key. Share carefully; do not paste into
+            public channels.
+          </q-tooltip>
         </q-btn>
         <q-btn
           outline
@@ -91,8 +92,7 @@
           square
           no-caps
           size="sm"
-          color="primary"
-          class="border-border"
+          class="border-border text-text"
           label="Copy HTTP"
           @click="copyExport('http', true)"
         >
@@ -104,8 +104,7 @@
           square
           no-caps
           size="sm"
-          color="primary"
-          class="border-border"
+          class="border-border text-text"
           label="Copy n8n JSON"
           @click="copyExport('n8n', true)"
         >
@@ -120,13 +119,13 @@
           square
           no-caps
           size="sm"
-          color="primary"
-          class="border-border"
+          class="border-border text-text"
           label="n8n + key"
           @click="copyExport('n8n', false)"
         >
           <q-tooltip>
-            Paste into n8n canvas. Includes API key. Share carefully.
+            n8n HTTP Request node including the API key. Share carefully; do
+            not paste into public workflows.
           </q-tooltip>
         </q-btn>
       </div>
@@ -137,7 +136,10 @@
     >
       <q-card flat bordered square class="bg-page-elevated flex flex-col min-h-0">
         <q-card-section class="pb-2">
-          <div class="text-subtitle2 font-semibold mb-3">Request</div>
+          <div class="text-subtitle2 font-semibold mb-1">Request</div>
+          <div class="text-caption text-text-muted mb-3">
+            Build method and path, then Send.
+          </div>
           <q-select
             v-model="method"
             :options="methodOptions"
@@ -164,15 +166,17 @@
       <q-card flat bordered square class="bg-page-elevated flex flex-col min-h-0">
         <q-card-section class="pb-2 flex-1 flex flex-col min-h-0">
           <div class="flex items-center justify-between gap-2 mb-2">
-            <div class="text-subtitle2 font-semibold">Body / knobs</div>
+            <div>
+              <div class="text-subtitle2 font-semibold">Body</div>
+              <div class="text-caption text-text-muted">Request body (JSON)</div>
+            </div>
             <q-btn
               outline
               dense
               square
               no-caps
               size="sm"
-              color="primary"
-              class="border-border"
+              class="border-border text-text"
               icon="content_copy"
               label="Copy"
               :disable="!needsBody || !body.trim()"
@@ -181,64 +185,66 @@
               <q-tooltip>Copy JSON body</q-tooltip>
             </q-btn>
           </div>
-          <div
-            v-if="method === 'POST' && path.includes('/search')"
-            class="grid grid-cols-2 gap-2 mb-3"
-          >
-            <q-input
-              v-model="searchKnobs.q"
-              outlined
-              dense
-              square
-              label="q"
-              hint="Search query"
-              @update:model-value="syncKnobsToBody"
-            />
-            <q-input
-              v-model="searchKnobs.filter"
-              outlined
-              dense
-              square
-              label="filter"
-              hint="Filter expression"
-              @update:model-value="syncKnobsToBody"
-            />
-            <q-input
-              v-model.number="searchKnobs.limit"
-              type="number"
-              outlined
-              dense
-              square
-              label="limit"
-              @update:model-value="syncKnobsToBody"
-            />
-            <q-input
-              v-model.number="searchKnobs.offset"
-              type="number"
-              outlined
-              dense
-              square
-              label="offset"
-              @update:model-value="syncKnobsToBody"
-            />
-            <q-input
-              v-model="searchKnobs.sort"
-              outlined
-              dense
-              square
-              label="sort (comma)"
-              class="col-span-2"
-              @update:model-value="syncKnobsToBody"
-            />
-            <q-input
-              v-model="searchKnobs.attributesToRetrieve"
-              outlined
-              dense
-              square
-              label="attributesToRetrieve (comma)"
-              class="col-span-2"
-              @update:model-value="syncKnobsToBody"
-            />
+          <div v-if="isSearchRequest" class="mb-3">
+            <div class="text-caption text-text-muted font-medium mb-2">
+              Search options
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <q-input
+                v-model="searchKnobs.q"
+                outlined
+                dense
+                square
+                label="q"
+                hint="Search query"
+                @update:model-value="syncKnobsToBody"
+              />
+              <q-input
+                v-model="searchKnobs.filter"
+                outlined
+                dense
+                square
+                label="filter"
+                hint="Filter expression"
+                @update:model-value="syncKnobsToBody"
+              />
+              <q-input
+                v-model.number="searchKnobs.limit"
+                type="number"
+                outlined
+                dense
+                square
+                label="limit"
+                @update:model-value="syncKnobsToBody"
+              />
+              <q-input
+                v-model.number="searchKnobs.offset"
+                type="number"
+                outlined
+                dense
+                square
+                label="offset"
+                @update:model-value="syncKnobsToBody"
+              />
+              <q-input
+                v-model="searchKnobs.sort"
+                outlined
+                dense
+                square
+                label="sort (comma)"
+                class="col-span-2"
+                @update:model-value="syncKnobsToBody"
+              />
+              <q-input
+                v-model="searchKnobs.attributesToRetrieve"
+                outlined
+                dense
+                square
+                label="attributesToRetrieve (comma)"
+                class="col-span-2"
+                @update:model-value="syncKnobsToBody"
+              />
+            </div>
           </div>
           <q-input
             v-model="body"
@@ -249,6 +255,7 @@
             autogrow
             class="font-mono text-caption flex-1"
             label="JSON body"
+            :placeholder="bodyPlaceholder"
             :disable="!needsBody"
             @update:model-value="persist"
           />
@@ -259,12 +266,17 @@
         <q-card-section class="pb-2 flex-1 flex flex-col min-h-0">
           <div class="flex items-center justify-between gap-2 mb-2">
             <div class="flex items-center gap-2 min-w-0">
-              <div class="text-subtitle2 font-semibold">Response</div>
-              <div
-                v-if="responseMeta"
-                class="text-caption text-text-muted truncate"
-              >
-                {{ responseMeta.status }} · {{ responseMeta.durationMs }}ms
+              <div>
+                <div class="text-subtitle2 font-semibold">Response</div>
+                <div
+                  v-if="responseMeta"
+                  class="text-caption text-text-muted truncate"
+                >
+                  {{ responseMeta.status }} · {{ responseMeta.durationMs }}ms
+                </div>
+                <div v-else class="text-caption text-text-muted">
+                  Results appear here after Send
+                </div>
               </div>
             </div>
             <q-btn
@@ -273,8 +285,7 @@
               square
               no-caps
               size="sm"
-              color="primary"
-              class="border-border"
+              class="border-border text-text"
               icon="content_copy"
               label="Copy"
               :disable="!hasCopyableResponse"
@@ -284,8 +295,12 @@
             </q-btn>
           </div>
           <pre
-            class="text-caption whitespace-pre-wrap break-all overflow-auto flex-1 min-h-48 bg-page p-3 border border-border"
-            >{{ responseText || "Send a request to see the response." }}</pre
+            class="text-caption whitespace-pre-wrap break-all overflow-auto flex-1 min-h-48 bg-page p-3 border border-border text-text"
+            :class="responseText ? '' : 'text-text-muted'"
+            >{{
+              responseText ||
+              "No response yet. Click Send to run the request."
+            }}</pre
           >
         </q-card-section>
       </q-card>
@@ -351,6 +366,16 @@ const searchKnobs = reactive({
 
 const needsBody = computed(() =>
   ["POST", "PUT", "PATCH"].includes(method.value),
+);
+
+const bodyPlaceholder = computed(() =>
+  needsBody.value
+    ? '{\n  "q": "",\n  "limit": 20\n}'
+    : "No body for this method",
+);
+
+const isSearchRequest = computed(
+  () => method.value === "POST" && path.value.includes("/search"),
 );
 
 const needsWriteConfirm = computed(() =>
