@@ -3,16 +3,24 @@
     <IndexDetailTabs v-model="detailPanelTab" class="flex-1 min-h-0">
       <template #overview-tab>
         <div v-if="iStats && iPk" class="flex flex-wrap gap-2 mb-4">
-          <q-chip icon="numbers" color="info" text-color="white">
+          <q-chip
+            square
+            dense
+            outline
+            icon="numbers"
+            class="chip-context"
+          >
             Count: {{ iStats.numberOfDocuments }}
           </q-chip>
-          <q-chip color="grey-8" text-color="white">
+          <q-chip square dense outline class="chip-context">
             Primary key: {{ iPk }}
           </q-chip>
           <q-chip
+            square
+            dense
+            outline
             :icon="iStats.isIndexing ? 'sync' : 'done'"
-            color="secondary"
-            text-color="white"
+            class="chip-context"
           >
             Indexing: {{ iStats.isIndexing }}
           </q-chip>
