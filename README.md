@@ -10,22 +10,37 @@ Credentials never leave the browser: instance URLs and API keys are stored in `l
 ## Docs
 
 - Workspace UX (index-first, Playground, side panel): [`docs/workspace-ux.md`](docs/workspace-ux.md)
+- Themes (picker, catalog, contrast): [`docs/themes.md`](docs/themes.md)
 - Reuse/fork/embed playbook: [`docs/reuse-and-embedding.md`](docs/reuse-and-embedding.md)
 - Headless core (copy-paste): [`src/meili-core/README.md`](src/meili-core/README.md)
 - Dynamic search rules: [`docs/dynamic-search-rules.md`](docs/dynamic-search-rules.md)
 - Release readiness summary: [`docs/release-readiness-1.42.md`](docs/release-readiness-1.42.md)
 - Dual-version QA checklist: [`docs/qa-checklist-1.11-1.42.md`](docs/qa-checklist-1.11-1.42.md)
 - GitHub release draft: [`RELEASE_DRAFT_1.42.md`](RELEASE_DRAFT_1.42.md)
+- Playwright shell screenshots (mobile/desktop review): [`docs/e2e-screenshots.md`](docs/e2e-screenshots.md)
 
 ## Quick start
 
 ```bash
 npm install
 npm run lint
-npx quasar dev
+npm run check:themes
+npm run dev
 ```
 
-The Quasar CLI is available via `npx` (or `@quasar/cli` if you prefer a global install). Dev server defaults to the Quasar/Vite port (usually `http://localhost:9000/`). Hash routing is used so the SPA works on static hosts such as `meili-manager.weeumson.com`.
+`npm run dev` runs `quasar dev` (also fine via `npx quasar`). Dev server defaults to the Quasar/Vite port (usually `http://localhost:9000/`). Hash routing is used so the SPA works on static hosts such as `meili-manager.weeumson.com`.
+
+### Screenshot review (Playwright)
+
+One-time: `npx playwright install chromium`. Then with the app on `:9000` (or let Playwright start `npm run dev`):
+
+```bash
+npm run test:e2e
+# or
+npm run review:screenshots
+```
+
+PNGs land in `tests/e2e/screenshots/` (gitignored). No Meili API keys required; specs capture the unconnected shell. Details: [`docs/e2e-screenshots.md`](docs/e2e-screenshots.md).
 
 ### Production build
 
@@ -47,6 +62,7 @@ Generates `changelog.json` with versioned entries grouped by ISO week.
 
 ```bash
 npm run lint
+npm run check:themes
 npm run format
 ```
 
@@ -89,11 +105,11 @@ Preview routes remain in the tree but are disabled in the router. Do not revive 
 
 ## Theme
 
-Dark Weeumson docs-style shell by default:
+Named presets from a single catalog (`src/themes/catalog.js`): Weeumson Dark (default), Weeumson Light, Slate Dark, Slate Light, High Contrast. Header palette picker; WCAG AA checked via `npm run check:themes`. See [`docs/themes.md`](docs/themes.md).
 
 - IBM Plex Sans
-- Primary `#b85538`, elevated page surfaces, square cards/buttons
-- Tailwind v4 theme tokens in `src/css/tailwind.css`; Quasar brand in `quasar.config.js` and `src/css/quasar.variables.scss`
+- Runtime CSS vars + Quasar `setCssVar` from the catalog (no per-theme CSS palettes)
+- Build-time Quasar brand defaults match Weeumson Dark
 
 UI priority: Quasar props → Tailwind utilities → Quasar utility classes → scoped CSS last.
 
