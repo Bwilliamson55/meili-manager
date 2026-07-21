@@ -118,6 +118,34 @@
                 :label="filtersVisible ? 'Hide filters' : 'Show filters'"
                 @click="filtersVisible = !filtersVisible"
               />
+              <q-btn
+                outline
+                dense
+                square
+                no-caps
+                color="primary"
+                icon="terminal"
+                label="Open in Playground"
+                @click="openSearchInPlayground"
+              >
+                <q-tooltip>
+                  Seed Playground with the current search body (q, filter, sort,
+                  limit/offset, hybrid)
+                </q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                dense
+                square
+                no-caps
+                icon="content_copy"
+                label="Copy search JSON"
+                @click="copyCurrentSearchJson"
+              >
+                <q-tooltip>
+                  Copy the Meilisearch search body as JSON
+                </q-tooltip>
+              </q-btn>
             </div>
             <div class="flex flex-wrap items-center gap-2">
               <q-input
@@ -216,6 +244,7 @@
                 normalizeThreshold(savedSearchState.hybridSemanticRatio)
               "
               @open-playground="openSearchInPlayground"
+              @copy-search-json="copyCurrentSearchJson"
             />
             <ais-configure v-bind="searchParams" />
             <SearchStatePersistence
@@ -306,6 +335,7 @@ import {
   normalizeThreshold,
   getDefaultIndexSearchState,
   buildRefinementListFromFilters,
+  buildMeiliSearchBodyFromIndexState,
   getLlmPresetPatch,
   getClearedLlmPresetFields,
   getDefaultEmbedderName,
@@ -339,6 +369,7 @@ import {
   mergeDisplaySettings,
 } from "src/meili-core/utils/display-settings";
 import { showError, showSuccess } from "src/utils/notifications";
+import { copyText } from "src/utils/clipboard";
 
 const route = useRoute();
 const router = useRouter();
@@ -434,6 +465,7 @@ const batchFetchedColumns = [
 // Search state persistence
 // Note: page is 0-based to match InstantSearch's internal format (0 = first page, 1 = second page)
 const savedSearchState = ref(getDefaultIndexSearchState());
+const DOCUMENTS_HITS_PER_PAGE = 50;
 
 const matchingStrategyOptions = [
   { label: "Last", value: "last" },
@@ -469,7 +501,7 @@ const searchParams = computed(() => {
     savedSearchState.value.filters,
   );
   const params = {
-    hitsPerPage: 50,
+    hitsPerPage: DOCUMENTS_HITS_PER_PAGE,
     query: savedSearchState.value.query || undefined,
     sortBy: savedSearchState.value.sort || undefined,
     page:
@@ -597,6 +629,16 @@ const onHitSelect = ({ item, documentId }) => {
   docPanelOpen.value = true;
 };
 
+const buildCurrentSearchBody = () =>
+  buildMeiliSearchBodyFromIndexState(savedSearchState.value, {
+    hitsPerPage: DOCUMENTS_HITS_PER_PAGE,
+    indexUid: currentIndex.value,
+    compatParams: buildCompatibleSearchParams(
+      savedSearchState.value,
+      meiliCompat.value,
+    ),
+  });
+
 const openDocumentInPlayground = (documentId) => {
   theSettings.setPlaygroundSeed({
     type: "document",
@@ -606,9 +648,19 @@ const openDocumentInPlayground = (documentId) => {
   detailPanelTab.value = "playground";
 };
 
-const openSearchInPlayground = (seed) => {
-  theSettings.setPlaygroundSeed(seed);
+const openSearchInPlayground = () => {
+  theSettings.setPlaygroundSeed({
+    type: "search",
+    indexUid: currentIndex.value,
+    body: buildCurrentSearchBody(),
+  });
   detailPanelTab.value = "playground";
+};
+
+const copyCurrentSearchJson = async () => {
+  await copyText(JSON.stringify(buildCurrentSearchBody(), null, 2), {
+    successMessage: "Search JSON copied",
+  });
 };
 
 const isTypingTarget = (el) => {
