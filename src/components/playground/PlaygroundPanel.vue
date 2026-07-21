@@ -7,9 +7,22 @@
       class="flex flex-wrap items-center gap-2 flex-shrink-0 border border-border bg-page-elevated p-2"
     >
       <span class="mm-section-kicker mr-1">Presets</span>
+      <q-select
+        v-model="activeGroupId"
+        :options="groupOptions"
+        option-value="id"
+        option-label="label"
+        emit-value
+        map-options
+        outlined
+        dense
+        square
+        label="Group"
+        class="w-40"
+      />
       <div class="flex flex-wrap items-stretch gap-1">
         <q-btn
-          v-for="tpl in templates"
+          v-for="tpl in groupTemplates"
           :key="tpl.id"
           dense
           square
@@ -148,7 +161,7 @@
             square
             label="Method"
             class="mb-3"
-            @update:model-value="onRequestEdited"
+            @update:model-value="onDraftEdited"
           />
           <q-input
             v-model="path"
@@ -158,7 +171,7 @@
             label="Path"
             hint="Relative to instance host"
             class="mb-2"
-            @update:model-value="onRequestEdited"
+            @update:model-value="onDraftEdited"
           />
         </q-card-section>
       </q-card>
@@ -185,7 +198,7 @@
               <q-tooltip>Copy JSON body</q-tooltip>
             </q-btn>
           </div>
-          <div v-if="isSearchRequest" class="mb-3">
+          <div v-if="isSingleIndexSearch" class="mb-3">
             <div class="mm-section-kicker mb-2">Search options</div>
             <div class="grid grid-cols-2 gap-2">
               <q-input
@@ -243,6 +256,68 @@
                 @update:model-value="syncKnobsToBody"
               />
             </div>
+            <div class="mm-section-kicker mt-3 mb-2">Hybrid</div>
+            <div class="grid grid-cols-2 gap-2">
+              <q-input
+                v-model="searchKnobs.hybridEmbedder"
+                outlined
+                dense
+                square
+                label="embedder"
+                hint="Required for hybrid"
+                @update:model-value="syncKnobsToBody"
+              />
+              <q-input
+                v-model.number="searchKnobs.hybridSemanticRatio"
+                type="number"
+                outlined
+                dense
+                square
+                label="semanticRatio"
+                hint="0–1"
+                min="0"
+                max="1"
+                step="0.05"
+                @update:model-value="syncKnobsToBody"
+              />
+            </div>
+          </div>
+          <div v-if="isFederatedMultiSearch" class="mb-3">
+            <div class="mm-section-kicker mb-2">Federation</div>
+            <div class="text-caption text-text-muted mb-2">
+              Syncs into body.federation only. Prefer federation.distinct over
+              query-level distinct.
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <q-input
+                v-model="federationKnobs.distinct"
+                outlined
+                dense
+                square
+                label="distinct"
+                hint="Attribute for federation.distinct"
+                class="col-span-2"
+                @update:model-value="syncFederationKnobsToBody"
+              />
+              <q-input
+                v-model.number="federationKnobs.limit"
+                type="number"
+                outlined
+                dense
+                square
+                label="limit"
+                @update:model-value="syncFederationKnobsToBody"
+              />
+              <q-input
+                v-model.number="federationKnobs.offset"
+                type="number"
+                outlined
+                dense
+                square
+                label="offset"
+                @update:model-value="syncFederationKnobsToBody"
+              />
+            </div>
           </div>
           <q-input
             v-model="body"
@@ -255,7 +330,7 @@
             label="JSON body"
             :placeholder="bodyPlaceholder"
             :disable="!needsBody"
-            @update:model-value="persist"
+            @update:model-value="onDraftEdited"
           />
         </q-card-section>
       </q-card>
@@ -311,13 +386,18 @@ import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useSettingsStore } from "src/meili-core/stores/settings-store";
 import {
   PLAYGROUND_TEMPLATES,
+  PLAYGROUND_TEMPLATE_GROUPS,
   buildExportRequest,
   executePlaygroundRequest,
   isDestructiveMethod,
+  isMultiSearchPath,
+  isSingleIndexSearchPath,
+  resolveTemplateBody,
   serializeCurl,
   serializeHttp,
   serializeN8nJson,
 } from "src/meili-core/utils/playground-request";
+import { buildHybridConfig } from "src/meili-core/utils/search-utils";
 import { copyText } from "src/utils/clipboard";
 import { showError } from "src/utils/notifications";
 
@@ -330,15 +410,46 @@ const props = defineProps({
 
 const theSettings = useSettingsStore();
 const templates = PLAYGROUND_TEMPLATES;
+const groupOptions = PLAYGROUND_TEMPLATE_GROUPS;
 const methodOptions = ["GET", "POST", "PUT", "PATCH", "DELETE"];
 
 const TEMPLATE_HINTS = {
   search: "POST search this index",
+  hybrid: "POST search with hybrid embedder + semanticRatio",
+  "multi-search": "POST /multi-search with queries[]",
+  federated: "POST /multi-search with federation.distinct + weights",
+  similar: "POST similar documents for an id",
+  "facet-search": "POST facet search on one attribute",
   "get-document": "GET one document by id",
-  "get-settings": "GET index settings",
-  "get-stats": "GET index stats",
+  "list-documents": "GET documents page",
+  "fetch-documents": "POST documents/fetch by ids",
   "add-documents": "POST documents (write)",
   "delete-document": "DELETE one document by id",
+  "delete-documents-batch": "POST documents/delete-batch (write)",
+  "get-settings": "GET index settings",
+  "patch-settings": "PATCH index settings (write)",
+  "get-stats": "GET index stats",
+  "get-fields": "GET index fields metadata",
+  "get-index": "GET index definition",
+  health: "GET /health",
+  version: "GET /version",
+  "cluster-stats": "GET /stats",
+  "list-indexes": "GET /indexes",
+  "create-dump": "POST /dumps (write)",
+  "list-tasks": "GET /tasks",
+  "get-task": "GET /tasks/:uid",
+  "cancel-tasks": "POST /tasks/cancel (write)",
+  "delete-tasks": "POST /tasks/delete (write)",
+  "list-keys": "GET /keys",
+  "get-key": "GET /keys/:key",
+  "create-key": "POST /keys (write)",
+  "delete-key": "DELETE /keys/:key",
+  "get-experimental": "GET /experimental-features",
+  "patch-experimental": "PATCH /experimental-features (write)",
+  "list-dynamic-rules": "POST /dynamic-search-rules list",
+  "get-dynamic-rule": "GET /dynamic-search-rules/:uid",
+  "get-network": "GET /network",
+  "patch-network": "PATCH /network (write)",
 };
 
 const templateHint = (tpl) =>
@@ -352,6 +463,7 @@ const writeConfirmed = ref(false);
 const responseText = ref("");
 const responseMeta = ref(null);
 const activeTemplateId = ref(null);
+const activeGroupId = ref("search");
 
 const searchKnobs = reactive({
   q: "",
@@ -360,6 +472,14 @@ const searchKnobs = reactive({
   offset: 0,
   sort: "",
   attributesToRetrieve: "",
+  hybridEmbedder: "",
+  hybridSemanticRatio: 0.5,
+});
+
+const federationKnobs = reactive({
+  distinct: "",
+  limit: 20,
+  offset: 0,
 });
 
 const needsBody = computed(() =>
@@ -372,8 +492,26 @@ const bodyPlaceholder = computed(() =>
     : "No body for this method",
 );
 
-const isSearchRequest = computed(
-  () => method.value === "POST" && path.value.includes("/search"),
+const isSingleIndexSearch = computed(() =>
+  isSingleIndexSearchPath(method.value, path.value),
+);
+
+const isMultiSearch = computed(() =>
+  isMultiSearchPath(method.value, path.value),
+);
+
+const bodyHasFederation = computed(() => {
+  if (!isMultiSearch.value) return false;
+  try {
+    const parsed = JSON.parse(body.value || "{}");
+    return Boolean(parsed && typeof parsed === "object" && parsed.federation);
+  } catch {
+    return false;
+  }
+});
+
+const isFederatedMultiSearch = computed(
+  () => isMultiSearch.value && bodyHasFederation.value,
 );
 
 const needsWriteConfirm = computed(() =>
@@ -384,6 +522,10 @@ const hasCopyableResponse = computed(() =>
   Boolean((responseText.value || "").trim()),
 );
 
+const groupTemplates = computed(() =>
+  templates.filter((tpl) => tpl.group === activeGroupId.value),
+);
+
 const persist = () => {
   theSettings.setIndexPlaygroundState(props.indexUid, {
     method: method.value,
@@ -392,27 +534,77 @@ const persist = () => {
   });
 };
 
+const templatePath = (tpl) => tpl.path(props.indexUid);
+
 const matchActiveTemplate = () => {
-  const match = templates.find(
+  const candidates = templates.filter(
     (tpl) =>
-      tpl.method === method.value && tpl.path(props.indexUid) === path.value,
+      tpl.method === method.value && templatePath(tpl) === path.value,
   );
-  activeTemplateId.value = match?.id || null;
+  if (!candidates.length) {
+    activeTemplateId.value = null;
+    return;
+  }
+  if (candidates.length === 1) {
+    activeTemplateId.value = candidates[0].id;
+    if (candidates[0].group) activeGroupId.value = candidates[0].group;
+    return;
+  }
+  // Disambiguate search/hybrid and multi-search/federated by body shape.
+  try {
+    const parsed = JSON.parse(body.value || "{}");
+    if (parsed && typeof parsed === "object") {
+      const hasFed = Boolean(parsed.federation);
+      const hasHybrid = Boolean(parsed.hybrid);
+      const preferred = candidates.find((c) => {
+        if (c.id === "federated" || c.id === "multi-search") {
+          return hasFed ? c.id === "federated" : c.id === "multi-search";
+        }
+        if (c.id === "hybrid" || c.id === "search") {
+          return hasHybrid ? c.id === "hybrid" : c.id === "search";
+        }
+        return false;
+      });
+      if (preferred) {
+        activeTemplateId.value = preferred.id;
+        activeGroupId.value = preferred.group;
+        return;
+      }
+    }
+  } catch {
+    // fall through
+  }
+  if (candidates.some((c) => c.id === activeTemplateId.value)) {
+    const current = candidates.find((c) => c.id === activeTemplateId.value);
+    if (current?.group) activeGroupId.value = current.group;
+    return;
+  }
+  activeTemplateId.value = candidates[0].id;
+  if (candidates[0].group) activeGroupId.value = candidates[0].group;
 };
 
-const onRequestEdited = () => {
+const onDraftEdited = () => {
   matchActiveTemplate();
+  if (isSingleIndexSearch.value) syncBodyToKnobs();
+  if (isFederatedMultiSearch.value) syncBodyToFederationKnobs();
   persist();
 };
 
 const applyTemplate = (tpl) => {
   method.value = tpl.method;
-  path.value = tpl.path(props.indexUid);
-  body.value = tpl.body || "";
+  path.value = templatePath(tpl);
+  body.value = resolveTemplateBody(tpl, props.indexUid);
   writeConfirmed.value = false;
   activeTemplateId.value = tpl.id;
-  if (tpl.id === "search") {
+  if (tpl.group) activeGroupId.value = tpl.group;
+  if (isSingleIndexSearchPath(tpl.method, path.value)) {
     syncBodyToKnobs();
+  }
+  if (
+    isMultiSearchPath(tpl.method, path.value) &&
+    body.value.includes('"federation"')
+  ) {
+    syncBodyToFederationKnobs();
   }
   persist();
 };
@@ -432,12 +624,38 @@ const syncBodyToKnobs = () => {
     )
       ? parsed.attributesToRetrieve.join(",")
       : "";
+    const hybrid = parsed.hybrid;
+    if (hybrid && typeof hybrid === "object") {
+      searchKnobs.hybridEmbedder = hybrid.embedder ?? "";
+      searchKnobs.hybridSemanticRatio =
+        hybrid.semanticRatio ?? searchKnobs.hybridSemanticRatio ?? 0.5;
+    } else {
+      searchKnobs.hybridEmbedder = "";
+    }
   } catch {
     // Keep knobs as-is when body is invalid JSON.
   }
 };
 
+const syncBodyToFederationKnobs = () => {
+  try {
+    const parsed = JSON.parse(body.value || "{}");
+    const fed = parsed.federation;
+    if (!fed || typeof fed !== "object") return;
+    federationKnobs.distinct = fed.distinct ?? "";
+    federationKnobs.limit = fed.limit ?? 20;
+    federationKnobs.offset = fed.offset ?? 0;
+  } catch {
+    // Keep knobs as-is when body is invalid JSON.
+  }
+};
+
+/**
+ * Sync single-index search knobs into the body.
+ * Never call for /multi-search (would wipe queries / federation).
+ */
 const syncKnobsToBody = () => {
+  if (!isSingleIndexSearchPath(method.value, path.value)) return;
   let parsed = {};
   try {
     parsed = JSON.parse(body.value || "{}");
@@ -465,6 +683,39 @@ const syncKnobsToBody = () => {
   } else {
     delete parsed.attributesToRetrieve;
   }
+  const hybrid = buildHybridConfig({
+    enableHybrid: Boolean(String(searchKnobs.hybridEmbedder || "").trim()),
+    hybridEmbedder: searchKnobs.hybridEmbedder,
+    hybridSemanticRatio: searchKnobs.hybridSemanticRatio,
+  });
+  if (hybrid) parsed.hybrid = hybrid;
+  else delete parsed.hybrid;
+  body.value = JSON.stringify(parsed, null, 2);
+  persist();
+};
+
+/**
+ * Sync federation knobs into body.federation only (preserve queries).
+ */
+const syncFederationKnobsToBody = () => {
+  if (!isMultiSearchPath(method.value, path.value)) return;
+  let parsed = {};
+  try {
+    parsed = JSON.parse(body.value || "{}");
+  } catch {
+    parsed = {};
+  }
+  if (!parsed || typeof parsed !== "object") parsed = {};
+  if (!parsed.federation || typeof parsed.federation !== "object") {
+    parsed.federation = {};
+  }
+  const fed = { ...parsed.federation };
+  const distinct = String(federationKnobs.distinct || "").trim();
+  if (distinct) fed.distinct = distinct;
+  else delete fed.distinct;
+  fed.limit = Number(federationKnobs.limit) || 20;
+  fed.offset = Number(federationKnobs.offset) || 0;
+  parsed.federation = fed;
   body.value = JSON.stringify(parsed, null, 2);
   persist();
 };
@@ -560,14 +811,22 @@ const applySeed = (seed) => {
   persist();
 };
 
-onMounted(() => {
-  const saved = theSettings.getIndexPlaygroundState(props.indexUid);
+const loadDraftForIndex = (uid) => {
+  const saved = theSettings.getIndexPlaygroundState(uid);
   method.value = saved.method || "POST";
-  path.value = saved.path || `/indexes/${props.indexUid}/search`;
+  path.value = saved.path || `/indexes/${uid}/search`;
   body.value = saved.body || '{\n  "q": "",\n  "limit": 20\n}';
-  syncBodyToKnobs();
+  if (isSingleIndexSearchPath(method.value, path.value)) {
+    syncBodyToKnobs();
+  }
+  if (isMultiSearchPath(method.value, path.value)) {
+    syncBodyToFederationKnobs();
+  }
   matchActiveTemplate();
+};
 
+onMounted(() => {
+  loadDraftForIndex(props.indexUid);
   const seed = theSettings.consumePlaygroundSeed();
   if (seed) applySeed(seed);
 });
@@ -575,15 +834,10 @@ onMounted(() => {
 watch(
   () => props.indexUid,
   (uid) => {
-    const saved = theSettings.getIndexPlaygroundState(uid);
-    method.value = saved.method || "POST";
-    path.value = saved.path || `/indexes/${uid}/search`;
-    body.value = saved.body || '{\n  "q": "",\n  "limit": 20\n}';
-    syncBodyToKnobs();
     writeConfirmed.value = false;
     responseText.value = "";
     responseMeta.value = null;
-    matchActiveTemplate();
+    loadDraftForIndex(uid);
   },
 );
 

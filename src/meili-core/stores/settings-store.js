@@ -33,7 +33,7 @@ export const useSettingsStore = defineStore("settings", {
     currentInstance: null,
     instances: [],
     // Per-index display preferences
-    indexDisplaySettings: {}, // { indexName: { imageField, listFields, listColumns, listViewMode, compactFieldLimit } }
+    indexDisplaySettings: {}, // { indexName: { imageField, listFields, listColumns, listViewMode, compactFieldLimit, visibleFilterAttributes } }
     // Per-index search state persistence
     indexSearchState: {}, // { indexName: { query: '', filters: {}, sort: '', page: 0, filtersVisible: true, ...search options } }
     // Latest Meilisearch index settings fetched or saved in-session

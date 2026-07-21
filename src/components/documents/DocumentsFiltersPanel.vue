@@ -12,6 +12,18 @@
           </span>
         </span>
         <div class="flex gap-0.5">
+          <q-btn
+            flat
+            dense
+            square
+            size="sm"
+            icon="tune"
+            class="text-text-muted"
+            aria-label="Configure attributes"
+            @click="$emit('configure')"
+          >
+            <q-tooltip>Configure facets and filterable/searchable attributes</q-tooltip>
+          </q-btn>
           <AisClearButton label="Clear" />
           <q-btn
             flat
@@ -129,8 +141,8 @@
             v-else-if="!filterableAttributes.length"
             class="text-caption text-text-muted p-3"
           >
-            No filterable attributes on this index. Add them in the Settings tab,
-            click Submit Settings, and the facets will appear here.
+            No filterable attributes on this index. Use the tune icon to Configure
+            attributes, or add them under Settings → Search and Submit.
           </div>
         </template>
       </ais-state-results>
@@ -159,7 +171,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["close", "update:filterDensity"]);
+const emit = defineEmits(["close", "configure", "update:filterDensity"]);
 
 const attributeSearch = ref("");
 const hideZeroCounts = ref(true);
