@@ -57,7 +57,7 @@ await useIndexesStore().fetchIndexes();
 Treat these as the public API. Refactor internals freely, but keep these signatures:
 
 - `settings-store`: `validateConnection()`, `getIndexClient(indexName)`, `rawRequest(path, options)`, `getIndexSearchState(indexName)`, `setIndexSearchState(indexName, state)`, `getIndexDisplaySettings(indexName)`, `setIndexDisplaySettings(indexName, settings)`, `getIndexSettingsCache(indexName)`, `setIndexSettingsCache(indexName, settings)`, `setLastIndexVisit(indexUid, tab)`, `getIndexPlaygroundState(indexName)`, `setIndexPlaygroundState(indexName, state)`, `setPlaygroundSeed(seed)`, `consumePlaygroundSeed()`
-- `utils/search-utils`: default search state + hybrid config helpers
+- `utils/search-utils`: default search state, hybrid config, Documents→Playground body helpers (`filtersToMeiliFilter`, `instantSortToMeiliSort`, `buildMeiliSearchBodyFromIndexState`)
 - `utils/display-settings`: list field resolution, document id/title helpers, `DEFAULT_DISPLAY_SETTINGS`, `mergeDisplaySettings()`
 - `utils/playground-request`: URL/curl/HTTP/n8n (canvas-pasteable HTTP Request node) serialization + `executePlaygroundRequest`
 - `utils/settings-config`: `SETTINGS_METADATA` (drives any settings UI)

@@ -27,6 +27,7 @@
       <q-tab-panels
         v-model="tabModel"
         animated
+        keep-alive
         class="flex-1 min-h-0 bg-transparent"
       >
         <q-tab-panel name="documents" class="p-0 flex flex-col flex-1 min-h-0">

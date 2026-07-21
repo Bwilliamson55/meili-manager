@@ -33,6 +33,12 @@ Peer tabs (query `?tab=` is shareable):
 - Full `/documents/:index/:id` page remains the deep-link escape hatch.
 - Shortcuts: `Esc` closes the panel; `/` focuses the search query when focus is not in an input.
 
+### Documents search persistence and Playground bridge
+
+- Index tabs use `keep-alive` so leaving Documents for Playground/Settings/Overview does not destroy InstantSearch.
+- `SearchStateWatcher` also guards against empty `refinementList` snapshots on unmount / remount grace (teardown often kept `query` but dropped facets, which wiped filters while the query stuck).
+- Toolbar and Search Diagnostics: **Open in Playground** and **Copy search JSON** build a Meilisearch body from `indexSearchState` via pure helpers in `src/meili-core/utils/search-utils.js` (`filtersToMeiliFilter`, `instantSortToMeiliSort`, `buildMeiliSearchBodyFromIndexState`). Body includes `q`, `filter`, `sort`, `limit`/`offset`, plus compat/hybrid fields when applicable. Seed uses `setPlaygroundSeed({ type: "search", indexUid, body })`; Playground `applySeed` syncs knobs from the body.
+
 ### Documents filters and facets
 
 - The Filters panel lists Meilisearch `filterableAttributes` as InstantSearch facets.

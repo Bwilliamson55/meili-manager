@@ -139,3 +139,88 @@ export const hasActiveSavedSearch = (state = {}) => {
     state.query?.trim() || hasFilters || state.sort || (state.page ?? 0) > 0,
   );
 };
+
+/** Escape a filter value for Meilisearch filter expressions. */
+export const escapeMeiliFilterValue = (value) => {
+  const str = String(value ?? "");
+  return `"${str.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+};
+
+/**
+ * InstantSearch refinement map `{ attr: string[] }` → Meili filter string.
+ * AND across attributes, OR within an attribute.
+ */
+export const filtersToMeiliFilter = (filters = {}) => {
+  const clauses = [];
+  for (const [attribute, values] of Object.entries(filters || {})) {
+    if (!attribute || !Array.isArray(values) || values.length === 0) continue;
+    const parts = values.map(
+      (value) => `${attribute} = ${escapeMeiliFilterValue(value)}`,
+    );
+    clauses.push(parts.length === 1 ? parts[0] : `(${parts.join(" OR ")})`);
+  }
+  return clauses.length > 0 ? clauses.join(" AND ") : undefined;
+};
+
+/**
+ * Strip InstantSearch `indexUid:attr:dir` sort values to Meili `["attr:dir"]`.
+ * Relevance (sort equals indexUid, or empty) returns undefined.
+ */
+export const instantSortToMeiliSort = (sortBy, indexUid = "") => {
+  if (!sortBy || typeof sortBy !== "string") return undefined;
+  const trimmed = sortBy.trim();
+  if (!trimmed) return undefined;
+  if (indexUid && trimmed === indexUid) return undefined;
+
+  const prefix = indexUid ? `${indexUid}:` : "";
+  if (prefix && trimmed.startsWith(prefix)) {
+    const rest = trimmed.slice(prefix.length);
+    if (/^.+:(asc|desc)$/i.test(rest)) return [rest];
+    return undefined;
+  }
+
+  if (/^.+:(asc|desc)$/i.test(trimmed)) return [trimmed];
+  return undefined;
+};
+
+/**
+ * Build a faithful Meilisearch POST /search body from Documents indexSearchState.
+ *
+ * @param {object} savedSearchState
+ * @param {{
+ *   hitsPerPage?: number,
+ *   indexUid?: string,
+ *   compatParams?: Record<string, unknown>,
+ * }} [options]
+ *   Pass `compatParams` from `buildCompatibleSearchParams` to include
+ *   matchingStrategy / distinct / ranking flags / hybrid with version gating.
+ */
+export const buildMeiliSearchBodyFromIndexState = (
+  savedSearchState = {},
+  { hitsPerPage = 20, indexUid = "", compatParams } = {},
+) => {
+  const limit = Number(hitsPerPage) > 0 ? Number(hitsPerPage) : 20;
+  const page = Math.max(Number(savedSearchState.page) || 0, 0);
+  const body = {
+    q: savedSearchState.query || "",
+    limit,
+    offset: page * limit,
+  };
+
+  const filter = filtersToMeiliFilter(savedSearchState.filters);
+  if (filter) body.filter = filter;
+
+  const sort = instantSortToMeiliSort(savedSearchState.sort, indexUid);
+  if (sort) body.sort = sort;
+
+  if (compatParams && typeof compatParams === "object") {
+    for (const [key, value] of Object.entries(compatParams)) {
+      if (value !== undefined) body[key] = value;
+    }
+  } else {
+    const hybrid = buildHybridConfig(savedSearchState);
+    if (hybrid) body.hybrid = hybrid;
+  }
+
+  return body;
+};

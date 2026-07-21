@@ -22,20 +22,60 @@ const emit = defineEmits(["state-changed"]);
 const theSettings = useSettingsStore();
 const isInitialized = ref(false);
 const hasSeenNonEmptyState = ref(false);
+/** After remount, InstantSearch may briefly report empty refinementList. */
+const restoreGraceUntil = ref(0);
 
-const persistFromInstantSearchState = (newState) => {
+const hasFilterValues = (filters = {}) =>
+  Object.values(filters).some(
+    (values) => Array.isArray(values) && values.length > 0,
+  );
+
+const extractFilters = (state) => {
+  const filters = {};
+  if (state?.refinementList) {
+    Object.keys(state.refinementList).forEach((key) => {
+      if (state.refinementList[key] && state.refinementList[key].length > 0) {
+        filters[key] = state.refinementList[key];
+      }
+    });
+  }
+  return filters;
+};
+
+/**
+ * Persist InstantSearch UI state into indexSearchState.
+ * @param {object} newState
+ * @param {{ preserveFiltersIfEmpty?: boolean }} [opts]
+ *   When true (unmount / restore grace), do not overwrite saved facet filters
+ *   with an empty map. Teardown and remount often keep `query` but drop
+ *   `refinementList`, which previously wiped filters while the query stuck.
+ */
+const persistFromInstantSearchState = (newState, opts = {}) => {
   if (!newState || !props.indexName) return;
+
+  const existingState = theSettings.getIndexSearchState(props.indexName);
+  let filters = extractFilters(newState);
+  const preserveFiltersIfEmpty =
+    opts.preserveFiltersIfEmpty || Date.now() < restoreGraceUntil.value;
+
+  if (
+    preserveFiltersIfEmpty &&
+    !hasFilterValues(filters) &&
+    hasFilterValues(existingState.filters)
+  ) {
+    filters = { ...existingState.filters };
+  }
 
   const searchState = {
     query: newState.query || "",
-    filters: extractFilters(newState),
+    filters,
     sort: newState.sortBy || "",
     page: newState.page !== undefined ? newState.page : 0,
   };
 
   const hasState =
     searchState.query ||
-    Object.keys(searchState.filters).length > 0 ||
+    hasFilterValues(searchState.filters) ||
     searchState.sort ||
     searchState.page > 0;
 
@@ -49,7 +89,6 @@ const persistFromInstantSearchState = (newState) => {
   }
 
   if (hasSeenNonEmptyState.value || hasState) {
-    const existingState = theSettings.getIndexSearchState(props.indexName);
     theSettings.setIndexSearchState(props.indexName, {
       ...existingState,
       ...searchState,
@@ -58,7 +97,6 @@ const persistFromInstantSearchState = (newState) => {
   }
 };
 
-// Watch for state changes and save them
 watch(
   () => props.state,
   (newState) => {
@@ -67,18 +105,19 @@ watch(
   { deep: true },
 );
 
-// Mark as initialized after a short delay to allow ais-configure to apply saved state
 onMounted(() => {
-  // Give ais-configure time to apply the saved state before we start watching
+  // Allow ais-configure to re-apply saved query/filters before empty snapshots win.
+  restoreGraceUntil.value = Date.now() + 500;
   setTimeout(() => {
     isInitialized.value = true;
-    // If we haven't seen a non-empty state yet, check if current state has any value
     const currentState = props.state;
     if (currentState) {
       const hasState =
         currentState.query ||
         (currentState.refinementList &&
-          Object.keys(currentState.refinementList).length > 0) ||
+          Object.keys(currentState.refinementList).some(
+            (key) => currentState.refinementList[key]?.length > 0,
+          )) ||
         currentState.sortBy ||
         (currentState.page !== undefined && currentState.page > 0);
       if (hasState) {
@@ -89,19 +128,8 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  persistFromInstantSearchState(props.state);
+  // Tab switches destroy the Documents panel (unless keep-alive). InstantSearch
+  // teardown often still has query/sort but an empty refinementList.
+  persistFromInstantSearchState(props.state, { preserveFiltersIfEmpty: true });
 });
-
-// Helper to extract filters from state
-function extractFilters(state) {
-  const filters = {};
-  if (state.refinementList) {
-    Object.keys(state.refinementList).forEach((key) => {
-      if (state.refinementList[key] && state.refinementList[key].length > 0) {
-        filters[key] = state.refinementList[key];
-      }
-    });
-  }
-  return filters;
-}
 </script>

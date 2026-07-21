@@ -1,6 +1,6 @@
 <template>
   <ais-state-results>
-    <template #default="{ results, state }">
+    <template #default="{ results }">
       <q-expansion-item
         dense
         dense-toggle
@@ -21,8 +21,26 @@
                 color="primary"
                 icon="terminal"
                 label="Open in Playground"
-                @click="openInPlayground(state)"
-              />
+                @click="$emit('open-playground')"
+              >
+                <q-tooltip>
+                  Seed Playground from the saved Documents search state
+                </q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                dense
+                square
+                no-caps
+                size="sm"
+                icon="content_copy"
+                label="Copy search JSON"
+                @click="$emit('copy-search-json')"
+              >
+                <q-tooltip>
+                  Copy the Meilisearch search body as JSON
+                </q-tooltip>
+              </q-btn>
             </div>
             <div class="mb-2">
               <strong>Request UID:</strong>
@@ -76,7 +94,7 @@
 </template>
 
 <script setup>
-const props = defineProps({
+defineProps({
   headerEnabled: {
     type: Boolean,
     default: false,
@@ -103,7 +121,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["open-playground"]);
+defineEmits(["open-playground", "copy-search-json"]);
 
 const getFirstHitValue = (results, key) => {
   const firstHit = results?.hits?.[0];
@@ -116,24 +134,5 @@ const formatValue = (value) => {
     return JSON.stringify(value);
   }
   return String(value);
-};
-
-const openInPlayground = (state) => {
-  const body = {
-    q: state?.query || "",
-    limit: state?.hitsPerPage || 20,
-  };
-  const embedder = props.hybridEmbedder?.trim();
-  if (props.hybridEnabled && embedder) {
-    body.hybrid = {
-      embedder,
-      semanticRatio: props.hybridSemanticRatio ?? 0.5,
-    };
-  }
-  emit("open-playground", {
-    type: "search",
-    indexUid: props.indexUid,
-    body,
-  });
 };
 </script>
