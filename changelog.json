@@ -1,5 +1,26 @@
 [
   {
+    "version": "1.24.2",
+    "week": "2026-W30",
+    "dateRange": "2026, Week 30",
+    "changes": [
+      {
+        "subject": "Merge pull request #24 from Bwilliamson55/dev",
+        "notes": [
+          "Add Playground API presets and Documents facet configure"
+        ]
+      },
+      {
+        "subject": "Add Playground API presets and Documents facet configure",
+        "notes": [
+          "Grouped Playground presets with hybrid and federation knobs that stay on the right endpoints",
+          "Added Configure attributes for visible facets and quick filterable/searchable appends",
+          "DRY draft hydrate/edit handlers and document the new UX; bump to 2.3.0"
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.23.33",
     "week": "2026-W29",
     "dateRange": "2026, Week 29",
