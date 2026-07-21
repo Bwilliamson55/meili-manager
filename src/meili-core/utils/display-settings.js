@@ -19,6 +19,8 @@ export const DEFAULT_DISPLAY_SETTINGS = Object.freeze({
   listColumns: 2,
   listViewMode: "compact",
   compactFieldLimit: 4,
+  /** null / omitted = show all filterable attributes as facets */
+  visibleFilterAttributes: null,
 });
 
 export const COMPACT_FIELD_CANDIDATES = [
@@ -158,6 +160,27 @@ export const resolveFilterableAttributes = (
   }
 
   return [];
+};
+
+/**
+ * Intersect Meili filterable attributes with a local display subset.
+ * null / omitted / empty visibleFilterAttributes → show all filterable (Meili order).
+ */
+export const resolveVisibleFilterAttributes = (
+  filterableAttributes = [],
+  visibleFilterAttributes = null,
+) => {
+  if (!Array.isArray(filterableAttributes) || filterableAttributes.length === 0) {
+    return [];
+  }
+  if (
+    !Array.isArray(visibleFilterAttributes) ||
+    visibleFilterAttributes.length === 0
+  ) {
+    return [...filterableAttributes];
+  }
+  const visible = new Set(visibleFilterAttributes.filter(Boolean));
+  return filterableAttributes.filter((attr) => visible.has(attr));
 };
 
 export const shouldUseAllItemFields = ({

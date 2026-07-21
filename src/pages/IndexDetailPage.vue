@@ -186,9 +186,10 @@
               <template #before>
                 <div class="pr-2 h-full min-h-0">
                   <DocumentsFiltersPanel
-                    :filterable-attributes="filterableAttributes"
+                    :filterable-attributes="visibleFilterableAttributes"
                     :filter-density="savedSearchState.filterDensity"
                     @update:filter-density="onFilterDensityChange"
+                    @configure="showConfigureAttributesDialog = true"
                     @close="filtersVisible = false"
                   />
                 </div>
@@ -282,6 +283,18 @@
       :fields="displaySettings.listFields"
       @update:fields="onListFieldsOrderChange"
     />
+
+    <DocumentsConfigureAttributesDialog
+      v-model="showConfigureAttributesDialog"
+      :index-uid="currentIndex || route.params.uid"
+      :filterable-attributes="allFilterableAttributes"
+      :visible-filter-attributes="displaySettings.visibleFilterAttributes"
+      :searchable-attributes="iSettings.searchableAttributes || []"
+      :candidate-attributes="attributeCandidates"
+      @update:visible-filter-attributes="onVisibleFilterAttributesChange"
+      @settings-updated="onIndexSettingsUpdated"
+      @open-settings-search="openSettingsSearchTab"
+    />
   </q-page>
 </template>
 
@@ -316,9 +329,11 @@ import DocumentsHitsColumn from "components/documents/DocumentsHitsColumn.vue";
 import DocumentsDisplayMenu from "components/documents/DocumentsDisplayMenu.vue";
 import DocumentSidePanel from "components/documents/DocumentSidePanel.vue";
 import ListFieldsOrderDialog from "components/documents/ListFieldsOrderDialog.vue";
+import DocumentsConfigureAttributesDialog from "components/documents/DocumentsConfigureAttributesDialog.vue";
 import {
   resolveListFields,
   resolveFilterableAttributes,
+  resolveVisibleFilterAttributes,
   shouldUseAllItemFields,
   getListFieldsSourceLabel,
   mergeDisplaySettings,
@@ -398,6 +413,7 @@ const listColumnOptions = [
   { label: "3 cols", value: 3 },
 ];
 const showListFieldsOrderDialog = ref(false);
+const showConfigureAttributesDialog = ref(false);
 const filtersVisible = ref(true);
 const filtersPanelWidth = ref(380);
 const previousIndex = ref("");
@@ -425,6 +441,25 @@ const matchingStrategyOptions = [
   { label: "Frequency", value: "frequency" },
 ];
 
+const allFilterableAttributes = computed(() => {
+  const cached =
+    theSettings.getIndexSettingsCache(currentIndex.value) || iSettings.value;
+  return resolveFilterableAttributes(cached, fieldsRows.value);
+});
+
+const visibleFilterableAttributes = computed(() =>
+  resolveVisibleFilterAttributes(
+    allFilterableAttributes.value,
+    displaySettings.value.visibleFilterAttributes,
+  ),
+);
+
+const attributeCandidates = computed(() => {
+  const fromDistribution = fdRows.value.map((row) => row["Field Name"]);
+  const fromFields = fieldsRows.value.map((row) => row.field);
+  return [...new Set([...fromDistribution, ...fromFields].filter(Boolean))];
+});
+
 const searchParams = computed(() => {
   const compatParams = buildCompatibleSearchParams(
     savedSearchState.value,
@@ -446,8 +481,8 @@ const searchParams = computed(() => {
   if (Object.keys(refinementList).length > 0) {
     params.refinementList = refinementList;
   }
-  if (filterableAttributes.value.length > 0) {
-    params.facets = filterableAttributes.value;
+  if (visibleFilterableAttributes.value.length > 0) {
+    params.facets = visibleFilterableAttributes.value;
   }
   return params;
 });
@@ -690,12 +725,6 @@ const resolvedListFields = computed(() =>
   }),
 );
 
-const filterableAttributes = computed(() => {
-  const cached =
-    theSettings.getIndexSettingsCache(currentIndex.value) || iSettings.value;
-  return resolveFilterableAttributes(cached, fieldsRows.value);
-});
-
 const syncIndexSettings = (settings) => {
   if (!settings || !currentIndex.value) return;
   theSettings.setIndexSettingsCache(currentIndex.value, settings);
@@ -705,6 +734,18 @@ const syncIndexSettings = (settings) => {
 
 const onIndexSettingsUpdated = (settings) => {
   syncIndexSettings(settings);
+};
+
+const onVisibleFilterAttributesChange = (next) => {
+  displaySettings.value = {
+    ...displaySettings.value,
+    visibleFilterAttributes: next,
+  };
+  saveDisplaySettings();
+};
+
+const openSettingsSearchTab = () => {
+  detailPanelTab.value = "settings";
 };
 
 const useAllItemFields = computed(() =>

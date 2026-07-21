@@ -1,6 +1,6 @@
 {
   "name": "meili-manager",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "A Quasar app to manage multiple Meilisearch instances",
   "productName": "Meili Manager",
   "author": "bwilliamson55@github.com",

@@ -2,7 +2,7 @@
 
 Open-source Quasar (Vue 3) PWA for managing multiple Meilisearch instances across development, staging, and production.
 
-**Version**: 2.2.0  
+**Version**: 2.3.0  
 **Demo**: [https://meili-manager.weeumson.com/#/](https://meili-manager.weeumson.com/#/)
 
 Credentials never leave the browser: instance URLs and API keys are stored in `localStorage` via Pinia persisted state. Do not commit secrets.
@@ -264,13 +264,14 @@ InstantSearch browser:
 
 - Query, sort, filters (advanced / LLM controls collapsed by default)
 - Display menu: compact / detailed / table, list fields, thumbnails
+- Filters panel: **Configure attributes** to choose which filterable fields show as facets (local per-index display setting), or quickly add attributes as filterable/searchable (writes Meilisearch settings and re-indexes; full reorder/remove remains under Settings → Search)
 - Click a hit to open the JSON side panel; full editor via **Open full editor** or `/documents/...`
 - Fetch by IDs when supported; **New** creates via the full editor route
 - Diagnostics: **Open in Playground** with an effective search body when available
 
 ### Playground
 
-Craft `GET`/`POST`/… requests scoped to the current index, Send, inspect status/timing/JSON, copy redacted curl (default) or with-key / HTTP / n8n workflow JSON (paste onto the n8n canvas). Seed from Documents hit or diagnostics. See [`docs/workspace-ux.md`](docs/workspace-ux.md).
+Craft `GET`/`POST`/… requests against the active instance, Send, inspect status/timing/JSON, copy redacted curl (default) or with-key / HTTP / n8n workflow JSON (paste onto the n8n canvas). Presets are grouped (Search, Documents, Index, Instance, Tasks, Keys, Experimental): Search covers hybrid, multi-search, federated (`federation.distinct` knobs), similar, and facet-search. Single-index search knobs never mutate `/multi-search`. Seed from Documents hit or diagnostics. See [`docs/workspace-ux.md`](docs/workspace-ux.md).
 
 ### Endpoints/Methods used
 
