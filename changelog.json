@@ -1,9 +1,30 @@
 [
   {
-    "version": "1.24.2",
+    "version": "1.24.5",
     "week": "2026-W30",
     "dateRange": "2026, Week 30",
     "changes": [
+      {
+        "subject": "Merge pull request #25 from Bwilliamson55/dev",
+        "notes": [
+          "Fix Documents filter persist and Playground search bridge"
+        ]
+      },
+      {
+        "subject": "Add Documents to Playground search bridge",
+        "notes": [
+          "Built Meilisearch search bodies from indexSearchState (q, filter, sort, limit/offset, hybrid/compat)",
+          "Added Open in Playground and Copy search JSON on Documents toolbar and diagnostics",
+          "Documented the bridge helpers and bumped version to 2.3.1"
+        ]
+      },
+      {
+        "subject": "Fix Documents facet filters wiping on tab switch",
+        "notes": [
+          "Kept index tab panels alive so InstantSearch is not destroyed when leaving Documents",
+          "Preserved saved refinementList when InstantSearch teardown reports empty filters with a still-present query"
+        ]
+      },
       {
         "subject": "Merge pull request #24 from Bwilliamson55/dev",
         "notes": [
